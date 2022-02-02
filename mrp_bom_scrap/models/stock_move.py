@@ -8,6 +8,12 @@ class StockMove(models.Model):
 
     scrap_move_line_ids = fields.One2many('stock.move.line', 'scrap_move_id')
 
+    def _action_cancel(self):
+        """Set scap move lines to zero if stock move is canclled."""
+        res = super()._action_cancel()
+        for line in self.scrap_move_line_ids:
+            line.qty_done = 0
+        return res
 
 class StockMoveLine(models.Model):
     _inherit = "stock.move.line"
@@ -33,6 +39,8 @@ class StockMoveLine(models.Model):
                             line.qty_done = qty
                     else:
                         scrap_move = self.env['stock.move'].create({
+                            #'name': _("Scrap move: %s") % (move.picking_id.name),
+                            #'date': move.date,
                             'location_id': bom_id.location_id.id,
                             'location_dest_id': bom_id.location_dest_id.id,
                             'product_id': line.product_id.id,
@@ -41,6 +49,7 @@ class StockMoveLine(models.Model):
                         })
                         line_id = self.env['stock.move.line'].create({
                             'scrap_move_id': move.id,
+                            #'date': move.date,
                             'move_id': scrap_move.id,
                             'picking_id': False,
                             'location_id': bom_id.location_id.id,
@@ -52,4 +61,5 @@ class StockMoveLine(models.Model):
                             'company_id': self.company_id.id
                         })
                         scrap_move._action_done()
+                        # scrap_move._action_confirm()
             return res
