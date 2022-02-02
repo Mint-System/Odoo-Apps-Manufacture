@@ -38,8 +38,11 @@ class StockMoveLine(models.Model):
                         for line in scrap_move_line_ids:
                             line.qty_done = qty
                     else:
+                        # Check if scrap move for picking exists
+                        # scrap_move = self.env['stock.move.line'].search([('scrap_move_id', '=', move.id)], limit=1).move_id
+                        #if not scrap_move:
                         scrap_move = self.env['stock.move'].create({
-                            #'name': _("Scrap move: %s") % (move.picking_id.name),
+                            'name': _("Scrap move: %s") % (move.picking_id.name),
                             #'date': move.date,
                             'location_id': bom_id.location_id.id,
                             'location_dest_id': bom_id.location_dest_id.id,
@@ -61,5 +64,6 @@ class StockMoveLine(models.Model):
                             'company_id': self.company_id.id
                         })
                         scrap_move._action_done()
+                        _logger.warning("SCRAP DONE")
                         # scrap_move._action_confirm()
-            return res
+        return res
