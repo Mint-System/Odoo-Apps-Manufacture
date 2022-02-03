@@ -35,11 +35,10 @@ class StockMoveLine(models.Model):
                 for line in bom_id.bom_line_ids:
                     qty = line.product_qty / bom_id.product_qty * move.quantity_done
                     # Update existing scrap move lines
-                    if scrap_move_line_ids:
-                        for line in scrap_move_line_ids:
-                            line.qty_done = qty
-                            line.move_id.product_uom_qty = qty
-                            confirm_moves.append(line.move_id)
+                    for line in scrap_move_line_ids:
+                        line.qty_done = qty
+                        line.move_id.product_uom_qty = qty
+                        confirm_moves.append(line.move_id)
             # Mark related move as done
             [move._action_done() for move in confirm_moves]
                             

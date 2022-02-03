@@ -8,8 +8,9 @@ class MrpBom(models.Model):
         ('scrap', 'Scrap'),
     ], ondelete={"scrap": "set default"})
 
-    location_id = fields.Many2one('stock.location', 'From')
-    location_dest_id = fields.Many2one('stock.location', 'To')
+    # location_id = fields.Many2one('stock.location', 'From')
+    # location_dest_id = fields.Many2one('stock.location', 'To')
+    scrap_picking_type_id = fields.Many2one('stock.picking.type', 'Scrap Operation Type', domain="[('company_id', '=', company_id)]", check_company=True)
 
 class MrpBomLine(models.Model):
     _inherit = 'mrp.bom.line'

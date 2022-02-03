@@ -20,11 +20,20 @@ class SaleOrder(models.Model):
         """Update commitent_date on each sale order line move"""
         result = super(SaleOrder, self).action_confirm()
         if result:
+            # scrap_picking = {}
             for move in self.order_line.move_ids:                
                 # Check if move is done, not scrapped and is delivery
                 if move.state in ['confirmed', 'assigned'] and not move.scrapped and move.picking_id.picking_type_code == 'outgoing':
                     # Get scrap bom
                     bom_id = self.env['mrp.bom'].search([('product_tmpl_id', '=', move.product_id.product_tmpl_id.id),('type', '=', 'scrap')],limit=1)
+                    # Create picking if it does not exist yet
+                    # if not scrap_picking:
+                    #     scrap_picking = self.env['stock.picking'].create({
+                    #         'picking_type_id': bom_id.scrap_picking_type_id.id,
+                    #         'location_id': bom_id.scrap_picking_type_id.default_location_src_id.id,
+                    #         'location_dest_id': bom_id.scrap_picking_type_id.default_location_dest_id.id,
+                    #         'group_id': self.procurement_group_id.id,
+                    #     })
                     # Create scrap move lines
                     for line in bom_id.bom_line_ids:
                         qty = line.product_qty / bom_id.product_qty * move.quantity_done
@@ -32,9 +41,10 @@ class SaleOrder(models.Model):
                             'name': _("Scrap move for: %s") % (move.picking_id.name),
                             'date': move.date,
                             'origin': self.name,
+                            # 'picking_id': scrap_picking.id,
                             'group_id': self.procurement_group_id.id,
-                            'location_id': bom_id.location_id.id,
-                            'location_dest_id': bom_id.location_dest_id.id,
+                            'location_id': bom_id.scrap_picking_type_id.default_location_src_id.id,
+                            'location_dest_id': bom_id.scrap_picking_type_id.default_location_dest_id.id,
                             'product_id': line.product_id.id,
                             'product_uom': line.product_uom_id.id,
                             'product_uom_qty': qty,
@@ -43,8 +53,9 @@ class SaleOrder(models.Model):
                             'scrap_move_id': move.id,
                             'date': move.date,
                             'move_id': scrap_move.id,
-                            'location_id': bom_id.location_id.id,
-                            'location_dest_id': bom_id.location_dest_id.id,
+                            # 'picking_id': scrap_picking.id,
+                            'location_id': bom_id.scrap_picking_type_id.default_location_src_id.id,
+                            'location_dest_id': bom_id.scrap_picking_type_id.default_location_dest_id.id,
                             'product_id': line.product_id.id,
                             'product_uom_id': line.product_uom_id.id,
                             'qty_done': qty,
