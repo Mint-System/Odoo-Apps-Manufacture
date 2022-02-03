@@ -2,11 +2,11 @@
     :target: http://www.gnu.org/licenses/gpl-3.0-standalone.html
     :alt: License: GPL-3
 
-=======================
-Manufacturing BoM Scrap
-=======================
+=============================
+Manufacturing BoM Consumption
+=============================
 
-Define a bill of material that is scraped on delivery.
+Define a bill of material that is consummated on delivery.
 
 .. image:: ./static/description/icon.png
   :height: 100

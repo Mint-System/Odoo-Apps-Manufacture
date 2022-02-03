@@ -1,7 +1,7 @@
 {
-    "name": "Manufacturing BoM Scrap",
+    "name": "Manufacturing BoM Consumption",
     "summary": """
-        Define a bill of material that is scraped on delivery.
+        Define a bill of material that is consummated on delivery.
     """,
     "author": "Mint System GmbH, Odoo Community Association (OCA)",
     "website": "https://www.mint-system.ch",

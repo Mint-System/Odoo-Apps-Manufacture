@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <odoo>
 
-  <record id="mrp_bom_form_view_scrap_type" model="ir.ui.view">
+  <record id="mrp_bom_form_view_consumed_type" model="ir.ui.view">
     <field name="model">mrp.bom</field>
     <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
     <field name="arch" type="xml">
@@ -11,9 +11,7 @@
         </xpath>
         <xpath expr="//sheet/group/group[2]" position="after">
           <group>
-            <!-- <field name="location_id" attrs="{ 'required': [('type','=','scrap')], 'invisible': [('type','!=','scrap')] }"/>
-            <field name="location_dest_id" attrs="{ 'required': [('type','=','scrap')], 'invisible': [('type','!=','scrap')] }"/> -->
-            <field name="scrap_picking_type_id" attrs="{ 'required': [('type','=','scrap')], 'invisible': [('type','!=','scrap')] }"/>
+            <field name="consumed_picking_type_id" attrs="{ 'required': [('type','=','consumed')], 'invisible': [('type','!=','consumed')] }"/>
           </group>
         </xpath>
       </data>
