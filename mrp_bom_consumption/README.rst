@@ -16,7 +16,7 @@ Define a bill of material that is consummated on delivery.
 Configuration
 ~~~~~~~~~~~~~
 
-* Creat bill of material with type scrap.
+* Creat bill of material of type consumed.
 
 Maintainer
 ==========
