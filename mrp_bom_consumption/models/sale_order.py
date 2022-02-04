@@ -7,65 +7,38 @@ class SaleOrder(models.Model):
     _inherit = "sale.order"
 
     def _action_cancel(self):
-        """Set consumed move lines to zero if stock move is canclled."""
+        """Cancel consumption moves if sale order is cancelled."""
         res = super()._action_cancel()
         for move in self.order_line.move_ids:
-            consumed_move_line_ids = self.env['stock.move.line'].search([('consumed_move_id', '=', move.id)])
-            for line in consumed_move_line_ids:
-                line.qty_done = 0
-                line.move_id._action_cancel()
+            consumption_move_ids = self.env['stock.move'].search([('consumption_move_id', '=', move.id)])
+            for move in consumption_move_ids:
+                for line in move.move_line_ids:
+                    line.qty_done = 0
+                move._action_cancel()
         return res
 
     def action_confirm(self):
-        """Update commitent_date on each sale order line move"""
+        """Update create consumption stocck move"""
         result = super(SaleOrder, self).action_confirm()
         if result:
-
-            # consumed_picking = {}
-
             for order_line in self.order_line:
                 for move in order_line.move_ids:
-                    # Check if move is done, not consumedped and is delivery
+                    # Check if move is done, not consummed and is delivery
                     if move.state in ['partially_available', 'confirmed', 'assigned'] and not move.scrapped and move.picking_id.picking_type_code == 'outgoing':
-                        # Get consumed bom
-                        bom_id = self.env['mrp.bom'].search([('product_tmpl_id', '=', move.product_id.product_tmpl_id.id),('type', '=', 'consumed')],limit=1)
-                        
-                        # Create picking if it does not exist yet
-                        # if not consumed_picking:
-                        #     consumed_picking = self.env['stock.picking'].create({
-                        #         'picking_type_id': bom_id.consumed_picking_type_id.id,
-                        #         'location_id': bom_id.consumed_picking_type_id.default_location_src_id.id,
-                        #         'location_dest_id': bom_id.consumed_picking_type_id.default_location_dest_id.id,
-                        #         'group_id': self.procurement_group_id.id,
-                        #     })
-
-                        # Create consumed move lines
+                        # Get consumption bom
+                        bom_id = self.env['mrp.bom'].search([('product_tmpl_id', '=', move.product_id.product_tmpl_id.id),('type', '=', 'consumption')],limit=1)
+                        # Create consumption move
                         for line in bom_id.bom_line_ids:
-                            qty = line.product_qty / bom_id.product_qty * move.quantity_done
-                            consumed_move = self.env['stock.move'].create({
-                                'name': _("Scrap move for: %s") % (move.picking_id.name),
+                            consumption_move = self.env['stock.move'].create({
+                                'name': _("Consumption move for: %s") % (move.picking_id.name),
                                 'date': move.date,
                                 'origin': self.name,
-                                # 'picking_id': consumed_picking.id,
-                                'group_id': self.procurement_group_id.id,
-                                'location_id': bom_id.consumed_picking_type_id.default_location_src_id.id,
-                                'location_dest_id': bom_id.consumed_picking_type_id.default_location_dest_id.id,
+                                'consumption_move_id': move.id,
+                                'location_id': bom_id.consumption_picking_type_id.default_location_src_id.id,
+                                'location_dest_id': bom_id.consumption_picking_type_id.default_location_dest_id.id,
                                 'product_id': line.product_id.id,
                                 'product_uom': line.product_uom_id.id,
-                                'product_uom_qty': qty,
+                                'product_uom_qty': 0,
                             })
-                            line_id = self.env['stock.move.line'].create({
-                                'consumed_move_id': move.id,
-                                'date': move.date,
-                                'move_id': consumed_move.id,
-                                # 'picking_id': consumed_picking.id,
-                                'location_id': bom_id.consumed_picking_type_id.default_location_src_id.id,
-                                'location_dest_id': bom_id.consumed_picking_type_id.default_location_dest_id.id,
-                                'product_id': line.product_id.id,
-                                'product_uom_id': line.product_uom_id.id,
-                                'qty_done': qty,
-                                'lot_id': line.lot_id.id,
-                                'company_id': self.company_id.id
-                            })
-                            consumed_move._action_confirm()
+                            _logger.warning(["CREATED CONSUMPTION MOVE", consumption_move])
         return result

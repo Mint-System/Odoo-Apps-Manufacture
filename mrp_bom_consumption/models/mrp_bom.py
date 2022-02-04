@@ -5,10 +5,10 @@ class MrpBom(models.Model):
     _inherit = 'mrp.bom'
 
     type = fields.Selection(selection_add=[
-        ('consumed', 'Consumed'),
-    ], ondelete={"consumed": "set default"})
+        ('consumption', 'Consumption'),
+    ], ondelete={"consumption": "set default"})
 
-    consumed_picking_type_id = fields.Many2one('stock.picking.type', 'Scrap Operation Type', domain="[('company_id', '=', company_id)]", check_company=True)
+    consumption_picking_type_id = fields.Many2one('stock.picking.type', 'Consumption Operation Type', domain="[('company_id', '=', company_id)]", check_company=True)
 
 class MrpBomLine(models.Model):
     _inherit = 'mrp.bom.line'

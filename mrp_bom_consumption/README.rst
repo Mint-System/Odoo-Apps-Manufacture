@@ -6,7 +6,7 @@
 Manufacturing BoM Consumption
 =============================
 
-Define a bill of material that is consummated on delivery.
+Define a bill of material that is consummed on delivery.
 
 .. image:: ./static/description/icon.png
   :height: 100
@@ -16,7 +16,7 @@ Define a bill of material that is consummated on delivery.
 Configuration
 ~~~~~~~~~~~~~
 
-* Creat bill of material of type consumed.
+* Creat bill of material of type consumption.
 
 Maintainer
 ==========

@@ -6,40 +6,41 @@ _logger = logging.getLogger(__name__)
 class StockMove(models.Model):
     _inherit = "stock.move"
 
-    consumed_move_line_ids = fields.One2many('stock.move.line', 'consumed_move_id')
+    consumption_move_id = fields.Many2one('stock.move', 'Scrap Stock Move')
 
-    def _action_cancel(self):
-        """Set consumed move lines to zero if stock move is cancelled."""
-        res = super()._action_cancel()
-        for line in self.consumed_move_line_ids:
-            line.qty_done = 0
-            line.move_id._action_cancel()
-        return res
-
-class StockMoveLine(models.Model):
-    _inherit = "stock.move.line"
-
-    consumed_move_id = fields.Many2one('stock.move', 'Scrap Stock Move')
-
-    def write(self,vals):
-        """If this method is called, update consumed move lines"""
-        res = super(StockMoveLine, self).write(vals)
-        for move in self.move_id:
-            # Get existing consumed move lines
-            consumed_move_line_ids = self.env['stock.move.line'].search([('consumed_move_id', '=', move.id)])
-            confirm_moves = []
-            if consumed_move_line_ids:
-                # Get consumed bom
-                bom_id = self.env['mrp.bom'].search([('product_tmpl_id', '=', move.product_id.product_tmpl_id.id),('type', '=', 'consumed')],limit=1)
-                # Check all possible consumed move lines
+    def _update_consumption_moves(self):
+        for move in self.filtered(lambda m: not m.consumption_move_id):
+            _logger.warning(["UPDATE CONSUMPTION MOVES", move.id])
+            # Get existing consumption move lines
+            consumption_move_ids = self.env['stock.move'].search([('consumption_move_id', '=', move.id)])
+            if consumption_move_ids:
+                # Get consumption bom
+                bom_id = move.env['mrp.bom'].search(
+                    [('product_tmpl_id', '=', move.product_id.product_tmpl_id.id), ('type', '=', 'consumption')], limit=1)
+                _logger.warning(["FOUND CONSUMPTION BOM", bom_id])
+                # Check all bom lines
                 for line in bom_id.bom_line_ids:
                     qty = line.product_qty / bom_id.product_qty * move.quantity_done
-                    # Update existing consumed move lines
-                    for line in consumed_move_line_ids:
-                        line.qty_done = qty
-                        line.move_id.product_uom_qty = qty
-                        confirm_moves.append(line.move_id)
-            # Mark related move as done
-            [move._action_done() for move in confirm_moves]
-                            
+                    # Update existing consumption moves
+                    for consumption_move in consumption_move_ids.filtered(lambda m: m.product_id == line.product_id):
+                        _logger.warning(["UPDATE CONSUMPTION MOVES", consumption_move_ids, qty])
+                        consumption_move.write({'product_uom_qty':  qty, 'quantity_done': qty})
+                        consumption_move._action_done()
+
+    def write(self, vals):
+        """If this method is called, update consumption moves"""
+        res = super(StockMove, self).write(vals)
+        self._update_consumption_moves()
         return res
+
+# class StockMoveLine(models.Model):
+#     _inherit = "stock.move.line"
+
+#     def write(self,vals):
+#         """If this method is called, update consumption moves"""
+#         res = super(StockMoveLine, self).write(vals)
+#         _logger.warning(["WRITE STOCK MOVE LINE", self.move_id])
+#         for move in self.move_id:
+#             if not move.consumption_move_id:
+#                 move._update_consumption_move()
+#         return res
