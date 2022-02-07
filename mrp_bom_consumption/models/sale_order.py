@@ -7,10 +7,11 @@ class SaleOrder(models.Model):
     _inherit = "sale.order"
 
     def _action_cancel(self):
-        """Cancel consumption moves if sale order is cancelled."""
-        res = super()._action_cancel()
-        for move in self.order_line.move_ids.consumption_move_ids:
-            move._action_cancel()
+        """Reset consumption move lines if sale order is cancelled."""
+        res = super(SaleOrder, self)._action_cancel()
+        for consumption_move in self.order_line.move_ids.consumption_move_ids:
+            for line in consumption_move.move_line_ids:
+                line.write({'qty_done': 0})
         return res
 
     def action_confirm(self):

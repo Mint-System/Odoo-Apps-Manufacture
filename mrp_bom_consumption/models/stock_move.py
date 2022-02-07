@@ -12,9 +12,13 @@ class StockMove(models.Model):
 
     def _action_cancel(self):
         """Reset consumption moves lines if stock move is cancelled."""
-        for line in self.consumption_move_ids.move_line_ids:
-            line.qty_done = 0
-        return super()._action_cancel()
+        res = super(StockMove, self)._action_cancel()
+        for consumption_move in self.consumption_move_ids:
+            # _logger.warning(["CLEAR CONSUMPTION MOVE",consumption_move])
+            for line in consumption_move.move_line_ids:
+                line.write({'qty_done': 0})
+            consumption_move._action_cancel()
+        return res
     
     @api.depends('product_id')
     def _compute_consumption_bom_id(self):
@@ -33,10 +37,14 @@ class StockMove(models.Model):
                     # Update existing consumption moves
                     for consumption_move in move.consumption_move_ids.filtered(lambda m: m.product_id == line.product_id):
                         # _logger.warning(["UPDATE CONSUMPTION MOVES", consumption_move, qty])
-                        consumption_move.write({'product_uom_qty':  qty, 'quantity_done': qty, 'state': 'assigned'})
+                        if consumption_move.move_line_ids:
+                            for line in consumption_move.move_line_ids:
+                                line.write({'qty_done': qty})
+                        else:
+                            consumption_move.write({'product_uom_qty':  qty, 'quantity_done': qty, 'state': 'assigned'})
+                            consumption_move._action_done()
                         if line.lot_id:
                             consumption_move.move_line_ids.lot_id = line.lot_id
-                        consumption_move._action_done()
 
     def write(self, vals):
         """If this method is called, update consumption moves"""
