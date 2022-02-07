@@ -8,7 +8,7 @@ class StockMove(models.Model):
 
     consumption_bom_id = fields.Many2one('mrp.bom', 'Consumption BoM', compute='_compute_consumption_bom_id', help='Returns the first consumption bom of the product in move.')
     consumption_move_id = fields.Many2one('stock.move', 'Consumption Stock Move', help='The origin stock move of the consumption stock move.')
-    consumption_move_ids = fields.One2many('stock.move', 'consumption_move_id', 'Consumption Stock Moves', help='All consumption stock mvoes of this stock move.')
+    consumption_move_ids = fields.One2many('stock.move', 'consumption_move_id', 'Consumption Stock Moves', help='All consumption stock moves of this stock move.')
 
     def _action_cancel(self):
         """Reset consumption moves lines if stock move is cancelled."""
@@ -33,7 +33,7 @@ class StockMove(models.Model):
                     # Update existing consumption moves
                     for consumption_move in move.consumption_move_ids.filtered(lambda m: m.product_id == line.product_id):
                         # _logger.warning(["UPDATE CONSUMPTION MOVES", consumption_move, qty])
-                        consumption_move.write({'product_uom_qty':  qty, 'quantity_done': qty, 'state': 'draft'})
+                        consumption_move.write({'product_uom_qty':  qty, 'quantity_done': qty, 'state': 'assigned'})
                         if line.lot_id:
                             consumption_move.move_line_ids.lot_id = line.lot_id
                         consumption_move._action_done()
