@@ -12,7 +12,7 @@ class StockMove(models.Model):
 
     def _action_cancel(self):
         """Reset consumption moves lines if stock move is cancelled."""
-        for line in self.move_line_ids:
+        for line in self.consumption_move_ids.move_line_ids:
             line.qty_done = 0
         return super()._action_cancel()
     
