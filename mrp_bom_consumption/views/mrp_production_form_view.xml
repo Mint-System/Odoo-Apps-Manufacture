@@ -7,7 +7,7 @@
     <field name="arch" type="xml">
       <data>
         <xpath expr="//page[@name='components']//field[@name='product_qty']" position="before">
-          <field name="lot_id" context="{'default_product_id': product_id}" optional="hide"/>
+          <field name="lot_id" context="{'default_product_id': product_id, 'default_company_id': company_id}" optional="hide"/>
         </xpath>
         <xpath expr="//sheet/group/group[2]" position="after">
           <group>

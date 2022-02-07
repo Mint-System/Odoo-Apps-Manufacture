@@ -13,5 +13,5 @@ class MrpBom(models.Model):
 class MrpBomLine(models.Model):
     _inherit = 'mrp.bom.line'
 
-    lot_id = fields.Many2one('stock.production.lot', 'Lot/Serial Number',
+    lot_id = fields.Many2one('stock.production.lot', 'Lot/Serial Number', check_company=True,
         domain="[('product_id', '=', product_id), ('company_id', '=', company_id)]")
