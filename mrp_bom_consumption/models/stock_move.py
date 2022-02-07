@@ -42,9 +42,10 @@ class StockMove(models.Model):
                                 line.write({'qty_done': qty})
                         else:
                             consumption_move.write({'product_uom_qty':  qty, 'quantity_done': qty, 'state': 'assigned'})
-                            consumption_move._action_done()
                         if line.lot_id:
                             consumption_move.move_line_ids.lot_id = line.lot_id
+                        if consumption_move.state != 'done':
+                            consumption_move._action_done()
 
     def write(self, vals):
         """If this method is called, update consumption moves"""
