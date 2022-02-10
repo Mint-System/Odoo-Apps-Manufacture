@@ -1,7 +1,7 @@
 from odoo import api, fields, models, _
 import logging
 _logger = logging.getLogger(__name__)
-
+from . import mrp_bom_consumption
 
 class StockPicking(models.Model):
     _inherit = "stock.picking"
@@ -14,3 +14,9 @@ class StockPicking(models.Model):
             for consumption_move in move.consumption_move_ids:
                 consumption_move.write({'date':  move.date})
         return res
+
+    def create_consumption_moves(self):
+        """Create consumption stock move for stock picking moves."""
+        for move in self.move_lines:
+            if not move.consumption_move_ids:
+                mrp_bom_consumption.create_consumption_move(self, move)

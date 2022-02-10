@@ -65,3 +65,12 @@ class StockMove(models.Model):
     def _get_source_document(self):
         res = super()._get_source_document()
         return res or self.consumption_move_id.picking_id
+
+    def _action_done(self, cancel_backorder=False):
+        """Cancel consumption stock if move is done."""
+        res = super()._action_done(cancel_backorder=cancel_backorder)
+        if res and self.consumption_move_ids:
+            for move in self.consumption_move_ids:
+                if not move.consumption_bom_id.confirm_consumption_moves:
+                    move._action_cancel()
+        return res
