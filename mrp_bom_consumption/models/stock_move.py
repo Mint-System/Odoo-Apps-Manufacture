@@ -61,3 +61,7 @@ class StockMove(models.Model):
         res = super(StockMove, self).write(vals)
         self._update_consumption_moves()
         return res
+
+    def _get_source_document(self):
+        res = super()._get_source_document()
+        return res or self.consumption_move_id.picking_id
