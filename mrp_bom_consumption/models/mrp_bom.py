@@ -4,6 +4,8 @@ from odoo import api, fields, models
 class MrpBom(models.Model):
     _inherit = 'mrp.bom'
 
+    confirm_consumption_moves = fields.Boolean(default=True)
+
     type = fields.Selection(selection_add=[
         ('consumption', 'Consumption'),
     ], ondelete={"consumption": "set default"})
