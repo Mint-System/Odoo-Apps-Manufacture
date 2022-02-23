@@ -28,6 +28,7 @@ class StockMove(models.Model):
 
     def _update_consumption_moves(self):
         """Update consumption stock moves"""
+        # Ensure this method is not executed for consuption moves
         for move in self.filtered(lambda m: not m.consumption_move_id):
             # Only proceed if move has consumption moves
             if move.consumption_move_ids:
@@ -35,7 +36,7 @@ class StockMove(models.Model):
                 for bom_line in move.consumption_bom_id.bom_line_ids:
                     qty = bom_line.product_qty / move.consumption_bom_id.product_qty * move.quantity_done
                     # Update existing consumption moves
-                    for consumption_move in move.consumption_move_ids.filtered(lambda m: m.product_id == bom_line.product_id):
+                    for consumption_move in move.consumption_move_ids.filtered(lambda m: m.product_id == bom_line.product_id and m.state not in ['done', 'cancel']):
                         # _logger.warning(["UPDATE CONSUMPTION MOVES", consumption_move, qty])
                         
                         # Confirm consumption move lines if enabled otherwise update move
@@ -48,11 +49,9 @@ class StockMove(models.Model):
                             else:
                                 consumption_move.write({'product_uom_qty':  qty, 'quantity_done': qty, 'state': 'assigned'})
 
-                            # Set lot and confirm
+                            # Set lot in case move is confirmed
                             if bom_line.lot_id:
                                 consumption_move.move_line_ids.lot_id = bom_line.lot_id
-                            if consumption_move.state != 'done':
-                                consumption_move._action_done()
                         else:
                             consumption_move.write({'product_uom_qty':  qty, 'quantity_done': qty, 'state': 'assigned'})
 
@@ -67,10 +66,12 @@ class StockMove(models.Model):
         return res or self.consumption_move_id.picking_id
 
     def _action_done(self, cancel_backorder=False):
-        """Cancel consumption stock if move is done."""
+        """Confirm or cancel consumption if stock move is done."""
         res = super()._action_done(cancel_backorder=cancel_backorder)
         if res and self.consumption_move_ids:
             for move in self.consumption_move_ids:
-                if not move.consumption_bom_id.confirm_consumption_moves:
+                if move.consumption_bom_id.confirm_consumption_moves:
+                    move._action_done()
+                else:
                     move._action_cancel()
         return res
