@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<odoo>
+    <record id="mrp_document_list_action" model="ir.actions.act_window">
+        <field name="limit">80</field>
+        <field name="name">Production Documents</field>
+        <field name="res_model">mrp.document</field>
+        <field name="target">current</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>
