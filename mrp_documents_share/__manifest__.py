@@ -8,7 +8,7 @@
     'author': 'Mint System GmbH, Odoo Community Association (OCA)',
     'website': "https://www.mint-system.ch",
     'category': 'Manufacturing',
-    'version': '14.0.2.0.1',
+    'version': '15.0.1.0.0',
     'license': 'AGPL-3',
 
     'depends': ['mrp_workorder', 'purchase'],
