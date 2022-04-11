@@ -9,9 +9,7 @@
     "version": "14.0.1.1.0",
     "license": "AGPL-3",
     "depends": ["mrp"],
-    "data": [
-        "views/mrp_production_form_view.xml",
-    ],
+    "data": ["views/mrp_production_form_view.xml"],
     "installable": True,
     "application": False,
     "auto_install": False,

@@ -9,7 +9,7 @@
     "version": "14.0.2.1.0",
     "license": "AGPL-3",
     "depends": ["mrp", "sale_stock", "sale_management"],
-    "data": ["views/mrp_production_form_view.xml","views/stock_picking_views.xml"],
+    "data": ["views/mrp_production_form_view.xml", "views/stock_picking_views.xml"],
     "installable": True,
     "application": False,
     "auto_install": False,
