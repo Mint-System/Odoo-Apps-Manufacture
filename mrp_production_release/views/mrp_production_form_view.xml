@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<odoo>
+
+  <record id="mrp_production_form_view" model="ir.ui.view">
+    <field name="name">mrp_production_release.mrp_production_form_view</field>
+    <field name="model">mrp.production</field>
+    <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+    <field name="arch" type="xml">
+      <data>
+        <field name="product_id" position="before">
+          <field name="is_released" invisible="1" />
+        </field>
+        <button name="action_confirm" position="before">
+          <button name="action_release" attrs="{'invisible': ['|',('is_released', '=', True),('state','=','cancel')]}" string="Release" type="object" class="oe_highlight"/>
+        </button>
+        <button name="action_confirm" position="attributes">
+          <attribute name="attrs">{'invisible': ['|',('state', '!=', 'draft'),('is_released', '!=', True)]}</attribute>
+        </button>
+      </data>
+    </field>
+  </record>
+
+</odoo>

@@ -17,4 +17,4 @@ git clone git@github.com:mint-system/odoo-apps-manufacture.git ./addons/manufact
 | [manufacture_production_move_date](manufacture_production_move_date/) | Make stock move dates editable.                                                               |
 | [mrp_bom_consumption](mrp_bom_consumption/)                           | Define a bill of material that is consummed on delivery.                                      |
 | [mrp_documents_share](mrp_documents_share/)                           | Share product drawing and step files with vendors and link them in the workorder tablet view. |
-|  |
+| [mrp_production_release](mrp_production_release/)                     | New manufacturing orders are in draft state by default and must be released before continue.  |
