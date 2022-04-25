@@ -6,7 +6,7 @@
 MRP Production Release
 ======================
 
-New manufacturing orders are in draft state by default and must be released before continue.
+Reset a confirmed manufacturing order or mark it as released.
 
 For a detailed documentation have a look at https://www.odoo-wiki.org/.
 

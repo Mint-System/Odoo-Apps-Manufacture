@@ -11,7 +11,8 @@
           <field name="is_released" invisible="1" />
         </field>
         <button name="action_confirm" position="before">
-          <button name="action_release" attrs="{'invisible': ['|',('is_released', '=', True),('state','=','cancel')]}" string="Release" type="object" class="oe_highlight"/>
+          <button name="action_release" attrs="{'invisible': [('is_released', '=', True)]}" string="Release" type="object" class="oe_highlight"/>
+          <button name="action_unrelease" attrs="{'invisible': [('state', 'not in', ['confirmed', 'cancel'])]}" string="Unrelease" type="object" class="oe_highlight"/>
         </button>
         <button name="action_confirm" position="attributes">
           <attribute name="attrs">{'invisible': ['|',('state', '!=', 'draft'),('is_released', '!=', True)]}</attribute>
