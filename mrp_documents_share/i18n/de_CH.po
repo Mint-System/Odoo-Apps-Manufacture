@@ -36,4 +36,4 @@ msgstr "Produktionsdokumente"
 #: model:ir.model.fields,field_description:mrp_documents_share.field_product_product__step_file
 #: model:ir.model.fields,field_description:mrp_documents_share.field_product_template__step_file
 msgid "Step File"
-msgstr "Step Datei"
+msgstr "STEP-Datei"
