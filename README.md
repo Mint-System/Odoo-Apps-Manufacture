@@ -18,3 +18,4 @@ git clone git@github.com:mint-system/odoo-apps-manufacture.git ./addons/manufact
 | [mrp_bom_consumption](mrp_bom_consumption/)                           | Define a bill of material that is consummed on delivery.                                      |
 | [mrp_documents_share](mrp_documents_share/)                           | Share product drawing and step files with vendors and link them in the workorder tablet view. |
 | [mrp_production_release](mrp_production_release/)                     | Reset a confirmed manufacturing order or mark it as released.                                 |
+| [mrp_production_assign_lot](mrp_production_assign_lot/)               | Lookup lot number in incoming moves and assign them to unreserved components.                 |
