@@ -14,10 +14,24 @@ class MrpProduction(models.Model):
             ["picking_type_code", "=", "incoming"],
             ("state", "in", ["confirmed", "assigned", "partially_available"])
         ])
-
         # Get move lines with lot and tracking enabled
-        lot_move_lines = pickings_in.move_line_ids.filtered(lambda l: l.lot_name and l.tracking)
-        
+        lot_ids = pickings_in.move_line_ids.filtered(lambda l: l.lot_id and l.tracking).mapped('lot_id.id')
+
+        # Convert to uniform lots data
+        # lots_data = lot_move_lines.mapped(lambda l: {'product_id': l.product_id.id, 'lot_id': l.lot_id.id})
+
+        # Get manufacturing orders
+        lot_ids += self.env['mrp.production'].search(["&",
+            ("lot_producing_id", "!=", False),
+            ("product_tracking", "!=", False),
+            ("state", "in", ["confirmed", "progress", "to_close"])
+        ]).mapped('lot_producing_id.id')
+
+        # Convert to uniform lots data
+        # lots_data.extend(lot_productions.mapped(lambda p: {'product_id': p.product_id.id, 'lot_id': p.lot_producing_id.id}))
+
+        # _logger.warning(lot_ids) 
+
         for production in self:
             note = []
 
@@ -28,25 +42,30 @@ class MrpProduction(models.Model):
             fix_moves = production.move_raw_ids.filtered(lambda m: m.state in ['waiting','confirmed','partially_available'])
 
             for move in fix_moves:
-                # Find matching move line with lot
-                match_move_lines = lot_move_lines.filtered(lambda l: l.product_id == move.product_id)
 
-                if match_move_lines:
-                    match_move_line = match_move_lines[0]
+                # Find matching move line with lot
+                match_lot_id = self.env['stock.production.lot'].search(["&",
+                    ("id", "in", lot_ids),
+                    ("product_id", "=", move.product_id.id)
+                ], limit=1)
+                # match_lot_ids = filter(lambda l: l.product_id == move.product_id.id,  lots_data)
+                # _logger.warning(match_lot_id); return
+
+                if match_lot_id:
 
                     # If move line does not exist yet create one
-                    if match_move_line and not move.move_line_ids:
+                    if not move.move_line_ids:
                         move.write({'move_line_ids': [(0, 0, {
                             'product_id': move.product_id.id,
                             'product_uom_id': move.product_uom.id,
                             'location_id': move.location_id.id,
                             'location_dest_id': move.location_dest_id.id,
-                            'lot_id': match_move_line.lot_id.id,
+                            'lot_id': match_lot_id.id,
                         })]})
 
                     # If move line exists set lot
-                    if match_move_line and move.move_line_ids:
-                        move.move_line_ids.write({'lot_id': match_move_line.lot_id.id,}) 
+                    if move.move_line_ids:
+                        move.move_line_ids.write({'lot_id': match_lot_id.id,}) 
 
                     # Confirm stock move
                     move.write({'state': 'assigned'})
@@ -55,7 +74,7 @@ class MrpProduction(models.Model):
                 else:
                     note.append(_('<li>No lot number found for: %s</li>') % move.name)
 
-                if note:
-                    production.message_post(
-                        subject=_('Lot assignment executed'),
-                        body=_('Lot assignment executed') + ':</br>' + '<ul>' + ''.join(note) + '</ul>')
+            if note:
+                production.message_post(
+                    subject=_('Lot assignment executed'),
+                    body=_('Lot assignment executed') + ':</br>' + '<ul>' + ''.join(note) + '</ul>')

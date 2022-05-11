@@ -6,7 +6,7 @@
 MRP Production Assign Lot
 =========================
 
-Lookup lot number in incoming moves and assign them to unreserved components.
+Lookup and assign lot numbers in incoming moves and manufacturing orders to unreserved components.
 
 For a detailed documentation have a look at https://www.odoo-wiki.org/.
 
