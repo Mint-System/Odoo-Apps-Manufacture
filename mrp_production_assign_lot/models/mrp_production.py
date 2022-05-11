@@ -67,6 +67,11 @@ class MrpProduction(models.Model):
                     if move.move_line_ids:
                         move.move_line_ids.write({'lot_id': match_lot_id.id,}) 
 
+                    # Get workorder with product_id as compoenent
+                    workorder_ids = production.workorder_ids.filtered(lambda w: w.component_id == move.product_id and not w.lot_id)
+                    _logger.warning(workorder_ids)
+                    workorder_ids.write({'lot_id': match_lot_id.id})
+                    
                     # Confirm stock move
                     move.write({'state': 'assigned'})
 
