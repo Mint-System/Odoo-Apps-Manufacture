@@ -7,7 +7,6 @@ class MrpWorkorder(models.Model):
     _inherit = 'mrp.workorder'
 
     def button_start(self):
+        """Ensure workorders start with qty_producing 0"""
         self.qty_remaining = 0.0
-        res = super().button_start()
-        self.qty_producing = 0.0
-        return res  
+        return super().button_start()
