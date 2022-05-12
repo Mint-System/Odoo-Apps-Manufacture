@@ -17,18 +17,12 @@ class MrpProduction(models.Model):
         # Get move lines with lot and tracking enabled
         lot_ids = pickings_in.move_line_ids.filtered(lambda l: l.lot_id and l.tracking).mapped('lot_id.id')
 
-        # Convert to uniform lots data
-        # lots_data = lot_move_lines.mapped(lambda l: {'product_id': l.product_id.id, 'lot_id': l.lot_id.id})
-
         # Get manufacturing orders
         lot_ids += self.env['mrp.production'].search(["&",
             ("lot_producing_id", "!=", False),
             ("product_tracking", "!=", False),
             ("state", "in", ["confirmed", "progress", "to_close"])
         ]).mapped('lot_producing_id.id')
-
-        # Convert to uniform lots data
-        # lots_data.extend(lot_productions.mapped(lambda p: {'product_id': p.product_id.id, 'lot_id': p.lot_producing_id.id}))
 
         # _logger.warning(lot_ids) 
 
@@ -48,7 +42,6 @@ class MrpProduction(models.Model):
                     ("id", "in", lot_ids),
                     ("product_id", "=", move.product_id.id)
                 ], limit=1)
-                # match_lot_ids = filter(lambda l: l.product_id == move.product_id.id,  lots_data)
                 # _logger.warning(match_lot_id); return
 
                 if match_lot_id:
@@ -83,3 +76,9 @@ class MrpProduction(models.Model):
                 production.message_post(
                     subject=_('Lot assignment executed'),
                     body=_('Lot assignment executed') + ':</br>' + '<ul>' + ''.join(note) + '</ul>')
+
+    def _generate_backorder_productions(self, close_mo=True):
+        backorders = super()._generate_backorder_productions(close_mo=close_mo)
+        for bo in backorders:
+            bo.action_assign_lot()
+        return backorders
