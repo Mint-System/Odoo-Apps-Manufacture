@@ -9,5 +9,6 @@ class MrpProduction(models.Model):
 
     def button_unplan(self):
         super().button_unplan()
-        # _logger.warning(datetime.strptime('2299-12-31', '%Y-%m-%d'))
-        self.move_finished_ids.write({'date': datetime.strptime('2299-12-31', '%Y-%m-%d')})
+        future_date = datetime.strptime('2299-12-31', '%Y-%m-%d')
+        self.move_finished_ids.write({'date': future_date})
+        self.write({'date_planned_finished': future_date})
