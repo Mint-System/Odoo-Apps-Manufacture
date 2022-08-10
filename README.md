@@ -16,6 +16,7 @@ git clone git@github.com:mint-system/odoo-apps-manufacture.git ./addons/manufact
 | --- | --- |
 | [manufacture_production_move_date](manufacture_production_move_date) |         Make stock move dates editable. |
 | [mrp_bom_consumption](mrp_bom_consumption) |         Define a bill of material that is consummed on delivery. |
+| [mrp_bom_position](mrp_bom_position) |         Position number for each bom line. |
 | [mrp_documents_share](mrp_documents_share) |         Share product drawing and step files with vendors and link them in the workorder tablet view. |
 | [mrp_production_assign_lot](mrp_production_assign_lot) |         Lookup and assign lot numbers in incoming moves and manufacturing orders to unreserved components. |
 | [mrp_production_create_upstream_backorder](mrp_production_create_upstream_backorder) |         Create backorders for upstream pickings of manufacturing orders. |
