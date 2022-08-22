@@ -22,20 +22,20 @@ class MrpProduction(models.Model):
                 if move_raw.product_uom_qty == quantity_done:
                     move._action_cancel()
                     move_to_unlink |= move
+                # Otherwise update upstream move with updated raw move quantity
                 else:
-                    old_qty = move.product_uom_qty
-                    new_qty = old_qty * factor
-                    _logger.warning([new_qty, factor])
+                    cur_qty = move_raw.product_uom_qty
+                    new_qty = cur_qty - quantity_done
                     if new_qty > 0:
                         move.write({'product_uom_qty': new_qty})
                         move._action_assign()
-                        # update_info.append((move, old_qty, new_qty))
+                    # Remove upstream move if neq_qty is below zero
                     else:
                         if move.quantity_done > 0:
                             raise UserError(
                                 _('Lines need to be deleted, but can not as you still have some quantities to consume in them.'))
                         move._action_cancel()
                         move_to_unlink |= move
-
+        # Remove moves to be unlinked
         move_to_unlink.unlink()
         return update_info
