@@ -8,7 +8,7 @@ class MrpProduction(models.Model):
     _inherit = "mrp.production"
 
     def _create_upstream_backorder(self, factor):
-        """Create backorder for done upstream stock moves"""
+        """Create backorder for done upstream stock moves."""
         self.ensure_one()
         move_orig_ids = self.move_raw_ids.move_orig_ids.filtered(lambda m: m.state in ('done'))
 
@@ -67,5 +67,6 @@ class MrpProduction(models.Model):
                     'move_lines': move_lines,
                     'origin': _("Backorder of %s", picking.name),
                 })
+                new_picking.action_assign()
 
                 # _logger.warning(['new_picking', new_picking])
