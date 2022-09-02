@@ -23,4 +23,5 @@ git clone git@github.com:mint-system/odoo-apps-manufacture.git ./addons/manufact
 | [mrp_production_release](mrp_production_release) |         Reset a confirmed manufacturing order or mark it as released. |
 | [mrp_production_unplan_move](mrp_production_unplan_move) |         Set future date on finished stock move when unplanning production order. |
 | [mrp_production_update_upstream_move](mrp_production_update_upstream_move) |         Update upstream moves on manufacturing order change. |
+| [mrp_workorder_disable_autostart](mrp_workorder_disable_autostart) |         Opening tablet view does not autostart workorder. |
 | [mrp_workorder_set_producing_qty](mrp_workorder_set_producing_qty) |         Sets the producing qty to zero when users starts a workorder. |

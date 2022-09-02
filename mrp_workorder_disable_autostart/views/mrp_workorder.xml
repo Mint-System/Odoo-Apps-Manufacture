@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<odoo>
+
+  <record id="mrp_production_workorder_tree_editable_view" model="ir.ui.view">
+    <field name="name">mrp_workorder_disable_autostart.mrp_production_workorder_tree_editable_view</field>
+    <field name="model">mrp.workorder</field>
+    <field name="inherit_id" ref="mrp_workorder.mrp_production_workorder_tree_editable_view_inherit_workorder" />
+    <field name="arch" type="xml">
+      <data>
+        <button name="open_tablet_view" position="attributes">
+          <attribute name="context">{'from_production_order': True, 'mrp_workorder_disable_autostart': False}</attribute>
+        </button>
+      </data>
+    </field>
+  </record>
+
+</odoo>
