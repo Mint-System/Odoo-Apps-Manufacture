@@ -22,38 +22,55 @@ class StockMove(models.Model):
     
     @api.depends('product_id')
     def _compute_consumption_bom_id(self):
-        """Return BoM with stock move product of type consumption"""
+        """Return BoM with stock move product of type consumption."""
         for move in self:
             move.consumption_bom_id = move.env['mrp.bom'].search([('product_tmpl_id', '=', move.product_id.product_tmpl_id.id), ('type', '=', 'consumption')], limit=1)
 
     def _update_consumption_moves(self):
-        """Update consumption stock moves"""
+        """Update consumption stock moves."""
+
         # Ensure this method is not executed for consuption moves
         for move in self.filtered(lambda m: not m.consumption_move_id):
             # Only proceed if move has consumption moves
             if move.consumption_move_ids:
                 # Check all bom lines
                 for bom_line in move.consumption_bom_id.bom_line_ids:
-                    qty = bom_line.product_qty / move.consumption_bom_id.product_qty * move.quantity_done
+                
+                    # Caclulate done qty
+                    # qty = bom_line.product_qty / move.consumption_bom_id.product_qty * move.quantity_done
+                    qty = bom_line.product_qty / move.consumption_bom_id.product_qty * move.product_uom_qty
+                    
                     # Update existing consumption moves
-                    for consumption_move in move.consumption_move_ids.filtered(lambda m: m.product_id == bom_line.product_id and m.state not in ['done', 'cancel']):
+                    consumption_move_ids = move.consumption_move_ids.filtered(lambda m: m.product_id == bom_line.product_id and m.state not in ['done', 'cancel'])          
+                    for consumption_move in consumption_move_ids:
                         # _logger.warning(["UPDATE CONSUMPTION MOVES", consumption_move, qty])
-                        
+
                         # Confirm consumption move lines if enabled otherwise update move
                         if move.consumption_bom_id.confirm_consumption_moves:
-
+                            
                             # Update move lines otherwhise move
                             if consumption_move.move_line_ids:
                                 for line in consumption_move.move_line_ids:
-                                    line.write({'qty_done': qty})
+                                    line.write({'qty_done': qty, 'state': 'assigned'})
                             else:
-                                consumption_move.write({'product_uom_qty':  qty, 'quantity_done': qty, 'state': 'assigned'})
+                                consumption_move.write({'product_uom_qty': qty, 'quantity_done': qty, 'state': 'assigned'})   
 
-                            # Set lot in case move is confirmed
-                            if bom_line.lot_id:
+                            # Get matching lot
+                            matching_lot_ids = []
+                            if move.consumption_bom_id.match_lot_name:
+                                available_lot_names = move.lot_ids.mapped('name')
+                                lot_ids = self.env['stock.production.lot'].search([('product_id', '=', consumption_move.product_id.id)])
+                                matching_lot_ids = lot_ids.filtered(lambda l: l.name in available_lot_names)
+
+                            # Set lot from bom
+                            if bom_line.lot_id and not move.consumption_bom_id.match_lot_name:
                                 consumption_move.move_line_ids.lot_id = bom_line.lot_id
+                            # Set lot from available lots
+                            elif move.consumption_bom_id.match_lot_name and matching_lot_ids:
+                                # _logger.warning(["FOUND MATCHING LOT", consumption_move, matching_lot_ids[0]])
+                                consumption_move.move_line_ids.lot_id = matching_lot_ids[0]                         
                         else:
-                            consumption_move.write({'product_uom_qty':  qty, 'quantity_done': qty, 'state': 'assigned'})
+                            consumption_move.write({'product_uom_qty': qty, 'quantity_done': qty, 'state': 'assigned'})
 
     def write(self, vals):
         """If this method is called, update consumption moves"""
@@ -67,11 +84,12 @@ class StockMove(models.Model):
 
     def _action_done(self, cancel_backorder=False):
         """Confirm or cancel consumption if stock move is done."""
-        res = super()._action_done(cancel_backorder=cancel_backorder)
-        if res and self.consumption_move_ids:
+        if self.consumption_move_ids:
+            self._update_consumption_moves()
             for move in self.consumption_move_ids:
-                if move.consumption_bom_id.confirm_consumption_moves:
+                # _logger.warning(["CONFIRM CONSUMPTION MOVES", self.consumption_bom_id.confirm_consumption_moves])
+                if self.consumption_bom_id.confirm_consumption_moves:
                     move._action_done()
                 else:
                     move._action_cancel()
-        return res
+        return super()._action_done(cancel_backorder=cancel_backorder)

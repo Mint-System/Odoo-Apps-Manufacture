@@ -6,8 +6,10 @@ from . import mrp_bom_consumption
 class StockPicking(models.Model):
     _inherit = "stock.picking"
 
+    consumption_move_ids = fields.One2many(related='move_lines.consumption_move_ids')
+
     def write(self, vals):
-        """Update date on consumption moves"""
+        """Update date on consumption moves."""
         res = super().write(vals)
         for move in self.move_lines:
             # _logger.warning(["UPDATE DATE", move.consumption_move_ids, move.date])
@@ -20,3 +22,8 @@ class StockPicking(models.Model):
         for move in self.move_lines:
             if not move.consumption_move_ids:
                 mrp_bom_consumption.create_consumption_move(self, move)
+
+    def update_consumption_moves(self):
+        """Update consumption stock moves."""
+        for move in self.move_lines:
+            move._update_consumption_moves()

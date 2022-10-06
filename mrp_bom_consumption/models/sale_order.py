@@ -16,7 +16,7 @@ class SaleOrder(models.Model):
         return res
 
     def action_confirm(self):
-        """Create consumption stock move if sale order is confirmed"""
+        """Create consumption stock move if sale order is confirmed."""
         result = super(SaleOrder, self).action_confirm()
         if result:
             for move in self.order_line.move_ids:

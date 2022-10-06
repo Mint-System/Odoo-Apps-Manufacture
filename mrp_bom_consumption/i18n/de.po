@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 14.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-10 14:16+0000\n"
-"PO-Revision-Date: 2022-02-10 14:16+0000\n"
+"POT-Creation-Date: 2022-10-06 09:11+0000\n"
+"PO-Revision-Date: 2022-10-06 09:11+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -17,6 +17,7 @@ msgstr ""
 
 #. module: mrp_bom_consumption
 #: model:ir.model.fields,help:mrp_bom_consumption.field_stock_move__consumption_move_ids
+#: model:ir.model.fields,help:mrp_bom_consumption.field_stock_picking__consumption_move_ids
 msgid "All consumption stock moves of this stock move."
 msgstr "Alle Verbrauch-Lagerbuchung dieser Lagerbuchung."
 
@@ -41,6 +42,11 @@ msgid "Confirm Consumption Moves"
 msgstr "Bestätige Verbrauch-Lagerbuchungen"
 
 #. module: mrp_bom_consumption
+#: model_terms:ir.ui.view,arch_db:mrp_bom_consumption.view_picking_form
+msgid "Consumpotion Operations"
+msgstr "Verbrauchs-Vorgänge"
+
+#. module: mrp_bom_consumption
 #: model:ir.model.fields.selection,name:mrp_bom_consumption.selection__mrp_bom__type__consumption
 msgid "Consumption"
 msgstr "Verbrauch"
@@ -51,6 +57,11 @@ msgid "Consumption BoM"
 msgstr "Verbrauch-Stückliste"
 
 #. module: mrp_bom_consumption
+#: model_terms:ir.ui.view,arch_db:mrp_bom_consumption.view_picking_form
+msgid "Consumption Moves"
+msgstr "Verbrauch-Lagerbuchungen"
+
+#. module: mrp_bom_consumption
 #: model:ir.model.fields,field_description:mrp_bom_consumption.field_mrp_bom__consumption_picking_type_id
 msgid "Consumption Operation Type"
 msgstr "Verbrauch Vorgangstyp"
@@ -58,12 +69,19 @@ msgstr "Verbrauch Vorgangstyp"
 #. module: mrp_bom_consumption
 #: model:ir.model.fields,field_description:mrp_bom_consumption.field_stock_move__consumption_move_id
 msgid "Consumption Stock Move"
-msgstr "Verbrauch-Lagerbewegung"
+msgstr "Verbrauch-Lagerbuchung"
 
 #. module: mrp_bom_consumption
 #: model:ir.model.fields,field_description:mrp_bom_consumption.field_stock_move__consumption_move_ids
+#: model:ir.model.fields,field_description:mrp_bom_consumption.field_stock_picking__consumption_move_ids
 msgid "Consumption Stock Moves"
-msgstr "Verbrauch-Lagerbewegungen"
+msgstr "Verbrauch-Lagerbuchungen"
+
+#. module: mrp_bom_consumption
+#: code:addons/mrp_bom_consumption/models/mrp_bom_consumption.py:0
+#, python-format
+msgid "Consumption move for: %s"
+msgstr "Verbrauch-Lagerbuchung für: %s"
 
 #. module: mrp_bom_consumption
 #: model:ir.actions.server,name:mrp_bom_consumption.action_create_consumption_moves
@@ -71,11 +89,80 @@ msgid "Create Consumption Moves"
 msgstr "Erstelle Verbrauch-Lagerbewegungen"
 
 #. module: mrp_bom_consumption
+#: model:ir.model.fields,field_description:mrp_bom_consumption.field_mrp_bom__display_name
+#: model:ir.model.fields,field_description:mrp_bom_consumption.field_mrp_bom_line__display_name
+#: model:ir.model.fields,field_description:mrp_bom_consumption.field_sale_order__display_name
+#: model:ir.model.fields,field_description:mrp_bom_consumption.field_stock_move__display_name
+#: model:ir.model.fields,field_description:mrp_bom_consumption.field_stock_picking__display_name
+msgid "Display Name"
+msgstr "Anzeigename"
+
+#. module: mrp_bom_consumption
+#: model:ir.model.fields,field_description:mrp_bom_consumption.field_mrp_bom__id
+#: model:ir.model.fields,field_description:mrp_bom_consumption.field_mrp_bom_line__id
+#: model:ir.model.fields,field_description:mrp_bom_consumption.field_sale_order__id
+#: model:ir.model.fields,field_description:mrp_bom_consumption.field_stock_move__id
+#: model:ir.model.fields,field_description:mrp_bom_consumption.field_stock_picking__id
+msgid "ID"
+msgstr ""
+
+#. module: mrp_bom_consumption
+#: model:ir.model.fields,help:mrp_bom_consumption.field_mrp_bom__confirm_consumption_moves
+msgid ""
+"If the related stock move is confirmed the consumption move will be "
+"confirmed as well."
+msgstr ""
+"Wenn die dazugehörige Lagerbuchung bestätigt wird, wird die Verbrauch-"
+"Lagerbuchung ebenfalls bestätigt"
+
+#. module: mrp_bom_consumption
+#: model:ir.model.fields,field_description:mrp_bom_consumption.field_mrp_bom____last_update
+#: model:ir.model.fields,field_description:mrp_bom_consumption.field_mrp_bom_line____last_update
+#: model:ir.model.fields,field_description:mrp_bom_consumption.field_sale_order____last_update
+#: model:ir.model.fields,field_description:mrp_bom_consumption.field_stock_move____last_update
+#: model:ir.model.fields,field_description:mrp_bom_consumption.field_stock_picking____last_update
+msgid "Last Modified on"
+msgstr "Zuletzt geändert am"
+
+#. module: mrp_bom_consumption
+#: model:ir.model.fields,field_description:mrp_bom_consumption.field_mrp_bom_line__lot_id
+msgid "Lot/Serial Number"
+msgstr ""
+
+#. module: mrp_bom_consumption
+#: model:ir.model.fields,field_description:mrp_bom_consumption.field_mrp_bom__match_lot_name
+msgid "Match Lot Name"
+msgstr "Los-Namen Prüfen"
+
+#. module: mrp_bom_consumption
 #: model:ir.model.fields,help:mrp_bom_consumption.field_stock_move__consumption_bom_id
 msgid "Returns the first consumption bom of the product in move."
 msgstr "Erste Verbrauch-Stückliste des Produkts dieser Lagerbewegung."
 
 #. module: mrp_bom_consumption
+#: model:ir.model,name:mrp_bom_consumption.model_sale_order
+msgid "Sales Order"
+msgstr "Verkaufsauftrag"
+
+#. module: mrp_bom_consumption
+#: model:ir.model,name:mrp_bom_consumption.model_stock_move
+msgid "Stock Move"
+msgstr "Lagerbuchung"
+
+#. module: mrp_bom_consumption
+#: model:ir.model.fields,help:mrp_bom_consumption.field_mrp_bom__match_lot_name
+msgid ""
+"The consumption move is created only if the products lot have the same name"
+msgstr ""
+"Die Verbrauchs-Lagerbuchung wird nur erstellt wenn die Lot der dazugehörigen"
+" Produkte den gleichen Namen haben."
+
+#. module: mrp_bom_consumption
 #: model:ir.model.fields,help:mrp_bom_consumption.field_stock_move__consumption_move_id
 msgid "The origin stock move of the consumption stock move."
 msgstr "Die originale Lagerbewegung dieser Verbrauch-Lagerbewegung."
+
+#. module: mrp_bom_consumption
+#: model:ir.model,name:mrp_bom_consumption.model_stock_picking
+msgid "Transfer"
+msgstr "Lieferung vornehmen"

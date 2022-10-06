@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <record id="view_picking_form" model="ir.ui.view">
+        <field name="name">mrp_bom_consumption.view_picking_form</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form" />
+        <field eval="50" name="priority" />
+        <field name="arch" type="xml">
+            <page name="note" position="after">
+                <page name="consumption_operations" string="Consumption Operations">
+                    <field name="consumption_move_ids" mode="tree">
+                        <tree string="Consumption Moves">
+                            <field name="state" invisible="1" readonly="0"/>
+                            <field name="product_id"/>
+                            <field name="product_uom_qty"/>
+                            <field name="quantity_done"/>
+                            <field name="product_uom"/>
+                        </tree>
+                    </field>
+                </page>
+            </page>
+
+            <header position="inside">
+                <button name="update_consumption_moves" type="object" string="Update Consumption Moves" class="oe_highlight"
+                attrs="{'invisible': ['|', ('state', '=', 'done'), ('has_tracking', '=', False)]}" />
+            </header>
+
+        </field>
+    </record>
+
+    <record id="action_create_consumption_moves" model="ir.actions.server">
+        <field name="name">Create Consumption Moves</field>
+        <field name="model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_view_types">form</field>
+        <field name="state">code</field>
+        <field name="code">
+        if records:
+            records.create_consumption_moves()
+        </field>
+    </record>
+
+</odoo>
