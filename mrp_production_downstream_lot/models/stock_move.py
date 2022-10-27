@@ -12,6 +12,7 @@ class StockMove(models.Model):
             if not move.move_line_ids:
                 move.write({
                     'quantity_done': move.product_uom_qty,
+                    'procure_method': 'make_to_stock'
                 })
             for line in move.move_line_ids:
                 line.write({
