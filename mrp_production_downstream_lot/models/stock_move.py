@@ -18,11 +18,3 @@ class StockMove(models.Model):
                 line.write({
                     'lot_id': lot_id.id or False,
                 })
-
-    # def _set_picking_id(self):
-    #     """Set picking id from linked move."""
-    #     for move in self:
-    #         for line in move.move_line_ids:
-    #             line.write({
-    #                 'picking_id': move.picking_id.id
-    #             })
