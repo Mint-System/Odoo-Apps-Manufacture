@@ -22,6 +22,7 @@ git clone git@github.com:mint-system/odoo-apps-manufacture.git ./addons/manufact
 | [mrp_production_create_upstream_backorder](mrp_production_create_upstream_backorder) |         Create backorders for upstream pickings of manufacturing orders. |
 | [mrp_production_downstream_lot](mrp_production_downstream_lot) |         Copy lot of manufacuring order to blocked stock moves. |
 | [mrp_production_generate_lot](mrp_production_generate_lot) |         Automatically generate lot for tracked and manufactured products. |
+| [mrp_production_note](mrp_production_note) |         Add a note on production orders. |
 | [mrp_production_release](mrp_production_release) |         Reset a confirmed manufacturing order or mark it as released. |
 | [mrp_production_unplan_move](mrp_production_unplan_move) |         Set future date on finished stock move when unplanning production order. |
 | [mrp_production_update_upstream_move](mrp_production_update_upstream_move) |         Update upstream moves on manufacturing order change. |

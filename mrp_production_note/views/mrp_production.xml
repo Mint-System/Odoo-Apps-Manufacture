@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<odoo>
+
+  <record id="mrp_production_form_view" model="ir.ui.view">
+    <field name="name">mrp_production_note.mrp_production_form_view</field>
+    <field name="model">mrp.production</field>
+    <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+    <field name="arch" type="xml">
+      <data>
+        <xpath expr="//page[@name='miscellaneous']//field[@name='origin']" position="after">
+          <field name="note" />
+        </xpath>       
+      </data>
+    </field>
+  </record>
+
+  <record id="mrp_production_tree_view" model="ir.ui.view">
+    <field name="name">mrp_production_note.mrp_production_tree_view</field>
+    <field name="model">mrp.production</field>
+    <field name="inherit_id" ref="mrp.mrp_production_tree_view"/>
+    <field name="arch" type="xml">
+      <data>
+        <field name="origin" position="after">
+          <field name="note" optional="show" />
+        </field>       
+      </data>
+    </field>
+  </record>
+
+</odoo>
