@@ -20,7 +20,7 @@ class MrpProduction(models.Model):
         date_move = vals.get('date_move')
         date_planned_start = vals.get('date_planned_start')
 
-        # Update dates
+        # Update move line dates
         if date_move:
             self.move_raw_ids.write({'date': date_move})
 
@@ -30,6 +30,7 @@ class MrpProduction(models.Model):
 
         if date_planned_start:
             self.move_raw_ids.write({'date_deadline': date_planned_start})
+            self.move_raw_ids.write({'date': self.date_move})
 
     @api.model
     def create(self, vals):
@@ -37,6 +38,7 @@ class MrpProduction(models.Model):
 
         # Execute create
         res = super(MrpProduction, self).create(vals)
+        # Set default move dates
         res._set_move_dates(vals)
         return res
 
@@ -46,16 +48,15 @@ class MrpProduction(models.Model):
         # Store current stock moves
         old_move_ids =  [production.move_raw_ids.read(['id', 'date']) for production in self]
 
-        # Execute write
+        # Execute write, this will overwrite the move date.
         res = super(MrpProduction, self).write(vals)
         self._set_move_dates(vals)
-
+        
         # Restore move date if stock moves did not change.
         if not vals.get('move_raw_ids'):
-            for moves in old_move_ids:
-                for move in moves:
-                    move_id = self.env['stock.move'].browse(move['id'])
-                    move_id.write({'date': move['date']})
+            for moves in old_move_ids.moves:
+                move_id = self.env['stock.move'].browse(move['id'])
+                move_id.write({'date': date })       
         
         return res
         
