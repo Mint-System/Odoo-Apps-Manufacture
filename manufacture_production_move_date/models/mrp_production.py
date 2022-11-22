@@ -13,43 +13,52 @@ class MrpProduction(models.Model):
 
     date_move = fields.Date(copy=False, default=_get_default_date_move)
 
+
+    def _set_move_dates(self, vals):
+
+        # Get dates
+        date_move = vals.get('date_move')
+        date_planned_start = vals.get('date_planned_start')
+
+        # Update dates
+        if date_move:
+            self.move_raw_ids.write({'date': date_move})
+
+            # Update orig stock moves if date move has changed
+            for move in self.move_raw_ids:
+                move.move_orig_ids.write({'date': date_move})  
+
+        if date_planned_start:
+            self.move_raw_ids.write({'date_deadline': date_planned_start})
+
     @api.model
     def create(self, vals):
         """Set date deadline and date on create."""
 
         # Execute create
         res = super(MrpProduction, self).create(vals)
-                
-        # Update moves with date from vals
-        date_move = vals.get('date_move')
-        date_planned_start = vals.get('date_planned_start')
-        if date_move:
-            res.move_raw_ids.write({'date': date_move})
-        if date_planned_start:
-            res.move_raw_ids.write({'date_deadline': date_planned_start})
+        res._set_move_dates(vals)
         return res
 
     def write(self, vals):
         """Store move date before write and then restore."""
-
-        # Update orig stock moves if date move has changed
-        if vals.get('date_move'):
-            for move in self.move_raw_ids:
-                move.move_orig_ids.write({'date': vals.get('date_move')})  
 
         # Store current stock moves
         old_move_ids =  [production.move_raw_ids.read(['id', 'date']) for production in self]
 
         # Execute write
         res = super(MrpProduction, self).write(vals)
+        self._set_move_dates(vals)
 
         # Restore move date if stock moves did not change.
-        if not vals.get('move_raw_ids') or vals.get('date_planned_start'):
+        if not vals.get('move_raw_ids'):
             for moves in old_move_ids:
                 for move in moves:
                     move_id = self.env['stock.move'].browse(move['id'])
                     move_id.write({'date': move['date']})
-
+        
+        return res
+        
     @api.onchange('date_planned_start', 'product_id')
     def _onchange_date_planned_start(self):
         """
