@@ -46,7 +46,7 @@ class MrpProduction(models.Model):
         """Store move date before write and then restore."""
 
         # Store current stock moves
-        old_move_ids =  [production.move_raw_ids.read(['id', 'date']) for production in self]
+        tmp_move_ids =  [production.move_raw_ids.read(['id', 'date']) for production in self]
 
         # Execute write, this will overwrite the move date.
         res = super(MrpProduction, self).write(vals)
@@ -54,9 +54,10 @@ class MrpProduction(models.Model):
         
         # Restore move date if stock moves did not change.
         if not vals.get('move_raw_ids'):
-            for moves in old_move_ids.moves:
-                move_id = self.env['stock.move'].browse(move['id'])
-                move_id.write({'date': date })       
+            for tmp_moves in tmp_move_ids:
+                for move in tmp_moves:
+                    move_id = self.env['stock.move'].browse(move['id'])
+                    move_id.write({'date': date })       
         
         return res
         

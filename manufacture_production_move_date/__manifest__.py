@@ -6,7 +6,7 @@
     "author": "Mint System GmbH, Odoo Community Association (OCA)",
     "website": "https://www.mint-system.ch",
     "category": "Manufacturing",
-    "version": "14.0.1.3.2",
+    "version": "14.0.1.4.0",
     "license": "AGPL-3",
     "depends": ["mrp"],
     "data": ["views/mrp_production_form_view.xml"],
