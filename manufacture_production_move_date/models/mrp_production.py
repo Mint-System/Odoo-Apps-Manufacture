@@ -57,7 +57,7 @@ class MrpProduction(models.Model):
             for tmp_moves in tmp_move_ids:
                 for move in tmp_moves:
                     move_id = self.env['stock.move'].browse(move['id'])
-                    move_id.write({'date': date })       
+                    move_id.write({'date': move['date'] })       
         
         return res
         
