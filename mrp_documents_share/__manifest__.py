@@ -9,7 +9,7 @@
     'website': "https://www.mint-system.ch",
     'category': 'Manufacturing',
     'version': '15.0.1.1.0',
-    'license': 'AGPL-3',
+    'license': 'OPL-1',
 
     'depends': ['mrp_workorder', 'purchase'],
 
