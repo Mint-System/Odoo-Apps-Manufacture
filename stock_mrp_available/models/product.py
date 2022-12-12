@@ -31,7 +31,7 @@ class Product(models.Model):
         # Filter products without BoM
         manufactured = self.filtered(lambda p: p.bom_ids)
         for product in manufactured:
-            product.production_qty = factorize_boms(p.bom_ids[0], 1)
+            product.production_qty = 1 # factorize_boms(product.bom_ids[0], 1)
         products = self - manufactured
         products.production_qty = 0
 
