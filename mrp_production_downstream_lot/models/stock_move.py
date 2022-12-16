@@ -7,7 +7,10 @@ class StockMove(models.Model):
     _inherit = 'stock.move'
 
     def _set_lot_id(self, lot_id):
-        """Set lot and generate move line if necessary."""
+        """
+        Set lot and quantiy done.
+        Generate move line if necessary.
+        """
         for move in self:
             if not move.move_line_ids:
                 move.write({
