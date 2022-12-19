@@ -6,7 +6,7 @@
 MRP BoM List
 ============
 
-Show BoM components as list.
+Show nested BoM structure as list.
 
 For a detailed documentation have a look at https://www.odoo-wiki.org/.
 

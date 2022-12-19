@@ -1,7 +1,7 @@
 {
     "name": "MRP BoM List",
     "summary": """
-        Show BoM components as list.
+        Show nested BoM structure as list.
     """,
     "author": "Mint System GmbH, Odoo Community Association (OCA)",
     "website": "https://www.mint-system.ch",
