@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    
+    <record id="view_stock_product_tree" model="ir.ui.view">
+        <field name="name">mrp_bom_list.view_stock_product_tree</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="stock.view_stock_product_tree" />
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="bom_id" optional="hide" />
+            </field>
+        </field>
+    </record>
+
+</odoo>

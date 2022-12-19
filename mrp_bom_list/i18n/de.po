@@ -1,0 +1,130 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* mrp_bom_list
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 14.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-12-19 14:43+0000\n"
+"PO-Revision-Date: 2022-12-19 14:43+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: mrp_bom_list
+#: model:ir.model,name:mrp_bom_list.model_mrp_bom
+msgid "Bill of Material"
+msgstr "Stückliste"
+
+#. module: mrp_bom_list
+#: model_terms:ir.ui.view,arch_db:mrp_bom_list.mrp_bom_form_view
+msgid "BoM List"
+msgstr "Komponenten-Liste"
+
+#. module: mrp_bom_list
+#: model_terms:ir.ui.view,arch_db:mrp_bom_list.mrp_bom_form_view
+msgid "BoM List at Date"
+msgstr "Komponenten-Liste zu Zeitpunkt"
+
+#. module: mrp_bom_list
+#: model:ir.model.fields,field_description:mrp_bom_list.field_mrp_bom_history__bom_id
+msgid "Bom"
+msgstr ""
+
+#. module: mrp_bom_list
+#: model:ir.model.fields,field_description:mrp_bom_list.field_mrp_bom__bom_product_ids
+msgid "Bom Product"
+msgstr ""
+
+#. module: mrp_bom_list
+#: model_terms:ir.ui.view,arch_db:mrp_bom_list.view_mrp_bom_history
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#. module: mrp_bom_list
+#: model:ir.model.fields,help:mrp_bom_list.field_mrp_bom_history__inventory_datetime
+msgid "Choose a date to get the inventory at that date"
+msgstr "Wählen Sie ein Datum aus um die Komponenten-List zu diesem Zeitpunkt anzuzeigen"
+
+#. module: mrp_bom_list
+#: model_terms:ir.ui.view,arch_db:mrp_bom_list.view_mrp_bom_history
+msgid "Choose your date"
+msgstr "Datum auswählen"
+
+#. module: mrp_bom_list
+#: model_terms:ir.ui.view,arch_db:mrp_bom_list.view_mrp_bom_history
+msgid "Confirm"
+msgstr "Bestätigen"
+
+#. module: mrp_bom_list
+#: model:ir.model.fields,field_description:mrp_bom_list.field_mrp_bom_history__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: mrp_bom_list
+#: model:ir.model.fields,field_description:mrp_bom_list.field_mrp_bom_history__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: mrp_bom_list
+#: model:ir.model.fields,field_description:mrp_bom_list.field_product_product__bom_id
+#: model:ir.model.fields,field_description:mrp_bom_list.field_product_template__bom_id
+msgid "Default BoM"
+msgstr "Standard-Stückliste"
+
+#. module: mrp_bom_list
+#: model:ir.model.fields,field_description:mrp_bom_list.field_mrp_bom__display_name
+#: model:ir.model.fields,field_description:mrp_bom_list.field_mrp_bom_history__display_name
+#: model:ir.model.fields,field_description:mrp_bom_list.field_product_template__display_name
+msgid "Display Name"
+msgstr "Anzeigename"
+
+#. module: mrp_bom_list
+#: model:ir.model.fields,field_description:mrp_bom_list.field_mrp_bom__id
+#: model:ir.model.fields,field_description:mrp_bom_list.field_mrp_bom_history__id
+#: model:ir.model.fields,field_description:mrp_bom_list.field_product_template__id
+msgid "ID"
+msgstr ""
+
+#. module: mrp_bom_list
+#: model:ir.model.fields,field_description:mrp_bom_list.field_mrp_bom_history__inventory_datetime
+msgid "Inventory at Date"
+msgstr "Bestand zu Zeitpunkt"
+
+#. module: mrp_bom_list
+#: model:ir.model.fields,field_description:mrp_bom_list.field_mrp_bom____last_update
+#: model:ir.model.fields,field_description:mrp_bom_list.field_mrp_bom_history____last_update
+#: model:ir.model.fields,field_description:mrp_bom_list.field_product_template____last_update
+msgid "Last Modified on"
+msgstr "Zuletzt geändert am"
+
+#. module: mrp_bom_list
+#: model:ir.model.fields,field_description:mrp_bom_list.field_mrp_bom_history__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: mrp_bom_list
+#: model:ir.model.fields,field_description:mrp_bom_list.field_mrp_bom_history__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: mrp_bom_list
+#: model:ir.actions.act_window,name:mrp_bom_list.action_mrp_bom_history
+#: model:ir.model,name:mrp_bom_list.model_mrp_bom_history
+msgid "MRP BoM History"
+msgstr ""
+
+#. module: mrp_bom_list
+#: model:ir.model,name:mrp_bom_list.model_product_template
+msgid "Product Template"
+msgstr "Produktvorlage"
+
+#. module: mrp_bom_list
+#: code:addons/mrp_bom_list/models/mrp_bom.py:0
+#, python-format
+msgid "Products"
+msgstr ""

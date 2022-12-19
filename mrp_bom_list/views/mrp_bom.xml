@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<odoo>
+
+  <record id="mrp_bom_form_view" model="ir.ui.view">
+    <field name="name">mrp_bom_list.mrp_bom_form_view</field>
+    <field name="model">mrp.bom</field>
+    <field name="inherit_id" ref="mrp.mrp_bom_form_view" />
+    <field name="arch" type="xml">
+      <data>
+
+        <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+          <button name="action_bom_list" type="object" class="oe_stat_button" icon="fa-list"
+            string="BoM List" />
+        </xpath>
+
+        <xpath expr="//sheet" position="before">
+          <header>
+            <button name="%(action_mrp_bom_history)d" string="BoM List at Date" type="action" />
+          </header>
+        </xpath>
+
+      </data>
+    </field>
+  </record>
+</odoo>
