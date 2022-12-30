@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<odoo>
+
+  <record id="mrp_production_form_view" model="ir.ui.view">
+    <field name="name">stock_mrp_traceability_list.mrp_production_form_view</field>
+    <field name="model">mrp.production</field>
+    <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+    <field name="arch" type="xml">
+      <data>
+        
+        <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+          <button name="action_traceability_list" type="object" class="oe_stat_button" icon="fa-list"
+            string="Traceability List" />
+        </xpath>
+
+      </data>
+    </field>
+  </record>
+
+</odoo>
