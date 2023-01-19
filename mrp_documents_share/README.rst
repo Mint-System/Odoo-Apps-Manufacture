@@ -13,15 +13,6 @@ Share product drawing and step files with vendors and link them in the workorder
   :width: 100
   :alt: Icon
 
-Usage
-~~~~~
-
-Clone module into Odoo addon directory.
-
-.. code-block:: bash
-
-    git clone git@github.com:mint-system/odoo-app-mrp-documents-share.git ./addons/mrp_documents_share
-
 Configuration
 ~~~~~~~~~~~~~
 
