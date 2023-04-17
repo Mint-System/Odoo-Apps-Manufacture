@@ -6,7 +6,7 @@
     "author": "Mint System GmbH, Odoo Community Association (OCA)",
     "website": "https://www.mint-system.ch",
     "category": "Manufacturing",
-    "version": "14.0.2.0.1",
+    "version": "14.0.2.1.0",
     "license": "OPL-1",
     "depends": ["mrp_workorder", "purchase"],
     "data": [

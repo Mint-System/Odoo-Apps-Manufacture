@@ -29,8 +29,8 @@
         <field name="arch" type="xml">
             <data>
                 <xpath expr="//field[@name='categ_id']" position="after">
-                    <field name="drawing_file" context="{'default_type': 'url'}"/>
-                    <field name="step_file" context="{'default_type': 'url'}"/>
+                    <field name="drawing_file" context="{'default_type': 'url', 'default_res_model': 'product.template', 'default_res_id': active_id}"/>
+                    <field name="step_file" context="{'default_type': 'url', 'default_res_model': 'product.template', 'default_res_id': active_id}"/>
                 </xpath>
             </data>
         </field>
