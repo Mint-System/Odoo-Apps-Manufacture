@@ -45,24 +45,7 @@
             </t>
         </xpath>
     </template>
-
-    <record id="product_template_form_view" model="ir.ui.view">
-        <field name="name">mrp_documents_share.product_template_form_view</field>
-        <field name="model">product.template</field>
-        <field name="inherit_id" ref="product.product_template_form_view"/>
-        <field name="priority">50</field>
-        <field name="arch" type="xml">
-            <data>
-                <xpath expr="//field[@name='categ_id']" position="after">
-                    <field name="drawing_file" context="{'default_type': 'url'}"/>
-                    <field name="step_file" context="{'default_type': 'url'}"/>
-                </xpath>
-            </data>
-        </field>
-        <field name="mode">extension</field>
-        <field name="type">form</field>
-    </record>
-
+    
     <record id="report_purchaseorder_document" model="ir.ui.view">
         <field name="name">mrp_documents_share.report_purchaseorder_document</field>
         <field name="inherit_id" ref="purchase.report_purchaseorder_document"/>
@@ -118,23 +101,6 @@
         </field>
         <field name="mode">extension</field>
         <field name="model" eval="False"/>
-        <field name="type">qweb</field>
-    </record>
-
-    <record id="mrp_workorder_view_form_tablet" model="ir.ui.view">
-        <field name="name">mrp_documents_share.mrp_workorder_view_form_tablet</field>
-        <field name="model">mrp.workorder</field>
-        <field name="inherit_id" ref="mrp_workorder.mrp_workorder_view_form_tablet"/>
-        <field name="priority">50</field>
-        <field name="arch" type="xml">
-            <data>
-                <xpath expr="//field[@name='name']" position="after">
-                    (<field name="drawing_file_url" widget="url" text="Drawing" readonly="1" />)
-                </xpath>
-            </data>
-        </field>
-        <field name="key">mrp_workorder_view_form_tablet</field>
-        <field name="mode">extension</field>
         <field name="type">qweb</field>
     </record>
 
