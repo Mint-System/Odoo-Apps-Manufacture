@@ -9,7 +9,8 @@ class StockPicking(models.Model):
     def action_confirm(self):
         """Link move lines to picking after confirmation."""
         res = super().action_confirm()
-        self.move_lines.move_line_ids.filtered(lambda l: not l.picking_id).write({
-            'picking_id': self.id
-        })
+        for picking in self:
+            picking.move_lines.move_line_ids.filtered(lambda l: not l.picking_id).write({
+                'picking_id': picking.id
+            })
         return res
