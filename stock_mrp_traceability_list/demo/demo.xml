@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="product_product_a" model="product.product">
+        <field name="name">Product A</field>
+        <field name="default_code">A</field>
+        <field name="type">product</field>
+        <field name="tracking">lot</field>
+        <field name="standard_price">1200.0</field>
+        <field name="weight">0.6</field>
+    </record>
+
+    <record id="product_product_a_product_template" model="product.template">
+        <field name="route_ids"
+            eval="[(6, 0, [ref('stock.route_warehouse0_mto'), ref('mrp.route_warehouse0_manufacture')])]" />
+    </record>
+
+    <record id="mrp_bom_product_a" model="mrp.bom">
+        <field name="product_tmpl_id" ref="product_product_a_product_template" />
+        <field name="product_uom_id" ref="uom.product_uom_unit" />
+        <field name="sequence">3</field>
+        <field name="consumption">flexible</field>
+    </record>
+
+    <record id="product_product_b" model="product.product">
+        <field name="name">Product B</field>
+        <field name="default_code">B</field>
+        <field name="type">product</field>
+        <field name="tracking">serial</field>
+        <field name="standard_price">200.0</field>
+        <field name="weight">0.03</field>
+    </record>
+
+    <record id="lot_product_b_1" model="stock.production.lot">
+        <field name="name">0000001</field>
+        <field name="product_id" ref="product_product_b"/>
+        <field name="company_id" ref="base.main_company"/>
+    </record>
+
+    <record id="product_product_c" model="product.product">
+        <field name="name">Product C</field>
+        <field name="default_code">C</field>
+        <field name="tracking">lot</field>
+        <field name="type">product</field>
+        <field name="standard_price">300.0</field>
+        <field name="weight">0.05</field>
+    </record>
+
+    <record id="product_product_c_product_template" model="product.template">
+        <field name="route_ids"
+            eval="[(6, 0, [ref('stock.route_warehouse0_mto'), ref('mrp.route_warehouse0_manufacture')])]" />
+    </record>
+
+    <record id="mrp_bom_product_a_line_1" model="mrp.bom.line">
+        <field name="product_id" ref="product_product_b" />
+        <field name="product_qty">1</field>
+        <field name="product_uom_id" ref="uom.product_uom_unit" />
+        <field name="sequence">1</field>
+        <field name="bom_id" ref="mrp_bom_product_a" />
+    </record>
+
+    <record id="mrp_bom_product_a_line_2" model="mrp.bom.line">
+        <field name="product_id" ref="product_product_c" />
+        <field name="product_qty">2</field>
+        <field name="product_uom_id" ref="uom.product_uom_unit" />
+        <field name="sequence">2</field>
+        <field name="bom_id" ref="mrp_bom_product_a" />
+    </record>
+
+    <record id="mrp_bom_product_c" model="mrp.bom">
+        <field name="product_tmpl_id" ref="product_product_c_product_template" />
+        <field name="product_uom_id" ref="uom.product_uom_unit" />
+        <field name="sequence">1</field>
+        <field name="consumption">flexible</field>
+    </record>
+
+    <record id="product_product_d" model="product.product">
+        <field name="name">Product D</field>
+        <field name="default_code">D</field>
+        <field name="type">product</field>
+        <field name="tracking">lot</field>
+        <field name="standard_price">100.0</field>
+        <field name="weight">0.05</field>
+    </record>
+
+    <record id="lot_product_d_1" model="stock.production.lot">
+        <field name="name">0000001</field>
+        <field name="product_id" ref="product_product_d"/>
+        <field name="company_id" ref="base.main_company"/>
+    </record>
+
+    <record id="mrp_bom_product_c_line_1" model="mrp.bom.line">
+        <field name="product_id" ref="product_product_d" />
+        <field name="product_qty">1</field>
+        <field name="product_uom_id" ref="uom.product_uom_unit" />
+        <field name="sequence">1</field>
+        <field name="bom_id" ref="mrp_bom_product_c" />
+    </record>
+
+</odoo>
