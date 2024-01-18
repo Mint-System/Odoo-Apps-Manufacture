@@ -1,13 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <odoo>
 
-    <record id="mrp_document_menu" model="ir.ui.menu">
-        <field name="action" ref="mrp_document_list_action"/>
-        <field name="name">mrp_documents_share.mrp_document_menu</field>
-        <field name="parent_id" ref="mrp.menu_mrp_bom"/>
-        <field name="sequence">2</field>
-    </record>
-    
     <record id="mrp_document_list_action" model="ir.actions.act_window">
         <field name="limit">80</field>
         <field name="name">mrp_documents_share.mrp_document_list_action</field>
@@ -15,6 +8,13 @@
         <field name="target">current</field>
         <field name="type">ir.actions.act_window</field>
         <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="mrp_document_menu" model="ir.ui.menu">
+        <field name="action" ref="mrp_documents_share.mrp_document_list_action"/>
+        <field name="name">mrp_documents_share.mrp_document_menu</field>
+        <field name="parent_id" ref="mrp.menu_mrp_bom"/>
+        <field name="sequence">2</field>
     </record>
 
 </odoo>
