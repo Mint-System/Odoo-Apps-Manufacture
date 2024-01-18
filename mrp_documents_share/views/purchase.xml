@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<odoo>
+
+    <record id="purchase_order_portal_content" model="ir.ui.view">
+        <field name="name">mrp_documents_share.purchase_order_portal_content</field>
+        <field name="inherit_id" ref="purchase.purchase_order_portal_content"/>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <data>
+                <xpath expr="//td[@id='product_name']/span" position="after">
+                    <t t-if="line.product_id.drawing_file">
+                        <br/>
+                        <span>Drawing: </span>
+                        <a t-attf-href="{{line.product_id.drawing_file.url}}">
+                            <span t-field="line.product_id.drawing_file.display_name"/>
+                        </a>
+                    </t>
+                    <t t-if="line.product_id.step_file">
+                        <br/>
+                        <span>STEP file: </span>
+                        <a t-attf-href="{{line.product_id.step_file.url}}">
+                            <span t-field="line.product_id.step_file.display_name"/>
+                        </a>
+                    </t>
+                </xpath>
+            </data>
+        </field>
+    </record>
+
+    <template id="portal_my_purchase_order" active="False" name="mrp_documents_share.product_template_form_view" inherit_id="purchase.portal_my_purchase_order">
+        <xpath expr="//span[@t-esc='ol.name']" position="after">
+            <t t-if="ol.product_id.drawing_file">
+                <br/>
+                <span>Drawing: </span>
+                <a t-attf-href="{{ol.product_id.drawing_file.url}}">
+                    <span t-field="ol.product_id.drawing_file.display_name"/>
+                </a>
+            </t>
+            <t t-if="ol.product_id.step_file">
+                <br/>
+                <span>STEP file: </span>
+                <a t-attf-href="{{ol.product_id.step_file.url}}">
+                    <span t-field="ol.product_id.step_file.display_name"/>
+                </a>
+            </t>
+        </xpath>
+    </template>
+    
+    <record id="report_purchaseorder_document" model="ir.ui.view">
+        <field name="name">mrp_documents_share.report_purchaseorder_document</field>
+        <field name="inherit_id" ref="purchase.report_purchaseorder_document"/>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <data>
+                <xpath expr="//table/tbody/t[2]/tr/t[1]/td[1]/span" position="after">
+                    <t t-if="line.product_id.drawing_file">
+                        <br/>
+                        <span>Drawing: </span>
+                        <a t-attf-href="{{line.product_id.drawing_file.url}}">
+                            <span t-field="line.product_id.drawing_file.display_name"/>
+                        </a>
+                    </t>
+                    <t t-if="line.product_id.step_file">
+                        <br/>
+                        <span>STEP file: </span>
+                        <a t-attf-href="{{line.product_id.step_file.url}}">
+                            <span t-field="line.product_id.step_file.display_name"/>
+                        </a>
+                    </t>
+                </xpath>
+            </data>
+        </field>
+        <field name="mode">extension</field>
+        <field name="model" eval="False"/>
+        <field name="type">qweb</field>
+    </record>
+
+    <record id="report_purchasequotation_document" model="ir.ui.view">
+        <field name="name">mrp_documents_share.report_purchasequotation_document</field>
+        <field name="inherit_id" ref="purchase.report_purchasequotation_document"/>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <data>
+                <xpath expr="//table/tbody/t/tr/t[1]/td[1]/span" position="after">
+                    <t t-if="order_line.product_id.drawing_file">
+                        <br/>
+                        <span>Drawing: </span>
+                        <a t-attf-href="{{order_line.product_id.drawing_file.url}}">
+                            <span t-field="order_line.product_id.drawing_file.display_name"/>
+                        </a>
+                    </t>
+                    <t t-if="order_line.product_id.step_file">
+                        <br/>
+                        <span>STEP file: </span>
+                        <a t-attf-href="{{order_line.product_id.step_file.url}}">
+                            <span t-field="order_line.product_id.step_file.display_name"/>
+                        </a>
+                    </t>
+                </xpath>
+            </data>
+        </field>
+        <field name="mode">extension</field>
+        <field name="model" eval="False"/>
+        <field name="type">qweb</field>
+    </record>
+
+</odoo>
