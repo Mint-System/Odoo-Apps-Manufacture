@@ -45,7 +45,7 @@
             </t>
         </xpath>
     </template>
-    
+
     <record id="report_purchaseorder_document" model="ir.ui.view">
         <field name="name">mrp_documents_share.report_purchaseorder_document</field>
         <field name="inherit_id" ref="purchase.report_purchaseorder_document"/>

@@ -12,7 +12,7 @@ git clone git@github.com:mint-system/odoo-apps-manufacture.git ./addons/manufact
 
 ## Available modules
 
-| Module                                      | Summary                                                                                       |
-| ------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| [mrp_documents_share](mrp_documents_share/) | Share product drawing and step files with vendors and link them in the workorder tablet view. |
-|                                             |
+| Module | Summary |
+| --- | --- |
+| [maintenance_plan_request_name](maintenance_plan_request_name) |         Use name of maintenance plan for maintenance requests. |
+| [mrp_documents_share](mrp_documents_share) |         Share product drawing and step files with vendors and link them in the workorder tablet view. |
