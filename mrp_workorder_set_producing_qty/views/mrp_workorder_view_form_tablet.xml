@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<odoo>
+
+  <record id="mrp_workorder_view_form_tablet" model="ir.ui.view">
+    <field name="name">mrp_workorder_set_producing_qty.mrp_workorder_view_form_tablet</field>
+    <field name="model">mrp.workorder</field>
+    <field name="inherit_id" ref="mrp_workorder.mrp_workorder_view_form_tablet"/>
+    <field name="arch" type="xml">
+      <data>
+      </data>
+    </field>
+  </record>
+
+</odoo>
