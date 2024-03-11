@@ -1,9 +1,12 @@
-from odoo import api, fields, models
 import logging
+
+from odoo import api, fields, models
+
 _logger = logging.getLogger(__name__)
 
+
 class MrpBom(models.Model):
-    _inherit = 'mrp.bom'
+    _inherit = "mrp.bom"
 
     def set_position(self):
         for bom in self:
@@ -25,7 +28,8 @@ class MrpBom(models.Model):
         self.set_position()
         return res
 
+
 class MrpBomLine(models.Model):
-    _inherit = 'mrp.bom.line'
+    _inherit = "mrp.bom.line"
 
     position = fields.Integer("Pos", readonly=True)

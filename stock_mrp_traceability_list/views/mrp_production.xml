@@ -7,7 +7,7 @@
     <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
     <field name="arch" type="xml">
       <data>
-        
+
         <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
           <button name="action_traceability_list" type="object" class="oe_stat_button" icon="fa-list"
             string="Traceability List" />
