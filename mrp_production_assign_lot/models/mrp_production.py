@@ -95,7 +95,7 @@ class MrpProduction(models.Model):
 
                     # Get workorder with product_id as compoenent
                     workorder_ids = production.workorder_ids.filtered(
-                        lambda w: w.component_id == move.product_id and not w.lot_id
+                        lambda w: w.product_id == move.product_id and not w.lot_id
                     )
                     # _logger.warning(workorder_ids)
                     workorder_ids.write({"lot_id": match_lot_id.id})
@@ -152,12 +152,12 @@ class MrpProduction(models.Model):
             for workorder in backorders.workorder_ids:
 
                 # Assign only if workorder component requires so
-                if workorder.component_id.tracking and not workorder.lot_id:
+                if workorder.product_id.tracking and not workorder.lot_id:
 
                     # Get matching workorder from first backorders
                     match_move_lines = (
                         first_backorder.move_raw_ids.move_line_ids.filtered(
-                            lambda l: l.product_id == workorder.component_id
+                            lambda l: l.product_id == workorder.product_id
                         )
                     )
                     # _logger.warning([first_backorder.move_raw_ids.move_line_ids,match_move_lines])
