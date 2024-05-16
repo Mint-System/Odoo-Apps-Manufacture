@@ -120,12 +120,6 @@ class MrpProduction(models.Model):
                     + "</ul>",
                 )
 
-    # def _generate_backorder_productions(self, close_mo=True):
-    #     backorders = super()._generate_backorder_productions(close_mo=close_mo)
-    #     for bo in backorders:
-    #         bo.action_assign_lot()
-    #     return backorders
-
     def _generate_backorder_productions(self, close_mo=True):
         """Copy lot from first workorder"""
         backorders = super()._generate_backorder_productions(close_mo=close_mo)
