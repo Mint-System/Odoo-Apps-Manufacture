@@ -1,4 +1,3 @@
-
 - Install mrp_workorder
 - Enable use of existing lot numbers on incoming operation type
 - Create receipt (incmoing picking) for a new "Product A"
