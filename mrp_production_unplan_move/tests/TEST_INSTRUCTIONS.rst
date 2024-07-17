@@ -1,0 +1,4 @@
+- Open Manufacturing > Operations > Manufacturing Orders
+- Create a new manufacturing order for product [FURN_7800] Desk Combination
+- Open the manufacturing forecast and Replenish the product by producing one more unit
+- A new manufacturing order will appear in the report, it will have the planned date of 12/31/2299
