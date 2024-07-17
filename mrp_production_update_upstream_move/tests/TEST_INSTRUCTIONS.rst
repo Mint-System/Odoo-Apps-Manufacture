@@ -1,0 +1,5 @@
+- Open Sales > Orders > Quotations
+- Create a new quotation for Azure Interior with product [FURN_7800] Desk Combination and quantity 2
+- Open the delivery and note the quantity 2
+- Replenish the product in Manufacturing Forecast and complete the order
+- In the Sale Order change the quantity to 3, the quantity is also changed on the delivery
