@@ -1,0 +1,5 @@
+- Open Manufacturing > Operations > Manufacturing Orders
+- Create a new manufacturing order for product [FURN_7800] Desk Combination
+- In the Work Orders tab create a new workorder
+- Open Manufacturing > Operations > Work Order and switch to kanban view
+- Open a Work Order in the tablet mode, the timer will not be started automatically
