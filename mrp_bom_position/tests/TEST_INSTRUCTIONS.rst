@@ -1,0 +1,3 @@
+- Open Manufacturing > Products > Bills of Materials
+- Create a new Bill of Materials for a product [FURN_8220] Four Person Desk, add two components [FURN_9666] Table and [FURN_0269] Office Chair Black
+- Save the Bill of Materials, the position numbers will be assigned to components

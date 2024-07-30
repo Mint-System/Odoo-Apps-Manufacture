@@ -8,12 +8,7 @@ MRP BoM Position
 
 Position number for each bom line.
 
-For a detailed documentation have a look at https://www.odoo-wiki.org/.
-
-.. image:: https://raw.githubusercontent.com/Mint-System/Wiki/master/assets/icon-box.png
-  :height: 100
-  :width: 100
-  :alt: Icon
+For a detailed documentation have a look at https://www.odoo-wiki.org/mrp-bom-position.html
 
 Configuration
 ~~~~~~~~~~~~~
