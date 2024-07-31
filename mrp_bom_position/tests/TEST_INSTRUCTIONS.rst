@@ -1,3 +1,6 @@
 - Open Manufacturing > Products > Bills of Materials
 - Create a new Bill of Materials for a product [FURN_8220] Four Person Desk, add two components [FURN_9666] Table and [FURN_0269] Office Chair Black
 - Save the Bill of Materials, the position numbers will be assigned to components
+- To test the Server Action for updating the position numbers in Bills of Materials open Settings > Techical > Server Actions
+- Create a new Server Action with a name Positionsnummer festlegen, model mrp.bom, action type Execute Python code and with a value: for record in records: record.set_position()
+- Open a Bill of Materials, under the Action button a new button to update the position numbers is now available
