@@ -1,0 +1,4 @@
+- Open Manufacturing > Operations > Manufacturing Orders
+- Create a new Manufacturing Order for product [FURN_7800] Desk Combination
+- In the new field Date Move set the date the when the order should be sent for delivery
+- Save the Manufacturing Order, the Date Scheduled field of the components will be set to Date Move
