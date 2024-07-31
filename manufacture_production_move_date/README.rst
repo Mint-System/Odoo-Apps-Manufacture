@@ -8,8 +8,7 @@ Manufacture Production Move Date
 
 Make stock move dates editable.
 
-For a detailed documentation have a look at
-https://www.odoo-wiki.org/manufacture_production_move_date.html
+For a detailed documentation have a look at https://www.odoo-wiki.org/manufacture_production_move_date.html
 
 Configuration
 ~~~~~~~~~~~~~
