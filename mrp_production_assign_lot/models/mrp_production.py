@@ -8,6 +8,44 @@ _logger = logging.getLogger(__name__)
 class MrpProduction(models.Model):
     _inherit = "mrp.production"
 
+    def _assign_lot(self, production, move, match_lot_id):
+        # If move line does not exist yet create one
+        if not move.move_line_ids:
+            move.write(
+                {
+                    "move_line_ids": [
+                        (
+                            0,
+                            0,
+                            {
+                                "product_id": move.product_id.id,
+                                "product_uom_id": move.product_uom.id,
+                                "location_id": move.location_id.id,
+                                "location_dest_id": move.location_dest_id.id,
+                                "lot_id": match_lot_id.id,
+                            },
+                        )
+                    ]
+                }
+            )
+
+        # If move line exists set lot
+        if move.move_line_ids:
+            move.move_line_ids.write(
+                {
+                    "lot_id": match_lot_id.id,
+                }
+            )
+
+            # Get workorder with product_id as compoenent
+            check_ids = production.workorder_ids.check_ids.filtered(
+                lambda w: w.component_id == move.product_id and not w.lot_id
+            )
+            check_ids.write({"lot_id": match_lot_id.id})
+
+            # Confirm stock move
+            move.write({"state": "assigned"})
+
     def action_assign_lot(self):
         """Lookup incoming lots and assign to unreserved components."""
 
@@ -37,7 +75,6 @@ class MrpProduction(models.Model):
             )
             .mapped("lot_producing_id.id")
         )
-        # _logger.warning(lot_ids)
 
         for production in self:
             note = []
@@ -61,47 +98,9 @@ class MrpProduction(models.Model):
                     ],
                     limit=1,
                 )
-                # _logger.warning(match_lot_id); return
 
                 if match_lot_id:
-
-                    # If move line does not exist yet create one
-                    if not move.move_line_ids:
-                        move.write(
-                            {
-                                "move_line_ids": [
-                                    (
-                                        0,
-                                        0,
-                                        {
-                                            "product_id": move.product_id.id,
-                                            "product_uom_id": move.product_uom.id,
-                                            "location_id": move.location_id.id,
-                                            "location_dest_id": move.location_dest_id.id,
-                                            "lot_id": match_lot_id.id,
-                                        },
-                                    )
-                                ]
-                            }
-                        )
-
-                    # If move line exists set lot
-                    if move.move_line_ids:
-                        move.move_line_ids.write(
-                            {
-                                "lot_id": match_lot_id.id,
-                            }
-                        )
-
-                    # Get workorder with product_id as compoenent
-                    workorder_ids = production.workorder_ids.filtered(
-                        lambda w: w.component_id == move.product_id and not w.lot_id
-                    )
-                    # _logger.warning(workorder_ids)
-                    workorder_ids.write({"lot_id": match_lot_id.id})
-
-                    # Confirm stock move
-                    move.write({"state": "assigned"})
+                    production._assign_lot(production, move, match_lot_id)
 
                     note.append(
                         _("<li>Assigned lot number to: %s</li>")
@@ -120,50 +119,44 @@ class MrpProduction(models.Model):
                     + "</ul>",
                 )
 
-    # def _generate_backorder_productions(self, close_mo=True):
-    #     backorders = super()._generate_backorder_productions(close_mo=close_mo)
-    #     for bo in backorders:
-    #         bo.action_assign_lot()
-    #     return backorders
-
-    def _generate_backorder_productions(self, close_mo=True):
-        """Copy lot from first workorder"""
-        backorders = super()._generate_backorder_productions(close_mo=close_mo)
-
-        # Run only backorders exist
-        if backorders:
+    def _split_productions(
+        self, amounts=False, cancel_remaining_qty=False, set_consumed_qty=False
+    ):
+        productions = super()._split_productions(
+            amounts=amounts,
+            cancel_remaining_qty=cancel_remaining_qty,
+            set_consumed_qty=set_consumed_qty,
+        )
+        if productions:
 
             # Get first backorder
-            first_backorder = self.env["mrp.production"].search(
+            first_production = self.env["mrp.production"].search(
                 [
                     "&",
                     (
                         "procurement_group_id",
                         "=",
-                        backorders[0].procurement_group_id.id,
+                        productions[0].procurement_group_id.id,
                     ),
                     ("backorder_sequence", "=", 1),
                 ],
                 limit=1,
             )
-            # _logger.warning([first_backorder.name])
 
-            # Assign lot for each workorder in backorders
-            for workorder in backorders.workorder_ids:
+            for check in productions.workorder_ids.check_ids:
 
-                # Assign only if workorder component requires so
-                if workorder.component_id.tracking and not workorder.lot_id:
+                # Assign only if check component requires so
+                if check.component_id.tracking and not check.lot_id:
 
-                    # Get matching workorder from first backorders
+                    # Get matching move lines from first backorder
                     match_move_lines = (
-                        first_backorder.move_raw_ids.move_line_ids.filtered(
-                            lambda l: l.product_id == workorder.component_id
+                        first_production.move_raw_ids.move_line_ids.filtered(
+                            lambda l: l.product_id == check.component_id
                         )
                     )
-                    # _logger.warning([first_backorder.move_raw_ids.move_line_ids,match_move_lines])
 
                     # Write lot if match found
                     if match_move_lines:
-                        workorder["lot_id"] = match_move_lines[0].lot_id
+                        check["lot_id"] = match_move_lines[0].lot_id
 
-        return backorders
+        return productions
