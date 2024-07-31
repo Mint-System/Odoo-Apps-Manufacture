@@ -1,0 +1,4 @@
+- Go to Settings > Inventory > Warehouse and enable Multi-Step Routes
+- Open Inventory > Configuration > Warehouses, open a warehouse and in the Manufacturing section select Pick components and then manufacture (2 steps)
+- Create a new Manufacturing Order for product [FURN_7800] Desk Combination
+- Confirm the Manufacturing Order, the Upstream Status field is now shown for the component list
