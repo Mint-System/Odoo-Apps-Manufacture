@@ -9,11 +9,11 @@ class MrpProductionWorkcenterLine(models.Model):
     _inherit = "mrp.workorder"
 
     def open_tablet_view(self):
-        """By default return tablet view without starting workorder."""
         self.ensure_one()
         disable_autostart = self.env.context.get(
             "mrp_workorder_disable_autostart", True
         )
+
         if not disable_autostart:
             return super().open_tablet_view()
         else:
@@ -22,11 +22,16 @@ class MrpProductionWorkcenterLine(models.Model):
             )
             action["target"] = "fullscreen"
             action["res_id"] = self.id
-            action["context"] = {
-                "active_id": self.id,
-                "from_production_order": self.env.context.get("from_production_order"),
-                "from_manufacturing_order": self.env.context.get(
-                    "from_manufacturing_order"
-                ),
-            }
+
+            if not isinstance(action.get("context"), dict):
+                action["context"] = {}
+
+            action["context"]["active_id"] = self.id
+            action["context"]["from_production_order"] = self.env.context.get(
+                "from_production_order"
+            )
+            action["context"]["from_manufacturing_order"] = self.env.context.get(
+                "from_manufacturing_order"
+            )
+
             return action
