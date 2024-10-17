@@ -22,16 +22,11 @@ class MrpProductionWorkcenterLine(models.Model):
             )
             action["target"] = "fullscreen"
             action["res_id"] = self.id
-
-            if not isinstance(action.get("context"), dict):
-                action["context"] = {}
-
-            action["context"]["active_id"] = self.id
-            action["context"]["from_production_order"] = self.env.context.get(
-                "from_production_order"
-            )
-            action["context"]["from_manufacturing_order"] = self.env.context.get(
-                "from_manufacturing_order"
-            )
-
+            action["context"] = {
+                "active_id": self.id,
+                "from_production_order": self.env.context.get("from_production_order"),
+                "from_manufacturing_order": self.env.context.get(
+                    "from_manufacturing_order"
+                ),
+            }
             return action
