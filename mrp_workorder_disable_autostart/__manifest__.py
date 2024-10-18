@@ -7,7 +7,7 @@
     "website": "https://www.mint-system.ch",
     "category": "Manufacturing",
     "version": "16.0.1.0.0",
-    "license": "OPL-1",
+    "license": "AGPL-3",
     "depends": ["mrp_workorder"],
     "data": ["views/mrp_workorder.xml"],
     "installable": True,
