@@ -1,1 +1,1 @@
-from . import quality
+from . import quality_check

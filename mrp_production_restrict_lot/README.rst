@@ -6,9 +6,9 @@
 MRP Production Restrict Lot
 ===========================
 
-Restrict lot selection in work orders based on assigned lots in production order.
+Restrict lot selection for components in table view.
 
-For a detailed documentation have a look at https://www.odoo-wiki.org/mrp_production_restrict_lot.html
+For a detailed documentation have a look at https://www.odoo-wiki.org/mrp-production-restrict-lot.html
 
 Configuration
 ~~~~~~~~~~~~~
