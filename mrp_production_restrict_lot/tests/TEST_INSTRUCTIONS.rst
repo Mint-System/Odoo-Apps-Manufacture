@@ -1,17 +1,20 @@
-- Install mrp_workorder
-- Enable use of existing lot numbers on incoming operation type
-- Create receipt (incmoing picking) for a new "Product A"
-- Product A is tracked
-- Set date of receipt to +1 week
-- Add lot with qty 2
-- Create production order for a new "Product B"
-- Product B is trackend and has BoM with Product A
-- Set producing and consuming qty to 2
-- Update production order with bill of material
-- Add workorder step to bill of material
-- Click on "assign lot"
-- Check if lot of Product A is assigned to the stock move line
-- Start the production order and open the tablet view
-- Produce and consume 1 qty
-- Create new lot and validate the production order
-- Check if a new backorder is created and the lot number for Product A is the same as before
+- Install mrp
+- Enable *Lots & Serial Numbers* (Settings > Inventory > Traceability)
+- Enable *Work Orders* (Settings > Manufacturing > Operations)
+- Set *Reservation Method* on the Operation Type *Manufacturing* to *Manually* (Inventory > Configuration > Warehouse Management > Operation Types > Manufacturing)
+- Create a product ("Product") with Product Type *Storable  Product*
+- Create two products ("Component 1" and "Component2") with Product Type *Storable  Product* and  *By Lots* enabled(> product tab *Inventory* > Tracking)
+- Create the lots 1A, 1B and 1C for Component 1 and 2A, 2B and 2C for Component 2 (Inventory > Products > Lots/Serial Numbers)
+- Edit the On Hand Quantity for the products Component 1 and 2. Set "Counted Quantity" to 10 for each Lot A, B and C
+- Create a Bill of Materials for the product "Product" with the two components ("Component 1" and "Component 2")
+- Create operation in the Bill of Materials
+- Create a new production order for 30 products ("Product") and click confirm
+- Show row *Lot/Serial Numbers* in the components list
+- On the line item 1 ("Component 1") select Lot "1B" with the quantity done 10 and Lot "1C" with the quantity done 20, confirm
+- On the line item 2 ("Component 2") select Lot "2A" with the quantity done 10 and the Lot "2C" with the quantity done 20, confirm
+- Check availability
+- Open the tablet view of the workorder *Operation 1*
+- *Mark as done* operation 1
+- Open the tablet view of the workorder *Operation 2*
+- Register consumed materials
+- The list of available lots should only show the lots which were assigned in the production order
