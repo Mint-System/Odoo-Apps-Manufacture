@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="quality_check_view_form_tablet_inherit" model="ir.ui.view">
+        <field name="name">quality.check.view.form.tablet.restrict.lot</field>
+        <field name="model">quality.check</field>
+        <field name="inherit_id" ref="mrp_workorder.quality_check_view_form_tablet"/>
+        <field name="arch" type="xml">
+            <!-- Add restricted_lot_ids as an invisible field after production_id -->
+            <xpath expr="//field[@name='production_id']" position="after">
+                <field name="restricted_lot_ids" invisible="1"/>
+            </xpath>
+            <!-- Update the domain on lot_id to filter based on restricted_lot_ids -->
+            <xpath expr="//field[@name='lot_id']" position="attributes">
+                <attribute name="domain">[('id', 'in', restricted_lot_ids)]</attribute>
+            </xpath>
+            <!-- Remove the invisible condition on component fields to ensure they are always visible -->
+            <xpath expr="//field[@name='component_id']" position="attributes">
+                <attribute name="attrs" remove="{'invisible': [('test_type', 'not in', ('register_byproducts', 'register_consumed_materials'))]}"/>
+            </xpath>
+            <xpath expr="//field[@name='qty_done']" position="attributes">
+                <attribute name="attrs" remove="{'invisible': [('test_type', 'not in', ('register_byproducts', 'register_consumed_materials'))]}"/>
+            </xpath>
+            <xpath expr="//field[@name='component_remaining_qty']" position="attributes">
+                <attribute name="attrs" remove="{'invisible': [('test_type', 'not in', ('register_byproducts', 'register_consumed_materials'))]}"/>
+            </xpath>
+            <xpath expr="//field[@name='component_uom_id']" position="attributes">
+                <attribute name="attrs" remove="{'invisible': [('test_type', 'not in', ('register_byproducts', 'register_consumed_materials'))]}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
