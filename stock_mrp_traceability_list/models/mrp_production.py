@@ -8,6 +8,12 @@ _logger = logging.getLogger(__name__)
 class MrpProduction(models.Model):
     _inherit = "mrp.production"
 
+    traceability_line_ids = fields.Many2many(
+        "stock.move.line",
+        "Traceability Lines",
+        compute="_compute_traceability_line_ids",
+    )
+
     def _compute_traceability_line_ids(self):
         for production in self:
             traceability_line_ids = []
@@ -62,9 +68,9 @@ class MrpProduction(models.Model):
                     traceability_line_ids += linked_move_lines
 
                 # Get move lines for each linked line
-                for line in linked_move_lines:
+                for linked_line in linked_move_lines:
                     move_lines = self.env["stock.traceability.report"]._get_move_lines(
-                        line
+                        linked_line
                     )
                     if move_lines:
                         traceability_line_ids += move_lines
@@ -73,10 +79,6 @@ class MrpProduction(models.Model):
                         lines_todo += list(move_lines)
 
             production.traceability_line_ids = traceability_line_ids
-
-    traceability_line_ids = fields.Many2many(
-        "stock.move.line", "Traceability Lines", compute=_compute_traceability_line_ids
-    )
 
     def action_traceability_list(self):
         tree_view_id = self.env.ref("stock.view_move_line_tree").id

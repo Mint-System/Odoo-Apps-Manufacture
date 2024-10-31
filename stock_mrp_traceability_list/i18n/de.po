@@ -38,11 +38,11 @@ msgstr "Fertigungsauftrag"
 #. module: stock_mrp_traceability_list
 #: model:ir.model.fields,field_description:stock_mrp_traceability_list.field_mrp_production__traceability_line_ids
 msgid "Traceability Line"
-msgstr "Lieferverfolgungszeile"
+msgstr "Rückverfolgbarkeitszeile"
 
 #. module: stock_mrp_traceability_list
 #: code:addons/stock_mrp_traceability_list/models/mrp_production.py:0
 #: model_terms:ir.ui.view,arch_db:stock_mrp_traceability_list.mrp_production_form_view
 #, python-format
 msgid "Traceability List"
-msgstr "Lieferverfolgungsliste"
+msgstr "Rückverfolgbarkeitsliste"
