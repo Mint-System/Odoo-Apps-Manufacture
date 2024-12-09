@@ -28,7 +28,7 @@
     </record>
 
     <template id="portal_my_purchase_order" active="False" name="mrp_documents_share.product_template_form_view" inherit_id="purchase.portal_my_purchase_order">
-        <xpath expr="//span[@t-esc='ol.name']" position="after">
+        <td id="product_name" position="inside">
             <t t-if="ol.product_id.drawing_file">
                 <br/>
                 <span>Drawing: </span>
@@ -43,7 +43,7 @@
                     <span t-field="ol.product_id.step_file.display_name"/>
                 </a>
             </t>
-        </xpath>
+        </td>
     </template>
     
     <record id="report_purchaseorder_document" model="ir.ui.view">
