@@ -27,7 +27,7 @@
         </field>
     </record>
 
-    <template id="purchase_order_portal_content" active="False" name="mrp_documents_share.purchase_order_portal_content" inherit_id="purchase.product_template_form_view">
+    <template id="purchase_order_portal_content" active="False" name="mrp_documents_share.purchase_order_portal_content" inherit_id="purchase.purchase_order_portal_content">
         <xpath expr="//span[@t-field='line.name']" position="after">
             <t t-if="line.product_id.drawing_file">
                 <br/>
