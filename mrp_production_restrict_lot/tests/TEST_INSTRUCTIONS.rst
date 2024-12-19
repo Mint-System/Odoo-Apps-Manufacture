@@ -18,7 +18,10 @@ Manufacturing order:
 - On the line item 2 ("Component 2") select Lot "2A" with the quantity done 10 and the Lot "2C" with the quantity done 20, confirm
 - Check availability
 - Open the tablet view of the workorder *Operation 1*
+- Set product quantity (qty_producing) to 20
 - *Mark as done* operation 1
 - Open the tablet view of the workorder *Operation 2*
 - Register consumed materials
 - The list of available lots should only show the lots which were assigned in the production order
+- Push button *Mark as done and close MO*
+- A backorder 2 is created and the assigned lots (from workorder 1) has been copied
