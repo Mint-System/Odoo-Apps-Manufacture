@@ -1,6 +1,6 @@
 - Install mrp_workorder
 - Enable use of existing lot numbers on incoming operation type
-- Create receipt (incmoing picking) for a new "Product A"
+- Create receipt (incoming picking) for a new "Product A"
 - Product A is tracked
 - Set date of receipt to +1 week
 - Add lot with qty 2
