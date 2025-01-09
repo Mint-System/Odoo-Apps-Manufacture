@@ -7,7 +7,7 @@ Setup products:
 - Create two products "B" and "C" with Product Type *Storable  Product* and tracking *By Lots* enabled
 - Create the lots 1 and 2 for each Component B and C (Inventory > Products > Lots/Serial Numbers)
 - Edit the On Hand Quantity for the products Component "B" and "C".
-Set "Counted Quantity" to 10 for each Lot 1 and 2.
+- Set "Counted Quantity" to 10 for each Lot 1 and 2.
 - Create a Bill of Materials for the product "Product" with the two components "B" and "C"
 - Create operation "Assemble" and assign to both components
 
