@@ -3,7 +3,7 @@
     "summary": """
         Share product drawing and step files with vendors and link them in the workorder tablet view.
     """,
-    "author": "Mint System GmbH, Odoo Community Association (OCA)",
+    "author": "Mint System GmbH",
     "website": "https://github.com/OCA/sale-workflow",
     "category": "Manufacturing",
     "version": "18.0.1.0.0",
