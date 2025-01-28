@@ -3,7 +3,7 @@
     "summary": """
         Lookup and assign lot numbers in incoming moves and manufacturing orders to unreserved components.
     """,
-    "author": "Mint System GmbH, Odoo Community Association (OCA)",
+    "author": "Mint System GmbH",
     "website": "https://www.mint-system.ch",
     "category": "Manufacturing",
     "version": "14.0.1.1.0",
