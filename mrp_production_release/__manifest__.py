@@ -3,7 +3,7 @@
     "summary": """
         Reset a confirmed manufacturing order or mark it as released.
     """,
-    "author": "Mint System GmbH, Odoo Community Association (OCA)",
+    "author": "Mint System GmbH",
     "website": "https://www.mint-system.ch",
     "category": "Manufacturing",
     "version": "16.0.1.0.0",
