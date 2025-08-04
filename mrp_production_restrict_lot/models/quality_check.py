@@ -24,11 +24,10 @@ class QualityCheck(models.Model):
                 record.restricted_lot_ids = product_lot_ids
 
 
-
+    # added by uk
     @api.onchange('restricted_lot_ids')
     def _onchange_restricted_lot_ids(self):
         for record in self:
             if not record.lot_id and record.restricted_lot_ids:
                 record.lot_id = record.restricted_lot_ids[0]
 
-    
