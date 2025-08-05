@@ -12,8 +12,8 @@ class QualityCheck(models.Model):
         "stock.lot", compute="_compute_restricted_lot_ids"
     )
 
-    @api.depends("component_id", "move_id")
     def _compute_restricted_lot_ids(self):
+        _logger.warning("######## CALLED _compute_restricted_lot_ids")
         for record in self:
             if record.move_id.lot_ids:
                 record.restricted_lot_ids = record.move_id.lot_ids
@@ -23,11 +23,11 @@ class QualityCheck(models.Model):
                 )
                 record.restricted_lot_ids = product_lot_ids
 
-
-    # added by uk
-    @api.onchange('restricted_lot_ids')
-    def _onchange_restricted_lot_ids(self):
+    @api.onchange('qty_done')
+    def _onchange_qty_done(self):
+        _logger.warning("######## CALLED _onchange_qty_done")
         for record in self:
             if not record.lot_id and record.restricted_lot_ids:
                 record.lot_id = record.restricted_lot_ids[0]
+
 

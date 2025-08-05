@@ -14,8 +14,13 @@
             <!-- Update the domain on lot_id to filter based on restricted_lot_ids -->
             <xpath expr="//field[@name='lot_id']" position="attributes">
                 <attribute name="domain">[('id', 'in', restricted_lot_ids)]</attribute>
+                <attribute name="context">{'default_lot_id': 1, 'default_product_id': component_id, 'default_company_id': company_id, 'active_mo_id': test_type == 'register_consumed_materials' and production_id or False}</attribute>
             </xpath>
 
         </field>
     </record>
+
+
 </odoo>
+
+
