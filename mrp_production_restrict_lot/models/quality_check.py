@@ -12,8 +12,12 @@ class QualityCheck(models.Model):
         "stock.lot", compute="_compute_restricted_lot_ids"
     )
 
+    # lot_id = fields.Many2one(
+    #     'stock.lot', compute="_compute_lot_id", store=True, readonly=False, precompute=True
+    # )
+        
+
     def _compute_restricted_lot_ids(self):
-        _logger.warning("######## CALLED _compute_restricted_lot_ids")
         for record in self:
             if record.move_id.lot_ids:
                 record.restricted_lot_ids = record.move_id.lot_ids
@@ -22,12 +26,15 @@ class QualityCheck(models.Model):
                     [("product_id", "=", record.component_id.id)]
                 )
                 record.restricted_lot_ids = product_lot_ids
-
-    @api.onchange('qty_done')
-    def _onchange_qty_done(self):
-        _logger.warning("######## CALLED _onchange_qty_done")
-        for record in self:
-            if not record.lot_id and record.restricted_lot_ids:
+            if record.restricted_lot_ids:
                 record.lot_id = record.restricted_lot_ids[0]
 
+    @api.depends()
+    def _compute_lot_id(self):
+        _logger.warning("####### _compute_lot_id")
+        for record in self:
+            if record.restricted_lot_ids:
+                record.lot_id = record.restricted_lot_ids[0]
+
+    
 

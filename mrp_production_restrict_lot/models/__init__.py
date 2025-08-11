@@ -1,1 +1,1 @@
-from . import quality_check, mrp_workorder
+from . import quality_check
