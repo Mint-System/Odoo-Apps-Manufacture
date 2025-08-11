@@ -26,7 +26,7 @@ class QualityCheck(models.Model):
                     [("product_id", "=", record.component_id.id)]
                 )
                 record.restricted_lot_ids = product_lot_ids
-            if record.restricted_lot_ids:
+            if record.restricted_lot_ids and not record.lot_id:
                 record.lot_id = record.restricted_lot_ids[0]
 
     @api.depends()
