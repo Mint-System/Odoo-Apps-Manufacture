@@ -18,6 +18,21 @@
                     </span>
                 </div>
             </xpath>
+            <xpath expr="//page[@name='components']" position="after">
+                <page name="sequential_productions" string="Sequential Productions" invisible="type != 'parallel'">
+                    <field name="sequential_production_ids" context="{'default_parallel_production_id': id}"
+                       domain="[('type','=','sequential')]"
+                       nolabel="1">
+                    <list editable="bottom">
+                        <!-- <field name="name" widget="many2one"/> -->
+                        <field name="link_mo_id" string="Order"/>
+                        <field name="product_id"/>
+                        <field name="lot_producing_id"/>
+                        <field name="state"/>
+                    </list>
+                </field>
+                </page>
+            </xpath>
          </field>
     </record>
 </odoo>
