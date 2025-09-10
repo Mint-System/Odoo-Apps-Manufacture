@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<odoo>
+    <record id="mrp_production_form_view" model="ir.ui.view">
+         <field name="name">mrp_parallel_production.mrp_production_form_view</field>
+         <field name="model">mrp.production</field>
+         <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+         <field name="arch" type="xml">
+             <xpath expr="//group[@name='group_extra_info']" position="after">
+                 <group name="group_parallel_production">
+                     <field name="type" />
+                 </group>
+             </xpath>
+             <xpath expr="//field[@name='name']" position="after">
+                <div invisible="type != 'parallel'">
+                    <span class="badge badge-primary"
+                        style="margin-left:8px; background-color:#007bff; color:white; padding:2px 6px; border-radius:4px;">
+                        P
+                    </span>
+                </div>
+            </xpath>
+         </field>
+    </record>
+</odoo>
