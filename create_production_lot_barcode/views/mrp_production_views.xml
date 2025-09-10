@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+  <record id="mrp_production_form_view" model="ir.ui.view">
+    <field name="name">Production Lot Barcode</field>
+    <field name="model">mrp.production</field>
+    <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+    <field name="arch" type="xml">
+      <xpath expr="//header" position="inside">
+        <button name="action_print_lot_barcode"
+                string="Print Prod. Lot Barcode"
+                type="object"
+                class="btn-primary"
+                invisible="not lot_producing_id"/>
+      </xpath>
+    </field>
+  </record>
+</odoo>
