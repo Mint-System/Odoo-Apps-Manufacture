@@ -5,6 +5,24 @@
          <field name="model">mrp.production</field>
          <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
          <field name="arch" type="xml">
+             <xpath expr="//div[@class='oe_button_box']" position="inside">
+                <button name="action_view_sequential_productions"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-list"
+                        invisible="type != 'parallel'">
+                    <field name="sequential_production_ids" widget="statinfo" string="Sequential"/>
+                </button>
+            </xpath>
+            <xpath expr="//div[@class='oe_button_box']" position="inside">
+                 <button name="action_view_parallel_production"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-link"
+                        invisible="type != 'sequential'">
+                    <field name="parallel_production_id" widget="statinfo" string="Parallel"/>
+                </button>
+            </xpath>
              <xpath expr="//group[@name='group_extra_info']" position="after">
                  <group name="group_parallel_production">
                      <field name="type" />
@@ -33,6 +51,40 @@
                 </field>
                 </page>
             </xpath>
+         <!--    <xpath expr="(//button[@name='button_mark_done'][@invisible])[2]" position="attributes">
+                <attribute name="invisible" add="type == 'parallel'" separator=" or "/>
+            </xpath> -->
          </field>
     </record>
+
+    <record id="view_mrp_production_search_inherit" model="ir.ui.view">
+        <field name="name">mrp.production.search.inherit</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.view_mrp_production_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='starred']" position="after">
+                <filter name="not_sequential"
+                        string="Not Sequential"
+                        domain="[('type','!=','sequential')]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_mrp_production_tree_inherit" model="ir.ui.view">
+        <field name="name">mrp.production.tree.inherit.sequential</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="inside">
+                <button name="action_view_sequential_productions"
+                        type="object"
+                        string="Sequential"
+                        icon="fa-random"
+                        invisible="type != 'parallel'"/>
+            </xpath>
+        </field>
+    </record>
+
+    
+
 </odoo>
