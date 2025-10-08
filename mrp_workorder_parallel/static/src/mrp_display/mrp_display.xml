@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+	<t t-inherit="mrp_workorder.MrpDisplayRecord" t-inherit-mode="extension">
+	    <xpath expr="//ul[@class='list-group list-group-flush']" position="before">
+	        <ul class="list-group list-group-flush">
+	            <t t-if="record.type == 'parallel' and record.sequential_infos">
+	                <div class="d-flex justify-content-between align-items-center px-3">
+	                	<div class="ml-4 mr-4 mt-2">
+	                    	<div class="mb-1">
+		                        <b><span class="me-1 mb-1">
+		                            <t t-esc="record.workorder_infos.workcenter"/>
+		                        </span></b>
+	                    	</div>
+	                    	<div class="mb-1">
+		                        <span class="me-1 mb-1">
+		                            <t t-esc="record.name"/>
+		                        </span>
+	                    	</div>
+	               		</div>
+	                	<div>
+		                    <t t-foreach="record.sequential_infos" t-as="prod" t-key="prod.id">
+		                    	<div class="mb-1">
+			                        <span class="badge rounded-pill text-white me-1 mb-1"
+			                              t-att-style="'background-color: ' + (
+			                                  prod.state == 'progress' and '#007bff' or
+			                                  prod.state == 'done' and '#28a745' or
+			                                  '#6c757d'
+			                              )">
+			                            <t t-esc="prod.serial"/>
+			                        </span>
+		                    	</div>
+		                    </t>
+	               		</div>
+	                </div>
+	            </t>
+	        </ul>
+	        <ul class="list-group list-group-flush">
+	        	<t t-if="record.type == 'parallel'">
+	                <div class="mt-2 text-center">
+	                    <button class="btn btn-sm text-nowrap btn-secondary" t-on-click="onClickToggleBatch" title="Start/Stop Batch">
+							<t t-esc="record.has_running == true ? 'Stop Batch' : 'Start Batch'"/>
+	                    </button>
+	                </div>
+	            </t>
+	        </ul>
+	    </xpath>
+	</t>
+
+	<t t-inherit="mrp_workorder.MrpDisplayWorkorderHeader" t-inherit-mode="extension">
+		<xpath expr="//span[@class='h5 text-truncate']" position="replace">
+			<span class="h5 text-truncate" t-esc="record.workorder_infos.parent_production"/>
+		</xpath>
+	</t>
+</templates>
