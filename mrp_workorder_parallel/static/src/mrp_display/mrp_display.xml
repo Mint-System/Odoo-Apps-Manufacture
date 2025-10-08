@@ -18,7 +18,7 @@
 	                    	</div>
 	               		</div>
 	                	<div>
-		                    <t t-foreach="record.sequential_infos" t-as="prod" t-key="prod.id">
+		                    <!-- <t t-foreach="record.sequential_infos" t-as="prod" t-key="prod.id">
 		                    	<div class="mb-1">
 			                        <span class="badge rounded-pill text-white me-1 mb-1"
 			                              t-att-style="'background-color: ' + (
@@ -29,17 +29,44 @@
 			                            <t t-esc="prod.serial"/>
 			                        </span>
 		                    	</div>
-		                    </t>
+		                    </t> -->
+		                    <button type="button"
+				                    class="btn btn-outline-primary btn-sm mt-2"
+				                    t-on-click="onClickOpenSequentialModal">
+				                Show Serials
+				            </button>
 	               		</div>
 	                </div>
 	            </t>
 	        </ul>
 	        <ul class="list-group list-group-flush">
 	        	<t t-if="record.type == 'parallel'">
-	                <div class="mt-2 text-center">
-	                    <button class="btn btn-sm text-nowrap btn-secondary" t-on-click="onClickToggleBatch" title="Start/Stop Batch">
-							<t t-esc="record.has_running == true ? 'Stop Batch' : 'Start Batch'"/>
-	                    </button>
+	                <div class="mt-2 mb-2 text-center d-flex justify-content-between mx-2">
+	                	<t t-if="record.is_finished">
+	                		<span>All done</span>
+	                	</t>
+	                	
+                    	<t t-if="record.has_ready">
+                    		<button class="btn btn-sm text-nowrap btn-secondary" t-on-click="onClickStartBatch" title="Start Batch">
+								<span>Start Batch</span>
+							</button>
+						</t>
+						<t t-if="record.has_paused">
+							<button class="btn btn-sm text-nowrap btn-secondary" t-on-click="onClickContinueBatch" title="Continue Batch">
+								<span>Continue Batch</span>
+							</button>
+						</t>
+						<t t-if="record.has_running">
+							<button class="btn btn-sm text-nowrap btn-secondary" t-on-click="onClickStopBatch" title="Stop Batch">
+								<span>Stop Batch</span>
+							</button>
+						</t>
+						<t t-if="!record.is_finished">
+							<button class="btn btn-sm text-nowrap btn-secondary" t-on-click="onClickFinishBatch" title="Finish Batch">
+								<span>Finish</span>
+							</button>
+	                    </t>
+		                
 	                </div>
 	            </t>
 	        </ul>

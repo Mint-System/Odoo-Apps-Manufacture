@@ -20,8 +20,9 @@ patch(MrpDisplayAction.prototype, {
             result["mrp.workorder"].push("has_running");
             result["mrp.workorder"].push("has_paused");
             result["mrp.workorder"].push("has_ready");
+            result["mrp.workorder"].push("is_finished");
             } else {
-            result["mrp.workorder"] = ["type", "sequential_infos", "workorder_infos", "has_running", "has_pauised", "has_ready"];
+            result["mrp.workorder"] = ["type", "sequential_infos", "workorder_infos", "has_running", "has_pauised", "has_ready", "is_finished"];
             };
         
         return (result);
