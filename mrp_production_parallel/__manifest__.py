@@ -19,10 +19,4 @@
     "application": False,
     "auto_install": False,
     "images": ["images/screen.png"],
-    "assets": {
-        "web.assets_backend": [
-            "mrp_production_parallel/static/src/mrp_display/*.js",
-            "mrp_production_parallel/static/src/mrp_display/*.xml",
-        ]
-    },
 }

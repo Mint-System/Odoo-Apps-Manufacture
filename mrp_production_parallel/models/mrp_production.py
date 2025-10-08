@@ -30,6 +30,7 @@ class MrpProduction(models.Model):
         store=False,   # no DB column needed
     )
 
+
     @api.depends()   # no dependencies necessary
     def _compute_link_mo(self):
         for rec in self:
@@ -37,6 +38,7 @@ class MrpProduction(models.Model):
             rec.link_mo_id = rec.id
 
     def _split_productions(self, amounts=False, cancel_remaining_qty=False, set_consumed_qty=False):
+        sequential_productions = super()._split_productions(amounts, cancel_remaining_qty, set_consumed_qty)
         for production in self:
             prod_type = production.type
             if prod_type == 'parallel':
@@ -44,18 +46,34 @@ class MrpProduction(models.Model):
                     'name': f"{production.name} - Parallel",
                     'type': 'parallel',
                     'state': 'confirmed',
-                    'workorder_ids': [(5, 0, 0)]
+                #    'workorder_ids': [(5, 0, 0)]
                 })
-        sequential_productions = super()._split_productions(amounts, cancel_remaining_qty, set_consumed_qty)
+                # base_workorders = production.workorder_ids
+                base_workorders = parallel_production.workorder_ids
+                base_workorders.write({"type": "parallel"})
+                # template_vals = []
+                # for wo in base_workorders:
+                #     template_vals.append({
+                #         "parent_production_id": parallel_production.id,
+                #         "name": wo.name,
+                #         "workcenter_id": wo.workcenter_id.id,
+                #         "operation_id": wo.operation_id.id,
+                #     })
+                # if template_vals:
+                #     self.env["mrp.workorder.template"].create(template_vals)
 
-        if prod_type == 'parallel':
-            for prod in sequential_productions:
-                prod.write({
-                    'type': 'sequential',
-                    'parallel_production_id': parallel_production.id
-                })
 
-        self = self.with_context(default_production_id=parallel_production.id)
+                for prod in sequential_productions:
+                    prod.write({
+                        'type': 'sequential',
+                        'parallel_production_id': parallel_production.id
+                    })
+                # Update all related workorders to type = sequential
+                sequential_workorders = sequential_productions.mapped('workorder_ids')
+                sequential_workorders.write({'type': 'sequential'})
+
+                self = self.with_context(default_production_id=parallel_production.id)
+        
         return sequential_productions
 
     @api.depends('state', 'product_qty', 'qty_producing', 'type', 'sequential_production_ids')
@@ -140,6 +158,10 @@ class MrpProduction(models.Model):
             "res_id": self.parallel_production_id.id,
             "target": "current",
         }
+
+
+
+
 
 
 
