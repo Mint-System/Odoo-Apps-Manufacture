@@ -11,7 +11,6 @@
     "license": "AGPL-3",
     "depends": ["mrp", "mrp_workorder", "mrp_production_parallel"],
     "data": [
-        "security/ir.model.access.csv",
         "views/mrp_production_views.xml",
     ],
     "installable": True,

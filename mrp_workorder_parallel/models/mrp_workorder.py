@@ -1,4 +1,5 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -26,6 +27,90 @@ class MrpWorkorder(models.Model):
         string="Workorder Infos",
         compute="_compute_workorder_infos",
     )
+
+    sequential_productions_in_step = fields.One2many(
+        "mrp.production", compute="_compute_sequential_productions_in_step",
+        string="Sequential Productions currently in this step",
+    )
+
+    sequential_serials_in_step = fields.Char("Serials in step", compute="_compute_sequential_serials_in_step")
+    registered = fields.Boolean(string="Registered for Batch", default=False)
+    registered_serials_info = fields.Char(
+        string="Registered Serials",
+        compute="_compute_registered_serials_info",
+        store=False,
+    )
+
+
+    def action_register_serial(self):
+        """Mark non finished workorder as registered"""
+        for wo in self:
+            if wo.state == "done":
+                raise UserError(_("You cannot register a serial for a completed workorder."))
+
+            wo.registered = not wo.registered  # Toggle registration
+
+        return {"type": "ir.actions.client", "tag": "reload"}
+
+    @api.depends("production_id.sequential_production_ids.workorder_ids.registered")
+    def _compute_registered_serials_info(self):
+        """Compute which serials of sequential workorders are registered."""
+        for wo in self:
+            if wo.type != "parallel":
+                wo.registered_serials_info = ""
+                continue
+
+            sequential_productions = wo.production_id.sequential_production_ids
+
+            registered_serials = []
+            for seq_prod in sequential_productions:
+                seq_wo = seq_prod.workorder_ids.filtered(lambda w: w.name == wo.name and w.registered)
+                if seq_wo and seq_prod.lot_producing_id:
+                    registered_serials.append(seq_prod.lot_producing_id.name)
+
+            wo.registered_serials_info = ", ".join(registered_serials)
+
+    def action_finish_batch(self):
+        """Finish all sequential workorders registered for this parallel step."""
+        for workorder in self:
+            if workorder.production_id.type != "parallel":
+                continue
+
+            sequential_workorders = self.env['mrp.workorder'].search([
+                ('production_id.parent_production_id', '=', workorder.production_id.id),
+                ('operation_id', '=', workorder.operation_id.id),
+                ('registered', '=', True),
+            ])
+
+            for wo in sequential_workorders:
+                # Finish each one safely
+                if wo.state not in ('done', 'cancel'):
+                    wo.button_finish()
+                wo.registered = False
+
+
+    @api.depends('production_id.sequential_production_ids.workorder_ids.state')
+    def _compute_sequential_productions_in_step(self):
+        for workorder in self:
+            if workorder.production_id.type != "parallel":
+                workorder.sequential_productions_in_step = False
+                continue
+            sequentials = workorder.production_id.sequential_production_ids.filtered(
+                lambda p: any(
+                    wo.operation_id == workorder.operation_id and
+                    # wo.state in ('waiting', 'progress', 'ready')
+                    wo.state in ('done')
+                    for wo in p.workorder_ids
+                )
+            )
+            workorder.sequential_productions_in_step = sequentials
+
+    @api.depends("sequential_productions_in_step")
+    def _compute_sequential_serials_in_step(self):
+        for workorder in self:
+            serials = ", ".join([p.lot_producing_id.name for p in workorder.sequential_productions_in_step])
+            workorder.sequential_serials_in_step = serials 
+
 
     @api.depends("production_id.sequential_production_ids", "production_id.type")
     def _compute_sequential_infos(self):
