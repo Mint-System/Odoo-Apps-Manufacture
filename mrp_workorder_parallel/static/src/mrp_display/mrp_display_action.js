@@ -16,13 +16,14 @@ patch(MrpDisplayAction.prototype, {
         if (result["mrp.workorder"]) {
             result["mrp.workorder"].push("type");
             result["mrp.workorder"].push("sequential_infos");
+            result["mrp.workorder"].push("sequential_stats");
             result["mrp.workorder"].push("workorder_infos");
             result["mrp.workorder"].push("has_running");
             result["mrp.workorder"].push("has_paused");
             result["mrp.workorder"].push("has_ready");
             result["mrp.workorder"].push("is_finished");
             } else {
-            result["mrp.workorder"] = ["type", "sequential_infos", "workorder_infos", "has_running", "has_pauised", "has_ready", "is_finished"];
+            result["mrp.workorder"] = ["type", "sequential_infos", "sequential_stats", "workorder_infos", "has_running", "has_pauised", "has_ready", "is_finished"];
             };
         
         return (result);

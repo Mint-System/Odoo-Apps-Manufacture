@@ -15,7 +15,19 @@
 		                        <span class="me-1 mb-1">
 		                            <t t-esc="record.name"/>
 		                        </span>
+		                        (<span class="me-1 mb-1">
+		                            <t t-esc="record.id"/>
+		                        </span>)
 	                    	</div>
+	                    	<t t-if="record.sequential_stats">
+							  <div class="flex flex-row gap-2 mt-2">
+							    <span class="badge bg-secondary"><t t-esc="record.sequential_stats.total_serials"/></span>
+							    <span class="badge bg-success"><t t-esc="record.sequential_stats.done_serials"/></span>
+							    <span class="badge bg-info"><t t-esc="record.sequential_stats.current_wo_serials"/></span>
+							    <span class="badge bg-primary"><t t-esc="record.sequential_stats.registered_serials"/></span>
+							  </div>
+							</t>
+
 	               		</div>
 	                	<div>
 		                    <!-- <t t-foreach="record.sequential_infos" t-as="prod" t-key="prod.id">
@@ -63,7 +75,7 @@
 						</t>
 						<t t-if="!record.is_finished">
 							<button class="btn btn-sm text-nowrap btn-secondary" t-on-click="onClickFinishBatch" title="Finish Batch">
-								<span>Finish</span>
+								<span>Finish Batch</span>
 							</button>
 	                    </t>
 		                
@@ -78,4 +90,6 @@
 			<span class="h5 text-truncate" t-esc="record.workorder_infos.parent_production"/>
 		</xpath>
 	</t>
+
+
 </templates>

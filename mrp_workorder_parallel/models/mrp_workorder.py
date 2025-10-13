@@ -22,6 +22,7 @@ class MrpWorkorder(models.Model):
         string="Sequential Infos",
         compute="_compute_sequential_infos",
     )
+    sequential_stats = fields.Json(compute="_compute_sequential_stats")
 
     workorder_infos = fields.Json(
         string="Workorder Infos",
@@ -42,15 +43,68 @@ class MrpWorkorder(models.Model):
     )
 
 
-    def action_register_serial(self):
+    def reload(self):
+        channel = "serial_update_channel"
+        parallel_workorder = self.env['mrp.workorder'].search([
+            ('production_id', '=', self.production_id.parallel_production_id.id),
+            ('name', '=', self.name),
+        ], limit=1)
+        payload = {
+                'parallel_workorder_id': parallel_workorder.id,
+                'updated_field': 'registered',
+                'channel': channel,
+                'serial': self.production_id.lot_producing_id.name
+        }
+        _logger.info("Sending reload trigger to frontend")
+        self.env["bus.bus"].sudo()._sendone(
+            "broadcast", "page_refresh", payload
+        )
+        _logger.info("Reload trigger sent successfully")
+
+
+    def action_register_serial_test(self):
         """Mark non finished workorder as registered"""
         for wo in self:
             if wo.state == "done":
                 raise UserError(_("You cannot register a serial for a completed workorder."))
 
             wo.registered = not wo.registered  # Toggle registration
+            wo.sudo().reload()
+            parallel_workorder = self.env['mrp.workorder'].search([
+                ('production_id', '=', wo.production_id.parallel_production_id.id),
+                ('name', '=', wo.name),
+            ], limit=1)
+            _logger.warning(f"### parallel wo: {parallel_workorder}")
 
-        return {"type": "ir.actions.client", "tag": "reload"}
+        # Return empty action since bus message will handle frontend update
+        return {}
+
+    def action_register_serial(self):
+        """Called when a serial barcode is scanned."""
+        scanned_serial = self.env.context.get("scanned_serial")
+        for wo in self:
+            if wo.state == "done":
+                raise UserError(_("Cannot register a serial for a completed workorder."))
+
+            if scanned_serial:
+                seq_prod = self.env["mrp.production"].search([
+                    ("parallel_production_id", "=", wo.production_id.id),
+                    ("lot_producing_id.name", "=", scanned_serial),
+                ], limit=1)
+
+                if not seq_prod:
+                    raise UserError(_("No production found for serial %s.") % scanned_serial)
+
+                seq_wo = self.env["mrp.workorder"].search([
+                    ("production_id", "=", seq_prod.id),
+                    ("name", "=", wo.name),
+                ], limit=1)
+
+                if seq_wo and seq_wo.state != "done":
+                    seq_wo.registered = True
+                else:
+                    raise UserError(_("Workorder already done or not found for serial %s.") % scanned_serial)
+
 
     @api.depends("production_id.sequential_production_ids.workorder_ids.registered")
     def _compute_registered_serials_info(self):
@@ -77,16 +131,16 @@ class MrpWorkorder(models.Model):
                 continue
 
             sequential_workorders = self.env['mrp.workorder'].search([
-                ('production_id.parent_production_id', '=', workorder.production_id.id),
+                ('production_id.parallel_production_id', '=', workorder.production_id.id),
                 ('operation_id', '=', workorder.operation_id.id),
                 ('registered', '=', True),
             ])
 
             for wo in sequential_workorders:
                 # Finish each one safely
-                if wo.state not in ('done', 'cancel'):
+                if wo.state in ('progress'):
                     wo.button_finish()
-                wo.registered = False
+                    wo.registered = False
 
 
     @api.depends('production_id.sequential_production_ids.workorder_ids.state')
@@ -112,21 +166,92 @@ class MrpWorkorder(models.Model):
             workorder.sequential_serials_in_step = serials 
 
 
-    @api.depends("production_id.sequential_production_ids", "production_id.type")
+    @api.depends(
+        "production_id.sequential_production_ids",
+        "production_id.sequential_production_ids.workorder_ids",
+        "production_id.type"
+    )
     def _compute_sequential_infos(self):
         for wo in self:
-            if wo.production_id.type == "parallel":
-                wo.sequential_infos = [
-                    {
-                        "id": p.id,
-                        "name": p.name,
-                        "state": p.state,
-                        "serial": p.lot_producing_id.name
-                    }
-                    for p in wo.production_id.sequential_production_ids
-                ]
-            else:
+            infos = []
+            if wo.production_id.type != "parallel":
                 wo.sequential_infos = []
+                continue
+
+            sequential_productions = wo.production_id.sequential_production_ids.filtered(lambda p: p.type == 'sequential')
+
+            for seq_prod in sequential_productions:
+                seq_wo = seq_prod.workorder_ids.filtered(lambda w: w.name == wo.name)
+                if not seq_wo:
+                    continue
+                seq_wo = seq_wo[0]
+
+                infos.append({
+                    "id": seq_prod.id,
+                    "name": seq_prod.name,
+                    "state": seq_wo.state,
+                    "registered": seq_wo.registered,
+                    "serial": seq_prod.lot_producing_id.name or ""
+                })
+
+            wo.sequential_infos = infos
+
+    @api.depends(
+        'production_id', 
+        'production_id.sequential_production_ids',
+        'production_id.sequential_production_ids.workorder_ids'
+        )
+    def _compute_sequential_stats(self):
+        for wo in self:
+            if wo.production_id.type != "parallel":
+                wo.sequential_infos = {}
+                continue
+
+            sequential_productions = wo.production_id.sequential_production_ids.filtered(lambda p: p.type == 'sequential')
+            total_serials = len(sequential_productions)
+            done_serials = len(sequential_productions.filtered(lambda p: p.state == 'done'))
+            current_wo_serials = 0
+            registered_serials = 0
+
+            for seq_prod in sequential_productions:
+                seq_wo = seq_prod.workorder_ids.filtered(lambda w: w.name == wo.name)
+                if not seq_wo:
+                    continue
+
+                if seq_wo.state not in ('done', 'cancel'):
+                    current_wo_serials += 1
+                if seq_wo.registered:
+                    registered_serials += 1
+
+            wo.sequential_stats = {
+                'total_serials': total_serials,
+                'done_serials': done_serials,
+                'current_wo_serials': current_wo_serials,
+                'registered_serials': registered_serials,
+            }
+
+
+
+
+    # def get_sequential_infos(self):
+    #     self.ensure_one()
+    #     infos = []
+    #     seq_workorders = self.env['mrp.workorder'].search([
+    #         ('production_id.parent_production_id', '=', self.production_id.id),
+    #         ('name', '=', self.name)
+    #     ])
+    #     for wo in seq_workorders:
+    #         infos.append({
+    #             'name': wo.production_id.lot_producing_id.name,
+    #             'state': (
+    #                 'done' if wo.state == 'done' else
+    #                 'registered' if wo.registered else
+    #                 'waiting'
+    #             )
+    #         })
+    #     return serials
+
+            
 
     @api.depends("production_id.type")
     def _compute_workorder_infos(self):

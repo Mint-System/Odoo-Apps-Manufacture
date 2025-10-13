@@ -6,7 +6,7 @@
         <field name="inherit_id" ref="mrp.mrp_production_workorder_tree_editable_view"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='state']" position="after">
-                <button name="action_register_serial"
+                <button name="action_register_serial_test"
                         type="object"
                         string="Register"
                         icon="fa-barcode"

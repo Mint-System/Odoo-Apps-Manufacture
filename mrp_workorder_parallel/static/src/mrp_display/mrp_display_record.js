@@ -7,13 +7,51 @@ import { patch } from "@web/core/utils/patch";
 import { Dialog } from "@web/core/dialog/dialog";
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { useService } from "@web/core/utils/hooks";
+import { Component, markup, useState } from "@odoo/owl";
+import { useBus } from "@web/core/utils/hooks";
+import { onMounted, onWillUnmount } from "@odoo/owl";
 
 patch(MrpDisplayRecord.prototype, {
 	setup() {
-		   super.setup();
-		   this.notification = useService("notification");
-		   this.dialogService = useService("dialog");
-		},
+        super.setup();
+        this.notification = useService("notification");
+        this.dialogService = useService("dialog");
+        const bus_service = this.env.services.bus_service;
+        const workorderId = this.props.record.resId;
+        const { resModel, resId, data } = this.props.record;
+        // if (!this._busSubscribed) {
+        if (!window._parallel_bus_subscribed) {
+            bus_service.subscribe("page_refresh", (payload) => {
+                console.log("bus service established")
+                console.log("Reloading production for workorder", payload.parallel_workorder_id);
+                this.handleBusRefresh(payload);
+                console.log("sequential_stats:", this.props.record.data.sequential_stats);
+                window._parallel_bus_subscribed = true;
+            });
+        }
+
+    },
+
+    async handleBusRefresh(payload) {
+        const record = this.props.record;
+        if (payload.parallel_workorder_id === record.resId) {
+            console.log("Reloading production for workorder", record.resId);
+            try {
+                await this.env.reload(this.props.production);
+                console.log("Reload complete, sequential_stats:", record.data.sequential_stats);
+            } catch (e) {
+                console.error("Reload failed:", e);
+            }
+        }
+    },
+
+    onMessage({ detail: notifications }) {
+        notifications = notifications.filter(item => item.payload.channel === this.channel)
+        console.log("notification:", notifications)
+          notifications.forEach(item => {
+              this.state.data.push(item.payload.data)
+          })
+      },
 
 	async onClickStartBatch() {
 		const { resModel, resId } = this.props.record;
@@ -33,7 +71,6 @@ patch(MrpDisplayRecord.prototype, {
 
         const hasRunning = this.props.record.data.has_running;
         const hasPaused = this.props.record.data.has_paused;
-        console.log("hasRunning:", hasRunning)
         if (hasRunning) {
             await this.stopBatchWorkingSimple();
         } else if (hasPaused) {
@@ -65,16 +102,22 @@ patch(MrpDisplayRecord.prototype, {
         }
     },
 
-    async onClickFinishBatch() {
-        const { resModel, resId, data } = this.props.record;
+    // async onClickFinishBatch() {
+    //     const { resModel, resId, data } = this.props.record;
 
-        if (resModel !== "mrp.workorder") return;
+    //     if (resModel !== "mrp.workorder") return;
 
-        const isFinished = this.props.record.data.is_finished;
+    //     const isFinished = this.props.record.data.is_finished;
         
-        if (!isFinished) {
-            await this.finishBatchWorkingSimple();
-        }
+    //     if (!isFinished) {
+    //         await this.finishBatchWorkingSimple();
+    //     }
+    // },
+
+    async onClickFinishBatch() {
+        const { resModel, resId } = this.props.record;
+        await this.model.orm.call(resModel, "action_finish_batch", [resId]);
+        await this.env.reload(this.props.production);
     },
 
     async startBatchWorking(shouldStop = false) {
@@ -182,9 +225,35 @@ patch(MrpDisplayRecord.prototype, {
     },
 
 	async openParallelModal(env) {
-		const parallelSerials = this.props.record.data.workorder_infos.parallel_serials;
+        const { resModel, resId } = this.props.record;
+        if (resModel !== "mrp.workorder") {
+            return;
+        }
+		// const serials = this.props.record.data.sequential_infos;
+        // const serials = await this.model.orm.call(
+        //     resModel,
+        //     "get_sequential_infos",
+        //     [resId],
+        //     { context: this.props.context }
+        // );
+        const [workorder] = await this.model.orm.read(
+            resModel,
+            [resId],
+            ["sequential_infos"]
+        );
+        const serials = workorder.sequential_infos || [];
+
+        const bodyHTML = serials.map(serial => {
+            let colorClass = "text-dark";
+            if (serial.state === 'done') colorClass = "bg-success text-white";
+            else if (serial.registered) colorClass = "bg-primary text-white";
+
+            return `<span class="badge ${colorClass} me-1 mb-1">${serial.serial}</span>`;
+        }).join(" ");
+
         this.dialogService.add(ConfirmationDialog, {
-		    body: parallelSerials,
+            title: "Serials Status",
+		    body: markup(`<div class="d-flex flex-wrap">${bodyHTML}</div>`),
 		    confirmClass: "btn-primary",
 		    confirmLabel: _t("Confirm"),
 		    confirm: () => {
@@ -195,6 +264,43 @@ patch(MrpDisplayRecord.prototype, {
 		    cancelLabel: _t("Cancel"),
 		    cancel: () => { },
 		});
-    } 
+    },
+    
+
+    async onClickRegisterSerial(prodId) {
+        try {
+            await this.model.orm.call("mrp.workorder", "action_register_serial", [prodId]);
+            await this.env.reload(this.props.production);
+        } catch (error) {
+            console.error("Error registering serial:", error);
+        }
+    },
 });
+
+
+
+class MyCompoenent extends owl.Component {
+  static template = owl.xml`
+    <div>
+      <t t-foreach="state.data" t-as="data" t-key="data_index">
+        <span t-out="data.name"/>
+      </t>
+    </div>`
+
+  setup() {
+    this.state = owl.useState({ data: [] })
+    
+    this.busService = this.env.services.bus_service
+    this.channel = "serial_update_channel"
+    this.busService.addChannel(this.channel)
+    this.busService.addEventListener("notification", this.onMessage.bind(this))
+  }
+  onMessage({ detail: notifications }) {
+    console.log("called");
+    notifications = notifications.filter(item => item.payload.channel === this.channel)
+      notifications.forEach(item => {
+          this.state.data.push(item.payload.data)
+      })
+  }
+}
 
