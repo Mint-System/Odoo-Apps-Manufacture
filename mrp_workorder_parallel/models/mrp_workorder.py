@@ -18,11 +18,17 @@ class MrpWorkorder(models.Model):
     has_ready = fields.Boolean(compute="_compute_workorder_states")
     is_finished = fields.Boolean(compute="_compute_workorder_states")
 
+    total_duration_expected = fields.Float("Erwartete Gesamtdauer", compute="_compute_total_duration_expected")
+
     sequential_infos = fields.Json(
         string="Sequential Infos",
         compute="_compute_sequential_infos",
     )
     sequential_stats = fields.Json(compute="_compute_sequential_stats")
+    sequential_time_entries = fields.One2many(
+        "mrp.workcenter.productivity", compute="_compute_sequential_time_entries",
+        string="Sequential Workorder Times", store=False,
+    )
 
     workorder_infos = fields.Json(
         string="Workorder Infos",
@@ -106,6 +112,17 @@ class MrpWorkorder(models.Model):
                     raise UserError(_("Workorder already done or not found for serial %s.") % scanned_serial)
 
 
+    @api.depends("duration_expected", "type")
+    def _compute_total_duration_expected(self):
+        for wo in self:
+            sequential_productions = wo.production_id.sequential_production_ids.filtered(lambda p: p.type == 'sequential')
+            total_serials = len(sequential_productions)
+
+            if wo.type == "parallel" and wo.duration_expected:
+                wo.total_duration_expected = round(total_serials * wo.duration_expected) 
+            else:
+                wo.total_duration_expected = 0
+
     @api.depends("production_id.sequential_production_ids.workorder_ids.registered")
     def _compute_registered_serials_info(self):
         """Compute which serials of sequential workorders are registered."""
@@ -124,6 +141,31 @@ class MrpWorkorder(models.Model):
 
             wo.registered_serials_info = ", ".join(registered_serials)
 
+    @api.depends("production_id")
+    def _compute_sequential_time_entries(self):
+        for wo in self:
+            entries = self.env["mrp.workcenter.productivity"]
+            if wo.production_id.type == "parallel":
+                sequential_wos = self.env["mrp.workorder"].search([
+                    ("production_id.parallel_production_id", "=", wo.production_id.id),
+                    ("name", "=", wo.name),
+                ])
+                entries = entries.search([("workorder_id", "in", sequential_wos.ids)])
+            wo.sequential_time_entries = entries
+
+
+    @api.depends('production_id', 'production_id.sequential_production_ids')
+    def _compute_duration_expected(self):
+        super()._compute_duration_expected()
+        for wo in self:
+            if wo.production_id.type == 'parallel':
+                # number of sequential child productions
+                sequential_count = len(wo.production_id.sequential_production_ids)
+                # Multiply duration by the number of child (sequential) productions
+                if sequential_count > 1:
+                    wo.duration_expected *= sequential_count
+
+
     def action_finish_batch(self):
         """Finish all sequential workorders registered for this parallel step."""
         for workorder in self:
@@ -133,14 +175,24 @@ class MrpWorkorder(models.Model):
             sequential_workorders = self.env['mrp.workorder'].search([
                 ('production_id.parallel_production_id', '=', workorder.production_id.id),
                 ('operation_id', '=', workorder.operation_id.id),
-                ('registered', '=', True),
             ])
 
             for wo in sequential_workorders:
-                # Finish each one safely
-                if wo.state in ('progress'):
+                if not wo.registered and not wo.state == 'done':
+                    wo.write({
+                        'time_ids': [(5, 0, 0)],  # remove existing times
+                        'duration': 0,
+                        # 'duration_expected': 0,
+                    })
+                if wo.registered and wo.state in ('progress'):
                     wo.button_finish()
                     wo.registered = False
+
+            # what to do with parallel workorder
+            if workorder.is_finished:
+                workorder.button_finish()
+
+               
 
 
     @api.depends('production_id.sequential_production_ids.workorder_ids.state')

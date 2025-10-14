@@ -33,11 +33,12 @@
                             <field name="name"/>
                             <field name="workcenter_id"/>
                             <!-- <field name="sequential_serials_in_step"/> -->
-                            <field name="registered_serials_info"
+                          <!--   <field name="registered_serials_info"
                                string="Registered Serials"
-                               invisible="type != 'parallel'"/>
+                               invisible="type != 'parallel'"/> -->
                             <field name="duration_expected"/>
                             <field name="duration" />
+                            <field name="state" />
                             <button name="action_finish_batch"
                                         type="object"
                                         string="BATCH FINISH"

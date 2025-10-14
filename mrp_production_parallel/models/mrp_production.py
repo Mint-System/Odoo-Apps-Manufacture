@@ -38,12 +38,14 @@ class MrpProduction(models.Model):
             rec.link_mo_id = rec.id
 
     def _split_productions(self, amounts=False, cancel_remaining_qty=False, set_consumed_qty=False):
+        for production in self:
+            new_production_name = f"{production.name} - Parallel"
         sequential_productions = super()._split_productions(amounts, cancel_remaining_qty, set_consumed_qty)
         for production in self:
             prod_type = production.type
             if prod_type == 'parallel':
                 parallel_production = production.copy({
-                    'name': f"{production.name} - Parallel",
+                    'name': new_production_name,
                     'type': 'parallel',
                     'state': 'confirmed',
                 #    'workorder_ids': [(5, 0, 0)]
