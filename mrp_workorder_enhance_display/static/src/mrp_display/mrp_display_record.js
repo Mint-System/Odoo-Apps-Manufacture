@@ -27,6 +27,16 @@ patch(MrpDisplayAction.prototype, {
             result["mrp.workorder"] = ["sale_id"];
             result["mrp.workorder"] = ["partner_id"];
             };
+
+        if (result["mrp.production"]) {
+            result["mrp.production"].push("sale_id");
+            result["mrp.production"].push("partner_id");
+            } else {
+            result["mrp.production"] = ["sale_id"];
+            result["mrp.production"] = ["partner_id"];
+            };
+
+
         
         return (result);
     }
