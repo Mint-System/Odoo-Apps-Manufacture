@@ -1,5 +1,6 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
+from datetime import timedelta
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -34,6 +35,7 @@ class MrpWorkorder(models.Model):
         string="Workorder Infos",
         compute="_compute_workorder_infos",
     )
+    total_serials = fields.Integer(compute="_compute_total_serials")
 
     sequential_productions_in_step = fields.One2many(
         "mrp.production", compute="_compute_sequential_productions_in_step",
@@ -47,6 +49,7 @@ class MrpWorkorder(models.Model):
         compute="_compute_registered_serials_info",
         store=False,
     )
+
 
 
     def reload(self):
@@ -283,6 +286,16 @@ class MrpWorkorder(models.Model):
             }
 
 
+    @api.depends(
+        'production_id', 
+        'production_id.sequential_production_ids',
+        )
+    def _compute_total_serials(self):
+        for wo in self:
+            sequential_productions = wo.production_id.sequential_production_ids.filtered(lambda p: p.type == 'sequential')
+            wo.total_serials = len(sequential_productions)
+
+
 
 
     # def get_sequential_infos(self):
@@ -386,6 +399,110 @@ class MrpWorkorder(models.Model):
             wo.has_paused = paused
             wo.has_ready = ready
             wo.is_finished = finished
-    
+
+    @api.model
+    def _normalize_date(self, value):
+        if not value:
+            return False
+        return fields.Datetime.to_datetime(value)
 
 
+    # sequential workorders must be replanned if parent is replanned
+    def write(self, vals):
+        if 'date_start' in vals:
+            vals['date_start'] = self._normalize_date(vals['date_start'])
+        if 'date_finished' in vals:
+            vals['date_finished'] = self._normalize_date(vals['date_finished'])
+        res = super().write(vals)
+        _logger.warning("#### res: %s" % (res,))
+        _logger.warning("#### vals: %s" % (vals,))
+        if not {'date_start', 'date_finished'} & set(vals.keys()):
+            return res
+
+        for workorder in self:            
+            if workorder.production_id.type == 'parallel':
+                # get sequential workorders
+                seq_workorders = self.search([
+                    ('production_id.parallel_production_id', '=', workorder.production_id.id),
+                    ('name', '=', workorder.name),
+                ])
+                _logger.warning("#### sequential workorders: %s" % (seq_workorders,))
+
+                for wo in seq_workorders:
+                    seq_wo_vals = {}
+                    if vals.get('date_start'):
+                        seq_wo_vals['date_start'] = vals['date_start']
+                    if vals.get('date_finished') and vals.get('date_start'):
+                        seq_wo_vals['date_finished'] = vals['date_start'] + timedelta(hours=wo.duration_expected)
+                    # update_vals['date_finished'] = update_vals['date_start']  + timedelta(minutes=wo.duration_expected)
+                    wo.write(seq_wo_vals)
+                # if update_vals:
+                #     seq_workorders.write(update_vals)
+
+        #         # update parallel production
+        #         parallel_prod = workorder.production_id
+        #         parallel_wo_valid = parallel_prod.workorder_ids.filtered(lambda w: w.date_start and w.date_finished)
+        #         if parallel_wo_valid:
+        #             parallel_prod.write({
+        #                 'date_start': min(parallel_wo_valid.mapped('date_start')),
+        #                 'date_finished': max(parallel_wo_valid.mapped('date_finished')),
+        #             })
+
+        #         # update sequential productions od sequential workorders
+        #         seq_productions = seq_workorders.mapped('production_id')
+        #         for seq_prod in seq_productions:
+        #             seq_wo_valid = seq_prod.workorder_ids.filtered(lambda w: w.date_start and w.date_finished)
+        #             if seq_wo_valid:
+        #                 seq_prod.write({
+        #                     'date_start': min(seq_wo_valid.mapped('date_start')),
+        #                     'date_finished': max(seq_wo_valid.mapped('date_finished')),
+        #                 })
+
+
+        return res
+
+                                                                                                                                                 
+    @api.model                                                                                                                                    
+    def get_gantt_data(self, domain, groupby, read_specification, **kwargs):                                                                      
+        """                                                                                                                                       
+        Override to filter workorders by type 'parallel'                                                                                          
+        """                                                                                                                                       
+        # Add the filter for type = 'parallel' to the domain      
+        _logger.warning("domain: %s" % (domain,))                                                                                
+        domain = domain or []                                                                                                                     
+        domain.append(('type', '=', 'parallel'))                                                                                    
+        return super().get_gantt_data(domain, groupby, read_specification, **kwargs) 
+
+
+    # @api.model
+    # def _gantt_progress_bar(self, field, res_ids, start, stop):
+    #     """
+    #     Calculate progress bar values only for parallel workorders
+    #     """
+    #     _logger.warning("res_ids: %s" % (res_ids,))
+    #     domain = [
+    #         (field, 'in', res_ids),
+    #         ('type', '=', 'parallel')
+    #     ]
+    #     result = {}
+    #     for res_id in res_ids:
+    #         count = self.search_count(domain + [(field, '=', res_id)])
+    #         result[res_id] = {
+    #             'value': count,
+    #             'max_value': count,  # This makes 100% represent parallel workorders only
+    #         }
+    #     return result
+ 
+    # @api.model  
+    # def _gantt_unavailability(self, field, res_ids, start, stop, scale):
+    #     """
+    #     If you use unavailability features, override this too
+    #     """
+    #     # Similar filtering for unavailability if needed
+    #     domain = [
+    #         (field, 'in', res_ids),
+    #         ('type', '=', 'parallel')
+    #     ]
+    #     # Your custom logic here
+    #     return super()._gantt_unavailability(field, res_ids, start, stop, scale)
+ 
