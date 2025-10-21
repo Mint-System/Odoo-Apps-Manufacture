@@ -1,1 +1,1 @@
-from . import mrp_production, fastapi_endpoint
+from . import mrp_production
