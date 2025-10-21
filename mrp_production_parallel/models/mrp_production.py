@@ -165,6 +165,29 @@ class MrpProduction(models.Model):
 
 
 
+    # # planning only for parallel workorders
+    # def button_plan(self):
+    #     parallel_orders = self.filtered(lambda mo: mo.type == 'parallel')
+    #     orders_to_confirm = parallel_orders.filtered(lambda mo: mo.state == 'draft')
+    #     orders_to_confirm.action_confirm()
+    #     for order in parallel_orders:
+    #         order._plan_only_parallel_workorders()
+    #     return True
+
+
+    # def _plan_only_parallel_workorders(self, replan=False):
+    #     if self.type == 'sequential':
+    #         _logger.debug("Skipping sequential production %s for planning", self.name)
+    #         return
+
+    #     self._plan_workorders(replan)
+
+
+
+
+
+
+
 
 
 
