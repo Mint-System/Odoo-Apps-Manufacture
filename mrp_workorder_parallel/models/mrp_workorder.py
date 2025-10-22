@@ -12,7 +12,8 @@ class MrpWorkorder(models.Model):
         ('default', 'Default'),
         ('parallel', 'Parallel'),
         ('sequential', 'Sequential')],
-    default='default')
+        default='default'
+    )
 
     has_running = fields.Boolean(compute="_compute_workorder_states")
     has_paused = fields.Boolean(compute="_compute_workorder_states")
@@ -49,7 +50,10 @@ class MrpWorkorder(models.Model):
         compute="_compute_registered_serials_info",
         store=False,
     )
-
+    enable_quick_finish = fields.Boolean(
+        string="Enable Quick Finish",
+        related='workcenter_id.enable_quick_finish',
+    )
 
 
     def reload(self):
@@ -195,7 +199,18 @@ class MrpWorkorder(models.Model):
             if workorder.is_finished:
                 workorder.button_finish()
 
-               
+    def action_quick_finish_batch(self):
+        """Finish all sequential workorders registered for this parallel step."""
+        for workorder in self:
+            if workorder.production_id.type != "parallel":
+                continue
+            if not workorder.enable_quick_finish:
+                continue
+            sequential_workorders = workorder._get_sequential_workorders()
+            for wo in sequential_workorders:
+                if wo.state not in ("done", "cancel"):
+                    wo.button_finish()
+
 
 
     @api.depends('production_id.sequential_production_ids.workorder_ids.state')

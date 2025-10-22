@@ -60,22 +60,27 @@
 	                	
                     	<t t-if="record.has_ready">
                     		<button class="btn btn-sm text-nowrap btn-secondary" t-on-click="onClickStartBatch" title="Start Batch">
-								<span>Start Batch</span>
+								<span><i class="fa fa-play"/></span>
 							</button>
 						</t>
 						<t t-if="record.has_paused">
 							<button class="btn btn-sm text-nowrap btn-secondary" t-on-click="onClickContinueBatch" title="Continue Batch">
-								<span>Continue Batch</span>
+								<span><i class="fa fa-forward"/></span>
 							</button>
 						</t>
 						<t t-if="record.has_running">
 							<button class="btn btn-sm text-nowrap btn-secondary" t-on-click="onClickStopBatch" title="Stop Batch">
-								<span>Stop Batch</span>
+								<span><i class="fa fa-pause"/></span>
 							</button>
 						</t>
 						<t t-if="!record.is_finished">
 							<button class="btn btn-sm text-nowrap btn-secondary" t-on-click="onClickFinishBatch" title="Finish Batch">
-								<span>Finish Batch</span>
+								<span><i class="fa fa-stop"/></span>
+							</button>
+	                    </t>
+	                    <t t-if="!record.is_finished and record.enable_quick_finish">
+							<button class="btn btn-sm text-nowrap btn-secondary" t-on-click="onClickQuickFinishBatch" title="Quick Finish Batch">
+								<span>Quick Finish</span>
 							</button>
 	                    </t>
 		                

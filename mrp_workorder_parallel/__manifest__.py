@@ -13,6 +13,7 @@
     "data": [
         "views/mrp_production_views.xml",
         "views/workorder_action_views.xml",
+        "views/mrp_workcenter_views.xml"
     ],
     "installable": True,
     "application": False,

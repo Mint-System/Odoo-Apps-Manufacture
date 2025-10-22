@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<odoo>
+  <record id="mrp_production_parallel.product_template_only_form_view" model="ir.ui.view">
+    <field name="name">product.template.form.inherit.parallel.flag</field>
+    <field name="model">product.template</field>
+    <field name="inherit_id" ref="product.product_template_only_form_view" />
+    <field name="arch" type="xml">
+      <xpath expr="//field[@name='barcode']" position="after">
+          <field name="has_parallel_production"/>
+      </xpath>
+    </field>
+  </record>
+</odoo>

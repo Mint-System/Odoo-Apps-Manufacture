@@ -22,8 +22,9 @@ patch(MrpDisplayAction.prototype, {
             result["mrp.workorder"].push("has_paused");
             result["mrp.workorder"].push("has_ready");
             result["mrp.workorder"].push("is_finished");
+            result["mrp.workorder"].push("enable_quick_finish");
             } else {
-            result["mrp.workorder"] = ["type", "sequential_infos", "sequential_stats", "workorder_infos", "has_running", "has_pauised", "has_ready", "is_finished"];
+            result["mrp.workorder"] = ["type", "sequential_infos", "sequential_stats", "workorder_infos", "has_running", "has_pauised", "has_ready", "is_finished", "enable_quick_finish"];
             };
         
         return (result);

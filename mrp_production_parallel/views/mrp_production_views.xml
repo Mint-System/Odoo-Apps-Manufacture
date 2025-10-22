@@ -5,6 +5,15 @@
          <field name="model">mrp.production</field>
          <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
          <field name="arch" type="xml">
+             <xpath expr="//header" position="inside">
+                  <field name="show_validate_button" invisible="1"/>
+                  <button name="action_validate_all_sequential_pickings"
+                        string="Validate Pickings"
+                        type="object"
+                        class="oe_highlight"
+                        invisible="type != 'parallel' or not show_validate_button"/>
+             </xpath>
+
              <xpath expr="//div[@class='oe_button_box']" position="inside">
                 <button name="action_view_sequential_productions"
                         type="object"
@@ -50,10 +59,39 @@
                     </list>
                 </field>
                 </page>
+                <page string="Sequential Pickings" invisible="type != 'parallel'">
+                    <field name="sequential_picking_ids" context="{'default_origin': name}">
+                        <list editable="bottom">
+                            <field name="name"/>
+                            <field name="state"/>
+                            <field name="picking_type_id"/>
+                            <field name="scheduled_date"/>
+                            <field name="partner_id"/>
+                        </list>
+                    </field>
+                </page>
             </xpath>
-         <!--    <xpath expr="(//button[@name='button_mark_done'][@invisible])[2]" position="attributes">
-                <attribute name="invisible" add="type == 'parallel'" separator=" or "/>
-            </xpath> -->
+            <xpath expr="//field[@name='show_produce_all']" position="after">
+                <field name="type" invisible="1"/>
+            </xpath> 
+           <xpath expr="(//button[@name='button_mark_done'])[1]" position="attributes">
+                <attribute name="invisible" add="type in ['sequential']" separator=" or "/>
+            </xpath>  
+           <xpath expr="(//button[@name='button_mark_done'])[2]" position="attributes">
+                <attribute name="invisible" add="type in ['sequential']" separator=" or "/>
+            </xpath>  
+            <xpath expr="(//button[@name='button_mark_done'])[3]" position="attributes">
+                <attribute name="invisible" add="type in ['sequential']" separator=" or "/>
+            </xpath> 
+            <xpath expr="(//button[@name='button_mark_done'])[4]" position="attributes">
+                <attribute name="invisible" add="type in ['sequential']" separator=" or "/>
+            </xpath> 
+            <xpath expr="//button[@name='button_plan']" position="attributes">
+                <attribute name="invisible" add="type in ['sequential']" separator=" or "/>
+            </xpath> 
+            <xpath expr="//button[@name='button_unplan']" position="attributes">
+                <attribute name="invisible" add="type in ['sequential']" separator=" or "/>
+            </xpath> 
          </field>
     </record>
 

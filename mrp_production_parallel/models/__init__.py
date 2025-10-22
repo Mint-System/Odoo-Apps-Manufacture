@@ -1,1 +1,1 @@
-from . import mrp_production
+from . import mrp_production, product_template

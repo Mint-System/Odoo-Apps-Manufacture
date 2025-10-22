@@ -119,6 +119,12 @@ patch(MrpDisplayRecord.prototype, {
         await this.model.orm.call(resModel, "action_finish_batch", [resId]);
         await this.env.reload(this.props.production);
     },
+    
+    async onClickQuickFinishBatch() {
+        const { resModel, resId } = this.props.record;
+        await this.model.orm.call(resModel, "action_quick_finish_batch", [resId]);
+        await this.env.reload(this.props.production);
+    },
 
     async startBatchWorking(shouldStop = false) {
     	const { resModel, resId } = this.props.record;

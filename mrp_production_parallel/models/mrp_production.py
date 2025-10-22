@@ -10,7 +10,17 @@ class MrpProduction(models.Model):
         ('default', 'Default'),
         ('parallel', 'Parallel'),
         ('sequential', 'Sequential')],
-    default='default')
+        default='default'
+    )
+
+    @api.onchange('product_id')
+    def _onchange_product_id_set_type(self):
+        for production in self:
+            if production.product_id:
+                tmpl = production.product_id.product_tmpl_id
+                if tmpl.has_parallel_production:
+                    production.type = 'parallel'
+
 
     parallel_production_id = fields.Many2one(
         'mrp.production',
@@ -23,6 +33,22 @@ class MrpProduction(models.Model):
         string='Sequential Manufacturing Orders',
     )
 
+    sequential_picking_ids = fields.One2many(
+        "stock.picking", compute="_compute_sequential_picking_ids", store=False
+    )
+
+    sequential_picking_count = fields.Integer(
+        string="Pickings",
+        compute="_compute_sequential_picking_ids",
+        store=False
+    )
+
+    show_validate_button = fields.Boolean(
+        string="Show Validate Button",
+        compute="_compute_show_validate_button",
+        store=False
+    )
+
     link_mo_id = fields.Many2one(
         'mrp.production',
         string='MO link',
@@ -30,17 +56,119 @@ class MrpProduction(models.Model):
         store=False,   # no DB column needed
     )
 
+    reservation_state = fields.Selection(selection=[
+        ('confirmed', 'Waiting'),
+        ('assigned', 'Ready'),
+        ('waiting', 'Waiting Another Operation')],
+        string='MO Readiness',
+        compute='_compute_reservation_state',
+        store=True, copy=False, index=True, readonly=True,
+        tracking=True, recursive=True,
+        help="Manufacturing readiness for this MO, based on sequential productions."
+    )
 
-    @api.depends()   # no dependencies necessary
+    @api.depends('sequential_production_ids')
+    def _compute_sequential_picking_ids(self):
+        for production in self:
+            if production.type == 'parallel':
+                pickings = production.sequential_production_ids.mapped('picking_ids')
+                production.sequential_picking_ids = pickings
+                production.sequential_picking_count = len(pickings)
+            else:
+                production.sequential_picking_ids = production.picking_ids
+                production.sequential_picking_count = len(production.picking_ids)
+
+
+    @api.depends('state', 'product_qty', 'qty_producing', 'type')
+    def _compute_show_produce(self):
+        _logger.warning("#### is called")
+        for production in self:
+            # Original logic
+            state_ok = production.state in ('confirmed', 'progress', 'to_close')
+            qty_none_or_all = production.qty_producing in (0, production.product_qty)
+            show_produce_all = state_ok and qty_none_or_all
+            show_produce = state_ok and not qty_none_or_all
+
+            # New condition: hide buttons for sequential productions
+            if production.type == 'sequential':
+                production.show_produce_all = False
+                production.show_produce = False
+            else:
+                production.show_produce_all = show_produce_all
+                production.show_produce = show_produce
+
+
+
+    @api.depends('type', 'sequential_production_ids.reservation_state')
+    def _compute_reservation_state(self):
+        for production in self:
+            if production.type == 'parallel':
+                sequential_productions = production.sequential_production_ids.filtered(lambda c: c.type == 'sequential')
+                if not sequential_productions:
+                    production.reservation_state = 'confirmed'
+                    continue
+
+                sequential_states = set(sequential_productions.mapped('reservation_state'))
+
+                # Priority: waiting > confirmed > assigned
+                if 'waiting' in sequential_states:
+                    production.reservation_state = 'waiting'
+                elif 'confirmed' in sequential_states:
+                    production.reservation_state = 'confirmed'
+                elif all(state == 'assigned' for state in sequential_states):
+                    production.reservation_state = 'assigned'
+                else:
+                    production.reservation_state = 'confirmed'
+            else:
+                # Fall back to the normal MRP behavior for sequential or regular MOs
+                super(MrpProduction, production)._compute_reservation_state()
+
+
+    @api.depends() 
     def _compute_link_mo(self):
         for rec in self:
             # set to the record id (or rec itself)
             rec.link_mo_id = rec.id
 
+
+    @api.depends('type')
+    def _compute_show_validate_button(self):
+        for production in self:
+            show = False
+
+            if production.type == 'parallel':
+                if any(p.state not in ('done', 'cancel') for p in production.sequential_picking_ids):
+                    show = True
+
+            production.show_validate_button = show
+
+
+    @api.depends(
+        "sequential_production_ids.move_raw_ids.state",
+        "sequential_production_ids.move_finished_ids.state",
+    )
+    def _compute_picking_state(self):
+        for production in self:
+            if production.type != "parallel":
+                continue
+
+            child_states = set(production.child_production_ids.mapped("picking_state"))
+            if not child_states:
+                production.picking_state = "draft"
+            elif all(s == "done" for s in child_states):
+                production.picking_state = "done"
+            elif any(s == "assigned" for s in child_states):
+                production.picking_state = "assigned"
+            elif any(s == "cancel" for s in child_states):
+                production.picking_state = "cancel"
+            else:
+                production.picking_state = "draft"
+
     def _split_productions(self, amounts=False, cancel_remaining_qty=False, set_consumed_qty=False):
         for production in self:
             new_production_name = f"{production.name} - Parallel"
         sequential_productions = super()._split_productions(amounts, cancel_remaining_qty, set_consumed_qty)
+        sequential_productions._compute_show_produce()
         for production in self:
             prod_type = production.type
             if prod_type == 'parallel':
@@ -50,20 +178,12 @@ class MrpProduction(models.Model):
                     'state': 'confirmed',
                 #    'workorder_ids': [(5, 0, 0)]
                 })
-                # base_workorders = production.workorder_ids
+                # Transfer all stock moves to the parallel production
+                # parallel_production.move_raw_ids = production.move_raw_ids
+                # parallel_production.move_finished_ids = production.move_finished_ids
+
                 base_workorders = parallel_production.workorder_ids
                 base_workorders.write({"type": "parallel"})
-                # template_vals = []
-                # for wo in base_workorders:
-                #     template_vals.append({
-                #         "parent_production_id": parallel_production.id,
-                #         "name": wo.name,
-                #         "workcenter_id": wo.workcenter_id.id,
-                #         "operation_id": wo.operation_id.id,
-                #     })
-                # if template_vals:
-                #     self.env["mrp.workorder.template"].create(template_vals)
-
 
                 for prod in sequential_productions:
                     prod.write({
@@ -160,6 +280,13 @@ class MrpProduction(models.Model):
             "res_id": self.parallel_production_id.id,
             "target": "current",
         }
+
+    def action_validate_all_sequential_pickings(self):
+        for production in self:
+            if production.type != 'parallel':
+                continue
+            for picking in production.sequential_picking_ids.filtered(lambda p: p.state not in ('done', 'cancel')):
+                picking.button_validate()
 
 
 
