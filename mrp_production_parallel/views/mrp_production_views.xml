@@ -95,18 +95,6 @@
          </field>
     </record>
 
-    <record id="view_mrp_production_search_inherit" model="ir.ui.view">
-        <field name="name">mrp.production.search.inherit</field>
-        <field name="model">mrp.production</field>
-        <field name="inherit_id" ref="mrp.view_mrp_production_filter"/>
-        <field name="arch" type="xml">
-            <xpath expr="//filter[@name='starred']" position="after">
-                <filter name="not_sequential"
-                        string="Not Sequential"
-                        domain="[('type','!=','sequential')]"/>
-            </xpath>
-        </field>
-    </record>
 
     <record id="view_mrp_production_tree_inherit" model="ir.ui.view">
         <field name="name">mrp.production.tree.inherit.sequential</field>
@@ -122,6 +110,8 @@
             </xpath>
         </field>
     </record>
+
+    
 
     
 

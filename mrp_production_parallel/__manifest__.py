@@ -12,7 +12,8 @@
     "depends": ["mrp"],
     "data": [
         "views/mrp_production_views.xml",
-        "views/product_template_form.xml"
+        "views/product_template_form.xml",
+        "views/mrp_production_filter.xml"
     ],
     "installable": True,
     "application": False,
