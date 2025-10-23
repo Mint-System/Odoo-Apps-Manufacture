@@ -245,20 +245,35 @@ patch(MrpDisplayRecord.prototype, {
         const [workorder] = await this.model.orm.read(
             resModel,
             [resId],
-            ["sequential_infos"]
+            ["sequential_infos", "workcenter_id"]
         );
-        const serials = workorder.sequential_infos || [];
+        const currentWorkcenterId = workorder.workcenter_id?.[0];
+        const serialsAll = workorder.sequential_infos.infos || [];
+        const serials = serialsAll.filter(s => s.active_workcenter_id === currentWorkcenterId);
+        console.log("currentWorkcenterId:", currentWorkcenterId);
+        console.log("serialsAll:", serialsAll);
+        console.log("serials: ", serials);
 
-        const bodyHTML = serials.map(serial => {
+        const activeCount = workorder.sequential_infos.active_wo_count;
+        const totalCount = workorder.sequential_infos.total_wo_count;
+
+        const bodyHTML = serials.length
+            ? serials.map(serial => {
             let colorClass = "text-dark";
             if (serial.state === 'done') colorClass = "bg-success text-white";
             else if (serial.registered) colorClass = "bg-primary text-white";
 
             return `<span class="badge ${colorClass} me-1 mb-1">${serial.serial}</span>`;
-        }).join(" ");
+             }).join(" ")
+            : `<div class="text-muted">No active serials for this workcenter.</div>`;
+
+        const modalTitle = serials.length
+            ? `${activeCount} of ${totalCount} active Serials`
+            : "No Active Serials"
+
 
         this.dialogService.add(ConfirmationDialog, {
-            title: "Serials Status",
+            title: modalTitle,
 		    body: markup(`<div class="d-flex flex-wrap">${bodyHTML}</div>`),
 		    confirmClass: "btn-primary",
 		    confirmLabel: _t("Confirm"),

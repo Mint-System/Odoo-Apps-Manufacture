@@ -236,6 +236,9 @@ class MrpWorkorder(models.Model):
             workorder.sequential_serials_in_step = serials 
 
 
+
+
+
     @api.depends(
         "production_id.sequential_production_ids",
         "production_id.sequential_production_ids.workorder_ids",
@@ -244,6 +247,7 @@ class MrpWorkorder(models.Model):
     def _compute_sequential_infos(self):
         for wo in self:
             infos = []
+            active_wo_count = 0
             if wo.production_id.type != "parallel":
                 wo.sequential_infos = []
                 continue
@@ -251,20 +255,36 @@ class MrpWorkorder(models.Model):
             sequential_productions = wo.production_id.sequential_production_ids.filtered(lambda p: p.type == 'sequential')
 
             for seq_prod in sequential_productions:
-                seq_wo = seq_prod.workorder_ids.filtered(lambda w: w.name == wo.name)
-                if not seq_wo:
+                seq_wos = seq_prod.workorder_ids.filtered(lambda w: w.name == wo.name)
+                if not seq_wos:
                     continue
-                seq_wo = seq_wo[0]
+                seq_wo = seq_wos[0]
+
+                active_wos = seq_wos.filtered(lambda w: w.state in ('ready', 'progress'))
+                
+                active_wo = active_wos[0] if active_wos else False
+                active_wc = active_wo.workcenter_id if active_wo else False
+
+                if active_wo:
+                    active_wo_count += 1
+
+                _logger.warning("#########  seq.wo")
 
                 infos.append({
                     "id": seq_prod.id,
                     "name": seq_prod.name,
                     "state": seq_wo.state,
                     "registered": seq_wo.registered,
-                    "serial": seq_prod.lot_producing_id.name or ""
+                    "serial": seq_prod.lot_producing_id.name or "",
+                    'active_workcenter_id': active_wc.id if active_wc else False,
+                    'active_workcenter_name': active_wc.display_name if active_wc else '—',
                 })
 
-            wo.sequential_infos = infos
+            wo.sequential_infos = {
+                "infos": infos,
+                "active_wo_count": active_wo_count,
+                "total_wo_count": len(infos),
+            }
 
     @api.depends(
         'production_id', 
@@ -337,11 +357,13 @@ class MrpWorkorder(models.Model):
     def _compute_workorder_infos(self):
         for wo in self:
             if wo.production_id.type == "parallel":
-                serials = "\n".join([p.lot_producing_id.name for p in wo.production_id.sequential_production_ids])
+                sequential_productions = wo.production_id.sequential_production_ids
+                serials = "\n".join([p.lot_producing_id.name for p in sequential_productions])
                 wo.workorder_infos = {
                     "parent_production": wo.production_id.name,
                     "workcenter": wo.workcenter_id.name,
-                    "parallel_serials": serials
+                    "parallel_serials": serials,
+                    "parallel_serials_count": len(sequential_productions)
                 }
             else:
                 wo.workorder_infos = {}
