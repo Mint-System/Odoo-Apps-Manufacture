@@ -53,6 +53,17 @@ patch(MrpDisplayRecord.prototype, {
           })
       },
 
+    async onClickHeader() {
+        const { resModel, resId } = this.props.record;
+        if (resModel !== "mrp.workorder") return;
+
+        const hasReady = this.props.record.data.has_ready;
+        
+        if (hasReady){
+            this.startBatchWorking(true);
+        }
+    },
+
 	async onClickStartBatch() {
 		const { resModel, resId } = this.props.record;
 		if (resModel !== "mrp.workorder") return;
@@ -131,6 +142,7 @@ patch(MrpDisplayRecord.prototype, {
     	if (resModel !== "mrp.workorder") {
             return;
         }
+        console.log("startBatchWorking called")
         await this.props.updateEmployees();
         const admin_id = this.props.sessionOwner.id;
         if (

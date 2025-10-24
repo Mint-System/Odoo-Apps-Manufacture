@@ -23,8 +23,9 @@ patch(MrpDisplayAction.prototype, {
             result["mrp.workorder"].push("has_ready");
             result["mrp.workorder"].push("is_finished");
             result["mrp.workorder"].push("enable_quick_finish");
+            result["mrp.workorder"].push("has_registered_serial");
             } else {
-            result["mrp.workorder"] = ["type", "sequential_infos", "sequential_stats", "workorder_infos", "has_running", "has_pauised", "has_ready", "is_finished", "enable_quick_finish"];
+            result["mrp.workorder"] = ["type", "sequential_infos", "sequential_stats", "workorder_infos", "has_running", "has_pauised", "has_ready", "is_finished", "enable_quick_finish", "has_registered_serial"];
             };
         
         return (result);

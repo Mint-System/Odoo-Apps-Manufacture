@@ -50,6 +50,12 @@ class MrpWorkorder(models.Model):
         compute="_compute_registered_serials_info",
         store=False,
     )
+    has_registered_serial = fields.Boolean(
+        compute="_compute_has_registered_serial",
+        string="Has Registered Sequential",
+        store=False,
+    )
+
     enable_quick_finish = fields.Boolean(
         string="Enable Quick Finish",
         related='workcenter_id.enable_quick_finish',
@@ -117,6 +123,24 @@ class MrpWorkorder(models.Model):
                     seq_wo.registered = True
                 else:
                     raise UserError(_("Workorder already done or not found for serial %s.") % scanned_serial)
+
+    def _get_sequential_workorders(self):
+        self.ensure_one()
+        # find all sequential productions belonging to this parallel one
+        sequential_prods = self.production_id.sequential_production_ids
+        # collect their workorders for same operation
+        return sequential_prods.mapped('workorder_ids').filtered(
+            lambda w: w.operation_id == self.operation_id
+        )
+
+    def _compute_has_registered_serial(self):
+        for wo in self:
+            has_registered = False
+            registered_seq_workorders = wo._get_sequential_workorders().filtered(lambda w: w.registered)
+
+            if registered_seq_workorders:
+                has_registered = True
+            wo.has_registered_serial = has_registered
 
 
     @api.depends("duration_expected", "type")
@@ -210,6 +234,10 @@ class MrpWorkorder(models.Model):
             for wo in sequential_workorders:
                 if wo.state not in ("done", "cancel"):
                     wo.button_finish()
+
+            # what to do with parallel workorder
+            if workorder.is_finished:
+                workorder.button_finish()
 
 
 
@@ -332,6 +360,22 @@ class MrpWorkorder(models.Model):
 
 
 
+    def _compute_state(self):
+        for workorder in self:
+            if workorder.type != 'parallel':
+                # original logic for normal/sequential workorders
+                super()._compute_state()
+                continue
+
+            # Parallel workorder logic
+            if workorder._get_sequential_workorders().filtered(lambda w: w.state == 'ready'):
+                workorder.state = 'ready'
+            elif workorder._get_sequential_workorders().filtered(lambda w: w.state in ('progress', 'paused')):
+                workorder.state = 'progress'
+            elif workorder._get_sequential_workorders() and all(w.state == 'done' for w in workorder._get_sequential_workorders()):
+                workorder.state = 'done'
+            else:
+                workorder.state = 'waiting'
 
     # def get_sequential_infos(self):
     #     self.ensure_one()
@@ -368,15 +412,6 @@ class MrpWorkorder(models.Model):
             else:
                 wo.workorder_infos = {}
 
-
-    def _get_sequential_workorders(self):
-        self.ensure_one()
-        # find all sequential productions belonging to this parallel one
-        sequential_prods = self.production_id.sequential_production_ids
-        # collect their workorders for same operation
-        return sequential_prods.mapped('workorder_ids').filtered(
-            lambda w: w.operation_id == self.operation_id
-        )
 
     def action_handle_parallel_start(self):
         return self._handle_parallel_action("start")
@@ -473,28 +508,36 @@ class MrpWorkorder(models.Model):
                         seq_wo_vals['date_finished'] = vals['date_start'] + timedelta(hours=wo.duration_expected)
                     # update_vals['date_finished'] = update_vals['date_start']  + timedelta(minutes=wo.duration_expected)
                     wo.write(seq_wo_vals)
-                # if update_vals:
-                #     seq_workorders.write(update_vals)
 
-        #         # update parallel production
-        #         parallel_prod = workorder.production_id
-        #         parallel_wo_valid = parallel_prod.workorder_ids.filtered(lambda w: w.date_start and w.date_finished)
-        #         if parallel_wo_valid:
-        #             parallel_prod.write({
-        #                 'date_start': min(parallel_wo_valid.mapped('date_start')),
-        #                 'date_finished': max(parallel_wo_valid.mapped('date_finished')),
-        #             })
+            # state handling
+        if "state" in vals:
+            for workorder in self:
+                _logger.warning(f"state: {vals["state"]} workorder: {workorder.name}")
+                _logger.warning(f"workorder type: {workorder.type}")
+                # only for sequential workorders
+                if workorder.type != "sequential" or not workorder.production_id.parallel_production_id:
+                    continue
 
-        #         # update sequential productions od sequential workorders
-        #         seq_productions = seq_workorders.mapped('production_id')
-        #         for seq_prod in seq_productions:
-        #             seq_wo_valid = seq_prod.workorder_ids.filtered(lambda w: w.date_start and w.date_finished)
-        #             if seq_wo_valid:
-        #                 seq_prod.write({
-        #                     'date_start': min(seq_wo_valid.mapped('date_start')),
-        #                     'date_finished': max(seq_wo_valid.mapped('date_finished')),
-        #                 })
+                parallel_prod = workorder.production_id.parallel_production_id
 
+                # Search ready workorders and restrict to the same parent (parallel) production
+                ready_seq_wos = self.env["mrp.workorder"].search([
+                    ("production_id.parallel_production_id", "=", parallel_prod.id),
+                    ("type", "=", "sequential"),
+                    ("state", "=", "ready"),
+                ])
+                _logger.warning("##### ready seq wos %s" % (ready_seq_wos,))
+
+                # get the corresponding parallel wo at this workcenter
+                for ready_wo in ready_seq_wos:
+                    parallel_wo = self.env["mrp.workorder"].search([
+                        ("production_id", "=", parallel_prod.id),
+                        ("workcenter_id", "=", ready_wo.workcenter_id.id),
+                    ], limit=1)
+                    _logger.warning(f"#### parallel_wo: {parallel_wo}, {parallel_wo.name}")
+
+                    if parallel_wo and parallel_wo.state in ["waiting", "pending"]:
+                        parallel_wo._compute_state()
 
         return res
 

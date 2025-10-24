@@ -73,10 +73,13 @@
 								<span><i class="fa fa-pause"/></span>
 							</button>
 						</t>
-						<t t-if="!record.is_finished">
+						<t t-if="!record.is_finished and record.has_registered_serial">
 							<button class="btn btn-lg text-nowrap btn-secondary" t-on-click="onClickFinishBatch" title="Finish Batch">
 								<span><i class="fa fa-stop"/></span>
 							</button>
+	                    </t>
+	                    <t t-if="record.has_running and !record.is_finished and !record.has_registered_serial">
+								<span>Please <i class="fa fa-barcode"/></span>
 	                    </t>
 	                    <t t-if="!record.is_finished and record.enable_quick_finish">
 							<button class="btn btn-sm text-nowrap btn-secondary" t-on-click="onClickQuickFinishBatch" title="Quick Finish Batch">
