@@ -512,7 +512,7 @@ class MrpWorkorder(models.Model):
             # state handling
         if "state" in vals:
             for workorder in self:
-                _logger.warning(f"state: {vals["state"]} workorder: {workorder.name}")
+                _logger.warning(f"state: {vals['state']} workorder: {workorder.name}")
                 _logger.warning(f"workorder type: {workorder.type}")
                 # only for sequential workorders
                 if workorder.type != "sequential" or not workorder.production_id.parallel_production_id:
