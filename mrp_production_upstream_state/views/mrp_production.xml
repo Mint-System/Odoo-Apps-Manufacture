@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<odoo>
+
+  <record id="mrp_production_form_view" model="ir.ui.view">
+    <field name="name">mrp_production_upstream_state.mrp_production_form_view</field>
+    <field name="model">mrp.production</field>
+    <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+    <field name="arch" type="xml">
+      <data>
+        <xpath expr="//field[@name='move_raw_ids']/tree[1]/field[@name='forecast_availability']" position="after">
+          <field name="move_orig_state"/>
+        </xpath>
+      </data>
+    </field>
+  </record>
+
+</odoo>

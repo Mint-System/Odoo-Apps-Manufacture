@@ -1,0 +1,1 @@
+Show state of upstream moves in component lines.
