@@ -1,4 +1,5 @@
 from odoo import models, fields, api
+from odoo.exceptions import UserError
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -176,6 +177,7 @@ class MrpProduction(models.Model):
                     'name': new_production_name,
                     'type': 'parallel',
                     'state': 'confirmed',
+                    'product_tracking': 'none',
                 #    'workorder_ids': [(5, 0, 0)]
                 })
                 # Transfer all stock moves to the parallel production
@@ -289,9 +291,6 @@ class MrpProduction(models.Model):
                 picking.button_validate()
 
 
-
-
-
     # # planning only for parallel workorders
     # def button_plan(self):
     #     parallel_orders = self.filtered(lambda mo: mo.type == 'parallel')
@@ -308,6 +307,56 @@ class MrpProduction(models.Model):
     #         return
 
     #     self._plan_workorders(replan)
+
+    def action_confirm(self):
+        for production in self:
+            if production.type == 'parallel' and production.product_qty <= 1:
+                raise UserError(
+                    "A parallel production must have a quantity greater than 1.\n"
+                    "Please increase the quantity or choose another production type."
+                )
+        return super().action_confirm()
+
+    def pre_button_mark_done(self):
+        res = super().pre_button_mark_done()
+
+        # call method for sequential production 
+        for production in self:
+            if production.type == "parallel":
+                sequential_productions = production.sequential_production_ids.filtered(lambda c: c.type == 'sequential')
+                _logger.info(f"########  SEQ PRODUCTIONS: {sequential_productions}")
+                for seq_prod in sequential_productions:
+                    seq_prod.button_mark_done()
+
+        return res
+
+    def button_mark_done(self):
+        _logger.warning("#### BUTTON_MARK_DONE called")
+        res = super().button_mark_done()
+
+        for production in self:
+            if production.type == "parallel":
+                # Remove or neutralize serial before finalization
+                production.lot_producing_id = False
+
+        return res
+
+    # def _post_inventory(self, cancel_backorder=False):
+    #     """Bypass serial enforcement for parallel productions."""
+    #     for order in self:
+    #         if order.type == "parallel":
+    #             # Mark all finished moves as untracked before finalizing
+    #             order.move_finished_ids.write({'tracking': 'none'})
+    #     return super()._post_inventory(cancel_backorder=cancel_backorder)
+
+
+
+    def action_generate_serial(self):
+        self.ensure_one()
+        if self.type == 'parallel':
+            return
+        return super().action_generate_serial()
+
 
 
 

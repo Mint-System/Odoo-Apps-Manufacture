@@ -45,6 +45,13 @@
                     </span>
                 </div>
             </xpath>
+            <xpath expr="//label[@for='lot_producing_id']" position="attributes">
+                <attribute name="invisible">type == 'parallel' or state == 'draft' or product_tracking in ('none', False)</attribute>
+            </xpath>
+
+            <xpath expr="//div[@class='o_row'][field[@name='lot_producing_id']]" position="attributes">
+                <attribute name="invisible">type == 'parallel' or state == 'draft' or product_tracking in ('none', False)</attribute>
+            </xpath> 
             <xpath expr="//page[@name='components']" position="after">
                 <page name="sequential_productions" string="Sequential Productions" invisible="type != 'parallel'">
                     <field name="sequential_production_ids" context="{'default_parallel_production_id': id}"
