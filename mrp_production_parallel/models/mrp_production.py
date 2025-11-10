@@ -322,24 +322,26 @@ class MrpProduction(models.Model):
 
         # call method for sequential production 
         for production in self:
-            if production.type == "parallel":
-                sequential_productions = production.sequential_production_ids.filtered(lambda c: c.type == 'sequential')
-                _logger.info(f"########  SEQ PRODUCTIONS: {sequential_productions}")
-                for seq_prod in sequential_productions:
-                    seq_prod.button_mark_done()
+            # if production.type == "parallel":
+            #     sequential_productions = production.sequential_production_ids.filtered(lambda c: c.type == 'sequential')
+            #     _logger.info(f"########  SEQ PRODUCTIONS: {sequential_productions}")
+            #     for seq_prod in sequential_productions:
+            #         seq_prod.pre_button_mark_done()
+            #         seq_prod.button_mark_done()
+            production._finish_sequential_productions()
 
         return res
 
-    def button_mark_done(self):
-        _logger.warning("#### BUTTON_MARK_DONE called")
-        res = super().button_mark_done()
+    # def button_mark_done(self):
+    #     _logger.warning("#### BUTTON_MARK_DONE called")
+    #     res = super().button_mark_done()
 
-        for production in self:
-            if production.type == "parallel":
-                # Remove or neutralize serial before finalization
-                production.lot_producing_id = False
+    #     for production in self:
+    #         if production.type == "parallel":
+    #             # Remove or neutralize serial before finalization
+    #             production.lot_producing_id = False
 
-        return res
+    #     return res
 
     # def _post_inventory(self, cancel_backorder=False):
     #     """Bypass serial enforcement for parallel productions."""
@@ -356,6 +358,26 @@ class MrpProduction(models.Model):
         if self.type == 'parallel':
             return
         return super().action_generate_serial()
+
+
+    def _finish_sequential_productions(self):
+        """Finish sequential productions."""
+        self.ensure_one()
+        production = self
+        if production.type != "parallel":
+            return
+
+        sequential_productions = production.sequential_production_ids.filtered(lambda c: c.type == 'sequential')
+        for seq_prod in sequential_productions:
+            if seq_prod.state not in ('done', 'cancel'):
+                # Finish all workorders
+                seq_prod.workorder_ids.filtered(lambda wo: wo.state not in ('done', 'cancel')).write({'state': 'done'})
+                # Mark their moves as done
+                seq_prod.move_finished_ids.filtered(lambda m: m.state not in ('done', 'cancel'))._action_done()
+                # Mark production as done
+                seq_prod.state = 'done'
+
+
 
 
 
