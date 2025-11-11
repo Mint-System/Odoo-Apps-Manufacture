@@ -9,7 +9,7 @@
     "category": "Repository",
     "version": "18.0.1.0.0",
     "license": "AGPL-3",
-    "depends": ["mrp"],
+    "depends": ["mrp", "mgmt_audit"],
     "data": [
         "views/mrp_production_views.xml",
         "views/product_template_form.xml",

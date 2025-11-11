@@ -426,7 +426,9 @@ class MrpWorkorder(models.Model):
         return self._handle_parallel_action("finish")
 
     def _handle_parallel_action(self, mode):
+        _logger.warning("_handle_parallel_action called")
         for wo in self:
+            _logger.warning(f"WO: {wo.id}, {wo.name}, {wo.date_start}, {wo.date_finished}, mode: {mode}")
             if mode == "start":
                 wo.button_start()    
             elif mode == "stop":
@@ -437,7 +439,10 @@ class MrpWorkorder(models.Model):
                 wo.button_finish()   
 
             sequential_workorders = wo._get_sequential_workorders()
+            _logger.warning(f"SEQ WO of wo {wo.id}: sequential_workorders")
+
             for workorder in sequential_workorders:
+                _logger.warning(f"#### started wo: {workorder.id}, {workorder.name}, {workorder.registered}")
                 if mode == "start" and (workorder.state == "ready" or workorder.state == "waiting"):
                     workorder.button_start()
                 elif mode == "continue" and workorder.state == "progress" and not workorder.time_ids.filtered(lambda t: not t.date_end):
@@ -507,7 +512,7 @@ class MrpWorkorder(models.Model):
                     if vals.get('date_finished') and vals.get('date_start'):
                         seq_wo_vals['date_finished'] = vals['date_start'] + timedelta(hours=wo.duration_expected)
                     # update_vals['date_finished'] = update_vals['date_start']  + timedelta(minutes=wo.duration_expected)
-                    wo.write(seq_wo_vals)
+                    # wo.write(seq_wo_vals)
 
             # state handling
         if "state" in vals:
@@ -585,4 +590,21 @@ class MrpWorkorder(models.Model):
     #     ]
     #     # Your custom logic here
     #     return super()._gantt_unavailability(field, res_ids, start, stop, scale)
+
+
+    def action_report_statement(self):
+        """Open form to create a new statement linked to this workorder"""
+        self.ensure_one()
+        return {
+            "name": "Report Statement",
+            "type": "ir.actions.act_window",
+            "res_model": "mgmt.statement",
+            "view_mode": "form",
+            "target": "new",
+            "context": {
+                "default_workorder_id": self.id,
+                "default_production_id": self.production_id.id,
+                "default_lot_id": self.production_id.lot_producing_id.id,
+            },
+        }
  

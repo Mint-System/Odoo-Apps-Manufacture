@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+<record id="nonconformity_form_view" model="ir.ui.view">
+    <field name="name">mrp_production_parallel.nonconformity_form_view</field>
+    <field name="model">mgmt.nonconformity</field>
+    <field name="inherit_id" ref="mgmt_audit.nonconformity_form_view"/>
+
+    <field name="arch" type="xml">
+        <xpath expr="//field[@name='type']" position="after">
+            <field name="code" />
+        </xpath>
+    </field>
+</record>
+</odoo>

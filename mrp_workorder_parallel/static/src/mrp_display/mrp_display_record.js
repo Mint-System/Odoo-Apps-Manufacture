@@ -142,6 +142,7 @@ patch(MrpDisplayRecord.prototype, {
     	if (resModel !== "mrp.workorder") {
             return;
         }
+        console.log("resId:", [resId])
         console.log("startBatchWorking called")
         await this.props.updateEmployees();
         const admin_id = this.props.sessionOwner.id;

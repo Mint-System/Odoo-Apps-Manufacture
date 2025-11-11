@@ -6,12 +6,20 @@
         <field name="inherit_id" ref="mrp.mrp_production_workorder_tree_editable_view"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='state']" position="after">
-                <button name="action_register_serial_test"
+                <!-- <button name="action_register_serial_test"
                         type="object"
                         string="Register"
                         icon="fa-barcode"
                         invisible="type != 'sequential' or state == 'done'"/>
-                <field name="registered" widget="boolean_toggle"/>
+                <field name="registered" widget="boolean_toggle"/> -->
+                <button name="action_report_statement"
+                    string="Report Statement"
+                    type="object"
+                    class="btn-secondary"
+                    icon="fa-exclamation-triangle"/>
+                <field name="id" />
+                <field name="date_start" />
+                <field name="date_finished" />
             </xpath>
         </field>
     </record>
@@ -31,6 +39,7 @@
                         <list editable="bottom">
                             <field name="type" widget="badge" invisible="type != 'parallel'"/>
                             <field name="name"/>
+                            <field name="id"/>
                             <field name="workcenter_id"/>
                             <!-- <field name="sequential_serials_in_step"/> -->
                           <!--   <field name="registered_serials_info"
