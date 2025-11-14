@@ -178,25 +178,42 @@ class MrpProduction(models.Model):
                     'type': 'parallel',
                     'state': 'confirmed',
                     'product_tracking': 'none',
-                #    'workorder_ids': [(5, 0, 0)]
                 })
-                # Transfer all stock moves to the parallel production
-                # parallel_production.move_raw_ids = production.move_raw_ids
-                # parallel_production.move_finished_ids = production.move_finished_ids
 
-                base_workorders = parallel_production.workorder_ids
-                base_workorders.write({"type": "parallel"})
+                parallel_workorders = parallel_production.workorder_ids
+                parallel_workorders.write({"type": "parallel"})
 
+                # correct the qty_production to the sum of seq workorders
+                for par_wo in parallel_workorders:
+                    total_qty_production = sum(par_wo.sequential_workorder_ids.mapped("qty_production"))
+                    par_wo.write({'qty_production': total_qty_production})
+
+                # set type of seq prod and link to parallel production 
                 for prod in sequential_productions:
                     prod.write({
                         'type': 'sequential',
                         'parallel_production_id': parallel_production.id
                     })
+
                 # Update all related workorders to type = sequential
                 sequential_workorders = sequential_productions.mapped('workorder_ids')
                 sequential_workorders.write({'type': 'sequential'})
 
                 self = self.with_context(default_production_id=parallel_production.id)
+
+        # set relation between sep workorders and parallel workorder
+        for seq_production in sequential_productions:
+            parallel_production = seq_production.parallel_production_id
+            if not parallel_production:
+                continue
+
+            for seq_wo in seq_production.workorder_ids:
+                # find the matching parallel WO by operation
+                parallel_wo = parallel_production.workorder_ids.filtered(
+                    lambda w: w.operation_id.id == seq_wo.operation_id.id
+                )
+                if parallel_wo:
+                    seq_wo.parallel_workorder_id = parallel_wo.id
         
         return sequential_productions
 
@@ -322,12 +339,6 @@ class MrpProduction(models.Model):
 
         # call method for sequential production 
         for production in self:
-            # if production.type == "parallel":
-            #     sequential_productions = production.sequential_production_ids.filtered(lambda c: c.type == 'sequential')
-            #     _logger.info(f"########  SEQ PRODUCTIONS: {sequential_productions}")
-            #     for seq_prod in sequential_productions:
-            #         seq_prod.pre_button_mark_done()
-            #         seq_prod.button_mark_done()
             production._finish_sequential_productions()
 
         return res

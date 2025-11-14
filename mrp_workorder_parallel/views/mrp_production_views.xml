@@ -18,6 +18,7 @@
                     class="btn-secondary"
                     icon="fa-exclamation-triangle"/>
                 <field name="id" />
+                <field name="parallel_workorder_id" readonly="1" />
                 <field name="date_start" />
                 <field name="date_finished" />
             </xpath>

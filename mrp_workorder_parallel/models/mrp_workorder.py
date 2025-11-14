@@ -38,6 +38,18 @@ class MrpWorkorder(models.Model):
     )
     total_serials = fields.Integer(compute="_compute_total_serials")
 
+    sequential_workorder_ids = fields.One2many(
+        'mrp.workorder',
+        'parallel_workorder_id',
+        string="Sequential Workorders"
+    )
+
+    parallel_workorder_id = fields.Many2one(
+        'mrp.workorder',
+        string="Parallel Workorder",
+        help="The parallel workorder linked to this sequential workorder."
+    )
+
     sequential_productions_in_step = fields.One2many(
         "mrp.production", compute="_compute_sequential_productions_in_step",
         string="Sequential Productions currently in this step",
@@ -185,13 +197,13 @@ class MrpWorkorder(models.Model):
             wo.sequential_time_entries = entries
 
 
-    @api.depends('production_id', 'production_id.sequential_production_ids')
+    @api.depends('production_id', 'sequential_workorder_ids')
     def _compute_duration_expected(self):
         super()._compute_duration_expected()
         for wo in self:
             if wo.production_id.type == 'parallel':
-                # number of sequential child productions
-                sequential_count = len(wo.production_id.sequential_production_ids)
+                # number of sequential workorders
+                sequential_count = len(wo.sequential_workorder_ids)
                 # Multiply duration by the number of child (sequential) productions
                 if sequential_count > 1:
                     wo.duration_expected *= sequential_count
@@ -218,8 +230,11 @@ class MrpWorkorder(models.Model):
                 if wo.registered and wo.state in ('progress'):
                     wo.button_finish()
                     wo.registered = False
+                    # rise quantity
 
             # what to do with parallel workorder
+            _logger.warning(f"##########  IS FINISHED: {workorder.is_finished}")
+            _logger.warning(f"##########  STATE: {workorder.state}")
             if workorder.is_finished:
                 workorder.button_finish()
 
@@ -264,9 +279,6 @@ class MrpWorkorder(models.Model):
             workorder.sequential_serials_in_step = serials 
 
 
-
-
-
     @api.depends(
         "production_id.sequential_production_ids",
         "production_id.sequential_production_ids.workorder_ids",
@@ -296,8 +308,6 @@ class MrpWorkorder(models.Model):
                 if active_wo:
                     active_wo_count += 1
 
-                _logger.warning("#########  seq.wo")
-
                 infos.append({
                     "id": seq_prod.id,
                     "name": seq_prod.name,
@@ -322,7 +332,7 @@ class MrpWorkorder(models.Model):
     def _compute_sequential_stats(self):
         for wo in self:
             if wo.production_id.type != "parallel":
-                wo.sequential_infos = {}
+                wo.sequential_stats = {}
                 continue
 
             sequential_productions = wo.production_id.sequential_production_ids.filtered(lambda p: p.type == 'sequential')
@@ -372,10 +382,12 @@ class MrpWorkorder(models.Model):
                 workorder.state = 'ready'
             elif workorder._get_sequential_workorders().filtered(lambda w: w.state in ('progress', 'paused')):
                 workorder.state = 'progress'
-            elif workorder._get_sequential_workorders() and all(w.state == 'done' for w in workorder._get_sequential_workorders()):
-                workorder.state = 'done'
-            else:
+            # elif workorder._get_sequential_workorders() and all(w.state == 'done' for w in workorder._get_sequential_workorders()):
+            #     workorder.state = 'done'
+            elif workorder._get_sequential_workorders().filtered(lambda w: w.state in ('waiting')):
                 workorder.state = 'waiting'
+            else:
+                pass
 
     # def get_sequential_infos(self):
     #     self.ensure_one()
@@ -428,15 +440,15 @@ class MrpWorkorder(models.Model):
     def _handle_parallel_action(self, mode):
         _logger.warning("_handle_parallel_action called")
         for wo in self:
-            _logger.warning(f"WO: {wo.id}, {wo.name}, {wo.date_start}, {wo.date_finished}, mode: {mode}")
+            _logger.warning(f"### >>>>> WO: {wo.id}, {wo.name}, {wo.date_start}, {wo.date_finished}, mode: {mode}")
             if mode == "start":
                 wo.button_start()    
             elif mode == "stop":
                 wo.button_pending()   
             elif mode == "continue":
                 wo.button_start()   
-            elif mode == "finish":
-                wo.button_finish()   
+            # elif mode == "finish":
+            #     wo.button_finish()   
 
             sequential_workorders = wo._get_sequential_workorders()
             _logger.warning(f"SEQ WO of wo {wo.id}: sequential_workorders")
@@ -449,8 +461,8 @@ class MrpWorkorder(models.Model):
                     workorder.button_start()
                 elif mode == "stop" and workorder.state == "progress" and workorder.time_ids.filtered(lambda t: not t.date_end):
                     workorder.button_pending()
-                elif mode == "finish" and workorder.state == "progress" and workorder.time_ids.filtered(lambda t: not t.date_end):
-                    workorder.button_finish()
+                # elif mode == "finish" and workorder.state == "progress" and workorder.time_ids.filtered(lambda t: not t.date_end):
+                #     workorder.button_finish()
 
 
     @api.depends(
@@ -459,6 +471,12 @@ class MrpWorkorder(models.Model):
     )
     def _compute_workorder_states(self):
         for wo in self:
+            if wo.type != "parallel":
+                wo.has_running = False
+                wo.has_paused = False
+                wo.has_ready = False
+                wo.is_finished = False
+
             sequential_workorders = wo._get_sequential_workorders()
 
             running = any(
@@ -487,6 +505,7 @@ class MrpWorkorder(models.Model):
     # sequential workorders must be replanned if parent is replanned
     def write(self, vals):
         _logger.warning(f"context: {self.env.context}")
+
         if 'date_start' in vals:
             vals['date_start'] = self._normalize_date(vals['date_start'])
         if 'date_finished' in vals:
@@ -497,7 +516,8 @@ class MrpWorkorder(models.Model):
         if not {'date_start', 'date_finished'} & set(vals.keys()):
             return res
 
-        for workorder in self:            
+        for workorder in self:   
+            _logger.warning(f"state of wo: {workorder.state}")         
             if workorder.production_id.type == 'parallel':
                 # get sequential workorders
                 seq_workorders = self.search([
@@ -546,6 +566,39 @@ class MrpWorkorder(models.Model):
 
                     if parallel_wo and parallel_wo.state in ["waiting", "pending"]:
                         parallel_wo._compute_state()
+
+        # finishing seq workorders
+        finishing_wo = (
+            vals.get("state") == "done"
+            or "date_finished" in vals
+        )
+
+        if finishing_wo and not self.env.context.get('skip_seq_date_update'):  # to avoid loops
+            for workorder in self:
+                # Only apply to sequential workorders
+                if workorder.production_id.type != "sequential":
+                    continue
+
+                parallel_prod = workorder.production_id.parallel_production_id
+                if not parallel_prod:
+                    continue
+
+                parallel_wo = parallel_prod.workorder_ids.filtered(
+                    lambda w: w.name == workorder.name
+                )
+                if not parallel_wo:
+                    continue
+
+                parallel_wo = parallel_wo[0]
+
+                # Ensure both have dates
+                if workorder.date_finished and parallel_wo.date_finished:
+                    if workorder.date_finished > parallel_wo.date_finished:
+                        # Prevent recursive update
+                        # parallel_wo.with_context(skip_seq_date_update=True).write({
+                        #     "date_finished": workorder.date_finished
+                        # })
+                        self.env.context['skip_seq_date_update'] = False
 
         return res
 
