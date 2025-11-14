@@ -199,14 +199,11 @@ class MrpWorkorder(models.Model):
 
     @api.depends('production_id', 'sequential_workorder_ids')
     def _compute_duration_expected(self):
-        super()._compute_duration_expected()
         for wo in self:
             if wo.production_id.type == 'parallel':
-                # number of sequential workorders
-                sequential_count = len(wo.sequential_workorder_ids)
-                # Multiply duration by the number of child (sequential) productions
-                if sequential_count > 1:
-                    wo.duration_expected *= sequential_count
+                # Sum expected durations of all sequential WOs
+                seq_expected = sum(wo.sequential_workorder_ids.mapped('duration_expected'))
+                wo.duration_expected = seq_expected
 
 
     def action_finish_batch(self):
