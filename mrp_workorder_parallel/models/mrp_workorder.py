@@ -486,6 +486,7 @@ class MrpWorkorder(models.Model):
 
     # sequential workorders must be replanned if parent is replanned
     def write(self, vals):
+        _logger.warning(f"context: {self.env.context}")
         if 'date_start' in vals:
             vals['date_start'] = self._normalize_date(vals['date_start'])
         if 'date_finished' in vals:
@@ -512,7 +513,9 @@ class MrpWorkorder(models.Model):
                     if vals.get('date_finished') and vals.get('date_start'):
                         seq_wo_vals['date_finished'] = vals['date_start'] + timedelta(hours=wo.duration_expected)
                     # update_vals['date_finished'] = update_vals['date_start']  + timedelta(minutes=wo.duration_expected)
-                    # wo.write(seq_wo_vals)
+                    # only update if seq wo is waiting or pending or ready
+                    if wo.state in ["waiting", "pending", "ready"]:
+                        wo.write(seq_wo_vals)
 
             # state handling
         if "state" in vals:
