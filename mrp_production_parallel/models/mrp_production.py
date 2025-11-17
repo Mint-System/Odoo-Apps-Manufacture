@@ -184,9 +184,11 @@ class MrpProduction(models.Model):
                 parallel_workorders.write({"type": "parallel"})
 
                 # correct the qty_production to the sum of seq workorders
-                for par_wo in parallel_workorders:
-                    total_qty_production = sum(par_wo.sequential_workorder_ids.mapped("qty_production"))
-                    par_wo.write({'qty_production': total_qty_production})
+                # does not work for workorders of serial production
+                # for par_wo in parallel_workorders:
+                #     total_qty_production = sum(par_wo.sequential_workorder_ids.mapped("qty_production"))
+                #     _logger.warning(f"#### parallel wo qty_production: {total_qty_production}")
+                #     par_wo.write({'qty_production': total_qty_production})
 
                 # set type of seq prod and link to parallel production 
                 for prod in sequential_productions:

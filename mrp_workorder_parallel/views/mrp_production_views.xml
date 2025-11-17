@@ -37,7 +37,7 @@
                       invisible="type != 'parallel'">
                     <field name="workorder_ids" domain="[('type','=','parallel')]"
                            context="{'default_type':'parallel'}">
-                        <list editable="bottom">
+                        <list>
                             <field name="type" widget="badge" invisible="type != 'parallel'"/>
                             <field name="name"/>
                             <field name="id"/>

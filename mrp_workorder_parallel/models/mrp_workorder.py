@@ -73,6 +73,12 @@ class MrpWorkorder(models.Model):
         related='workcenter_id.enable_quick_finish',
     )
 
+    all_time_ids = fields.One2many(
+        'mrp.workcenter.productivity',
+        compute='_compute_all_time_ids',
+        string='All Workorder Times'
+    )
+
 
     def reload(self):
         channel = "serial_update_channel"
@@ -207,6 +213,15 @@ class MrpWorkorder(models.Model):
                 _logger.warning(f"########## nr of seq wo: {len(wo.sequential_workorder_ids)}")
                 seq_expected = sum(wo.sequential_workorder_ids.mapped('duration_expected'))
                 wo.duration_expected = seq_expected
+
+    @api.depends('sequential_workorder_ids.time_ids')
+    def _compute_all_time_ids(self):
+        for wo in self:
+            if wo.production_id.type == 'parallel':
+                wo.all_time_ids = wo.sequential_workorder_ids.mapped("time_ids")
+            else:
+                # For normal workorders, fallback to its own time_ids
+                wo.all_time_ids = wo.time_ids
 
 
     def action_finish_batch(self):
@@ -442,11 +457,11 @@ class MrpWorkorder(models.Model):
         for wo in self:
             _logger.warning(f"### >>>>> WO: {wo.id}, {wo.name}, {wo.date_start}, {wo.date_finished}, mode: {mode}")
             if mode == "start":
-                wo.button_start()    
+                wo.with_context(from_production=True).button_start()    
             elif mode == "stop":
-                wo.button_pending()   
+                wo.with_context(from_production=True).button_pending()   
             elif mode == "continue":
-                wo.button_start()   
+                wo.with_context(from_production=True).button_start()   
             # elif mode == "finish":
             #     wo.button_finish()   
 
@@ -456,11 +471,11 @@ class MrpWorkorder(models.Model):
             for workorder in sequential_workorders:
                 _logger.warning(f"#### started wo: {workorder.id}, {workorder.name}, {workorder.registered}")
                 if mode == "start" and (workorder.state == "ready" or workorder.state == "waiting"):
-                    workorder.button_start()
+                    workorder.with_context(from_production=True).button_start()
                 elif mode == "continue" and workorder.state == "progress" and not workorder.time_ids.filtered(lambda t: not t.date_end):
-                    workorder.button_start()
+                    workorder.with_context(from_production=True).button_start()
                 elif mode == "stop" and workorder.state == "progress" and workorder.time_ids.filtered(lambda t: not t.date_end):
-                    workorder.button_pending()
+                    workorder.with_context(from_production=True).button_pending()
                 # elif mode == "finish" and workorder.state == "progress" and workorder.time_ids.filtered(lambda t: not t.date_end):
                 #     workorder.button_finish()
 
@@ -505,6 +520,7 @@ class MrpWorkorder(models.Model):
     # sequential workorders must be replanned if parent is replanned
     def write(self, vals):
         _logger.warning(f"context: {self.env.context}")
+        from_production = self.env.context.get('from_production')
 
         if 'date_start' in vals:
             vals['date_start'] = self._normalize_date(vals['date_start'])
@@ -516,28 +532,30 @@ class MrpWorkorder(models.Model):
         if not {'date_start', 'date_finished'} & set(vals.keys()):
             return res
 
-        for workorder in self:   
-            _logger.warning(f"state of wo: {workorder.state}")         
-            if workorder.production_id.type == 'parallel':
-                # get sequential workorders
-                seq_workorders = self.search([
-                    ('production_id.parallel_production_id', '=', workorder.production_id.id),
-                    ('name', '=', workorder.name),
-                ])
-                _logger.warning("#### sequential workorders: %s" % (seq_workorders,))
+        # time handling if not from production
+        if not from_production:
+            for workorder in self:   
+                _logger.warning(f"state of wo: {workorder.state}")         
+                if workorder.production_id.type == 'parallel':
+                    # get sequential workorders
+                    seq_workorders = self.search([
+                        ('production_id.parallel_production_id', '=', workorder.production_id.id),
+                        ('name', '=', workorder.name),
+                    ])
+                    _logger.warning("#### sequential workorders: %s" % (seq_workorders,))
 
-                for wo in seq_workorders:
-                    seq_wo_vals = {}
-                    if vals.get('date_start'):
-                        seq_wo_vals['date_start'] = vals['date_start']
-                    if vals.get('date_finished') and vals.get('date_start'):
-                        seq_wo_vals['date_finished'] = vals['date_start'] + timedelta(hours=wo.duration_expected)
-                    # update_vals['date_finished'] = update_vals['date_start']  + timedelta(minutes=wo.duration_expected)
-                    # only update if seq wo is waiting or pending or ready
-                    if wo.state in ["waiting", "pending", "ready"]:
-                        wo.write(seq_wo_vals)
+                    for wo in seq_workorders:
+                        seq_wo_vals = {}
+                        if vals.get('date_start'):
+                            seq_wo_vals['date_start'] = vals['date_start']
+                        if vals.get('date_finished') and vals.get('date_start'):
+                            seq_wo_vals['date_finished'] = vals['date_start'] + timedelta(hours=wo.duration_expected)
+                        # update_vals['date_finished'] = update_vals['date_start']  + timedelta(minutes=wo.duration_expected)
+                        # only update if seq wo is waiting or pending or ready
+                        if wo.state in ["waiting", "pending", "ready"]:
+                            wo.write(seq_wo_vals)
 
-            # state handling
+        # state handling
         if "state" in vals:
             for workorder in self:
                 _logger.warning(f"state: {vals['state']} workorder: {workorder.name}")
