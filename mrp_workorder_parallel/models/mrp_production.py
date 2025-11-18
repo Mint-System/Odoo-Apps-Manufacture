@@ -6,6 +6,12 @@ _logger = logging.getLogger(__name__)
 class MrpProduction(models.Model):
     _inherit = 'mrp.production'
 
+    statement_ids = fields.One2many(
+        "mgmt.statement",
+        "parallel_production_id",
+        string="Nonconformities",
+    )
+
 
     def get_active_workorder(self):
         """Register the active workorder (the one in progress or ready)."""

@@ -14,6 +14,7 @@ class MgmtStatement(models.Model):
     parallel_production_id = fields.Many2one('mrp.production', compute='_compute_parallel_production_id', store=True)
     lot_id = fields.Many2one('stock.lot', string='Serial/Lot', compute='_compute_lot_id', store=True)
     user_id = fields.Many2one('res.users', default=lambda self: self.env.user, string='Reported by')
+    description = fields.Char()
 
     # components of the bom
     component_id = fields.Many2one('product.product', string="Component (if applicable)")
@@ -23,6 +24,7 @@ class MgmtStatement(models.Model):
         string="BOM Components",
         compute="_compute_bom_component_ids",
     )
+    nc_counter = fields.Integer("Number of NC")
 
     # add field for components?
 
@@ -33,11 +35,15 @@ class MgmtStatement(models.Model):
 
     @api.depends('workorder_id.production_id')
     def _compute_parallel_production_id(self):
+
         for rec in self:
-            if not rec.production_id.type == 'sequential' and rec.production_id.parallel_production_id.type == "parallel":
+            _logger.warning(f"###### rec.production_id.type: {rec.production_id.type}, rec.workorder_id.production_id.type: {rec.workorder_id.production_id.type}")
+            if not rec.production_id.type == 'parallel' and not rec.workorder_id.production_id.type == "parallel":
                 continue
 
-            rec.parallel_production_id = rec.production_id.parallel_production_id
+            _logger.warning(f"######### par pro id: {rec.workorder_id.production_id.id}")
+
+            rec.parallel_production_id = rec.workorder_id.production_id.id
 
     @api.depends('production_id.bom_id.bom_line_ids')
     def _compute_bom_component_ids(self):

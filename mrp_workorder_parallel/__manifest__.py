@@ -11,11 +11,13 @@
     "license": "AGPL-3",
     "depends": ["mrp", "mrp_workorder", "mrp_production_parallel"],
     "data": [
+        "security/ir.model.access.csv",
         "views/mrp_production_views.xml",
         "views/workorder_action_views.xml",
         "views/mrp_workcenter_views.xml",
         "views/statement_views.xml",
-        "views/nonconformity_views.xml"
+        "views/nonconformity_views.xml",
+        "views/mgmt_statement_wizard_views.xml"
     ],
     "installable": True,
     "application": False,

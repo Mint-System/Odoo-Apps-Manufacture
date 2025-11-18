@@ -8,6 +8,7 @@
     <field name="arch" type="xml">
         <xpath expr="//field[@name='type']" position="after">
             <field name="code" />
+            <field name="nc_type" />
         </xpath>
     </field>
 </record>

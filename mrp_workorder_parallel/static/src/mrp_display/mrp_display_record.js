@@ -16,6 +16,7 @@ patch(MrpDisplayRecord.prototype, {
         super.setup();
         this.notification = useService("notification");
         this.dialogService = useService("dialog");
+        this.action = useService('action');
         const bus_service = this.env.services.bus_service;
         const workorderId = this.props.record.resId;
         const { resModel, resId, data } = this.props.record;
@@ -298,6 +299,30 @@ patch(MrpDisplayRecord.prototype, {
 		    cancelLabel: _t("Cancel"),
 		    cancel: () => { },
 		});
+    },
+
+    async onClickOpenStatementModal() {
+        const { resModel, resId } = this.props.record;
+        const productionId = this.props.record.data.production_id?.[0];
+
+        const res = await this.model.orm.searchRead(
+            "mgmt.statement",
+            // [["parallel_production_id", "=", this.props.production[0]]],
+            [["parallel_production_id", "=", productionId]],
+            ["name", "nonconformity_id", "component_id", "create_date"]
+        );
+        this.statements = res;
+
+        await this.action.doAction(
+            "mrp_workorder_parallel.action_mgmt_statement_wizard",
+            {
+                additionalContext: {
+                    default_parallel_workorder_id: resId,
+                    nc_type: "prod",
+                },
+            }
+        );
+
     },
     
 
