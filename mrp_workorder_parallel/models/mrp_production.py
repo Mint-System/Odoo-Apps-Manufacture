@@ -12,6 +12,12 @@ class MrpProduction(models.Model):
         string="Nonconformities",
     )
 
+    maintenance_request_ids = fields.One2many(
+        "maintenance.request",
+        "production_id",
+        string="Maintenance Requests"
+    )
+
 
     def get_active_workorder(self):
         """Register the active workorder (the one in progress or ready)."""

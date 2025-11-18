@@ -45,6 +45,7 @@ class MgmtStatementWizard(models.TransientModel):
         compute="_compute_statement_ids",
         string="Existing Statements"
     )
+    create_mr = fields.Boolean(string="MR", default=False)
 
     @api.depends("parallel_production_id")
     def _compute_statement_ids(self):
@@ -140,11 +141,21 @@ class MgmtStatementWizard(models.TransientModel):
         parallel_wo = self.parallel_workorder_id
         today = date.today()
 
-        self.env["mgmt.statement"].create({
+        statement = self.env["mgmt.statement"].create({
             "name": f"{parallel_wo.production_id.name}-{today}",
             "workorder_id": self.parallel_workorder_id.id,
             "nonconformity_id": self.nonconformity_id.id,
             "component_id": self.component_id.id,
         })
+
+        if self.create_mr and self.component_id:
+            request = self.env["maintenance.request"].create({
+                "name": f"{self.nonconformity_id.name} - {self.component_id.display_name}",
+                "maintenance_type": "corrective",
+                "request_date": fields.Date.today(),
+                "production_id": self.parallel_production_id.id,
+                "workorder_id": self.parallel_workorder_id.id,
+            })
+            statement.maintenance_request_id = request.id
 
         return {"type": "ir.actions.act_window_close"}

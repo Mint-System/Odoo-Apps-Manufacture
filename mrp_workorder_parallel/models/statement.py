@@ -26,6 +26,12 @@ class MgmtStatement(models.Model):
     )
     nc_counter = fields.Integer("Number of NC")
 
+    maintenance_request_id = fields.Many2one(
+        "maintenance.request",
+        string="Maintenance Request",
+        readonly=True
+    )
+
     # add field for components?
 
     @api.depends('workorder_id.production_id.lot_producing_id')

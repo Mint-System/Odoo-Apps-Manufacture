@@ -14,6 +14,7 @@
                         <field name="component_id" domain="component_id_domain" />
                         <field name="nonconformity_id" domain="nonconformity_id_domain" />
                         <field name="nc_number" />
+                        <field name="create_mr" />
                     </group>
                     
                     <group string="Existing Nonconformity Statements">
