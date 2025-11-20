@@ -158,4 +158,18 @@ class MgmtStatementWizard(models.TransientModel):
             })
             statement.maintenance_request_id = request.id
 
+        if self._context.get("save_and_new"):
+            new_context = {
+                "default_parallel_workorder_id": self._context.get("default_parallel_workorder_id"),
+                "nc_type": self._context.get("nc_type"),
+            }
+            return {
+                "type": "ir.actions.act_window",
+                "res_model": self._name,
+                "view_mode": "form",
+                "target": "new",
+                "context": new_context,
+            }
+
         return {"type": "ir.actions.act_window_close"}
+

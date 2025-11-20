@@ -666,19 +666,4 @@ class MrpWorkorder(models.Model):
     #     return super()._gantt_unavailability(field, res_ids, start, stop, scale)
 
 
-    def action_report_statement(self):
-        """Open form to create a new statement linked to this workorder"""
-        self.ensure_one()
-        return {
-            "name": "Report Statement",
-            "type": "ir.actions.act_window",
-            "res_model": "mgmt.statement",
-            "view_mode": "form",
-            "target": "new",
-            "context": {
-                "default_workorder_id": self.id,
-                "default_production_id": self.production_id.id,
-                "default_lot_id": self.production_id.lot_producing_id.id,
-            },
-        }
- 
+    

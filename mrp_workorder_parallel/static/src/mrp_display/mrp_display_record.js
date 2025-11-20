@@ -314,7 +314,7 @@ patch(MrpDisplayRecord.prototype, {
         this.statements = res;
 
         await this.action.doAction(
-            "mrp_workorder_parallel.action_mgmt_statement_wizard",
+            "mrp_production_parallel_management.action_mgmt_statement_wizard",
             {
                 additionalContext: {
                     default_parallel_workorder_id: resId,

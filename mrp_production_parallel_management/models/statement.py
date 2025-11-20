@@ -77,3 +77,4 @@ class MgmtStatement(models.Model):
                     rec.production_id.product_id.display_name
                 ))
 
+   
