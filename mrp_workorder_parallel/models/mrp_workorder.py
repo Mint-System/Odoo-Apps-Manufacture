@@ -57,6 +57,7 @@ class MrpWorkorder(models.Model):
 
     sequential_serials_in_step = fields.Char("Serials in step", compute="_compute_sequential_serials_in_step")
     registered = fields.Boolean(string="Registered for Batch", default=False)
+    on_repair = fields.Boolean(string="On Repair", default=False)
     registered_serials_info = fields.Char(
         string="Registered Serials",
         compute="_compute_registered_serials_info",
@@ -105,6 +106,9 @@ class MrpWorkorder(models.Model):
             if wo.state == "done":
                 raise UserError(_("You cannot register a serial for a completed workorder."))
 
+            if wo.on_repair:
+                raise UserError(_("This Serial is under repair."))
+
             wo.registered = not wo.registered  # Toggle registration
             wo.sudo().reload()
             parallel_workorder = self.env['mrp.workorder'].search([
@@ -141,6 +145,29 @@ class MrpWorkorder(models.Model):
                     seq_wo.registered = True
                 else:
                     raise UserError(_("Workorder already done or not found for serial %s.") % scanned_serial)
+
+    def action_move_to_repair(self, barcode):
+        for wo in self:
+            product_id = wo.production_id.product_id
+            _logger.warning(f"product: {product_id}, lot: {barcode}")
+            lot_id = self.env["stock.lot"].search([("name", "=", barcode)])[0]
+            new_ro = self.env["repair.order"].create(
+                    {
+                        "product_id": product_id.id,
+                        "lot_id": lot_id.id,
+                        "workorder_id": wo.id,
+                        "production_id": wo.production_id.id
+                    }
+                ) 
+            # block workcenter productivity
+            wcps = self.env["mrp.workcenter.productivity"].search([
+                    ("workorder_id", "=", wo.id), ("workcenter_id", "=", wo.workcenter_id.id)
+                ])
+            if wcps:
+                for wcp in wcps:
+                    wcp.button_block()
+
+            wo.on_repair = True
 
     def _get_sequential_workorders(self):
         self.ensure_one()
@@ -224,50 +251,7 @@ class MrpWorkorder(models.Model):
                 wo.all_time_ids = wo.time_ids
 
 
-    def action_finish_batch(self):
-        """Finish all sequential workorders registered for this parallel step."""
-        for workorder in self:
-            if workorder.production_id.type != "parallel":
-                continue
-
-            sequential_workorders = self.env['mrp.workorder'].search([
-                ('production_id.parallel_production_id', '=', workorder.production_id.id),
-                ('operation_id', '=', workorder.operation_id.id),
-            ])
-
-            for wo in sequential_workorders:
-                if not wo.registered and not wo.state == 'done':
-                    wo.write({
-                        'time_ids': [(5, 0, 0)],  # remove existing times
-                        'duration': 0,
-                        # 'duration_expected': 0,
-                    })
-                if wo.registered and wo.state in ('progress'):
-                    wo.button_finish()
-                    wo.registered = False
-                    # rise quantity
-
-            # what to do with parallel workorder
-            _logger.warning(f"##########  IS FINISHED: {workorder.is_finished}")
-            _logger.warning(f"##########  STATE: {workorder.state}")
-            if workorder.is_finished:
-                workorder.button_finish()
-
-    def action_quick_finish_batch(self):
-        """Finish all sequential workorders registered for this parallel step."""
-        for workorder in self:
-            if workorder.production_id.type != "parallel":
-                continue
-            if not workorder.enable_quick_finish:
-                continue
-            sequential_workorders = workorder._get_sequential_workorders()
-            for wo in sequential_workorders:
-                if wo.state not in ("done", "cancel"):
-                    wo.button_finish()
-
-            # what to do with parallel workorder
-            if workorder.is_finished:
-                workorder.button_finish()
+    
 
 
 
@@ -328,6 +312,7 @@ class MrpWorkorder(models.Model):
                     "name": seq_prod.name,
                     "state": seq_wo.state,
                     "registered": seq_wo.registered,
+                    "on_repair": seq_wo.on_repair,
                     "serial": seq_prod.lot_producing_id.name or "",
                     'active_workcenter_id': active_wc.id if active_wc else False,
                     'active_workcenter_name': active_wc.display_name if active_wc else '—',
@@ -479,6 +464,51 @@ class MrpWorkorder(models.Model):
                 # elif mode == "finish" and workorder.state == "progress" and workorder.time_ids.filtered(lambda t: not t.date_end):
                 #     workorder.button_finish()
 
+
+    def action_finish_batch(self):
+        """Finish all sequential workorders registered for this parallel step."""
+        for workorder in self:
+            if workorder.production_id.type != "parallel":
+                continue
+
+            sequential_workorders = self.env['mrp.workorder'].search([
+                ('production_id.parallel_production_id', '=', workorder.production_id.id),
+                ('operation_id', '=', workorder.operation_id.id),
+            ])
+
+            for wo in sequential_workorders:
+                if not wo.registered and not wo.state == 'done':
+                    wo.write({
+                        'time_ids': [(5, 0, 0)],  # remove existing times
+                        'duration': 0,
+                        # 'duration_expected': 0,
+                    })
+                if wo.registered and wo.state in ('progress'):
+                    wo.button_finish()
+                    wo.registered = False
+                    # rise quantity
+
+            # what to do with parallel workorder
+            _logger.warning(f"##########  IS FINISHED: {workorder.is_finished}")
+            _logger.warning(f"##########  STATE: {workorder.state}")
+            if workorder.is_finished:
+                workorder.button_finish()
+
+    def action_quick_finish_batch(self):
+        """Finish all sequential workorders registered for this parallel step."""
+        for workorder in self:
+            if workorder.production_id.type != "parallel":
+                continue
+            if not workorder.enable_quick_finish:
+                continue
+            sequential_workorders = workorder._get_sequential_workorders()
+            for wo in sequential_workorders:
+                if wo.state not in ("done", "cancel"):
+                    wo.button_finish()
+
+            # what to do with parallel workorder
+            if workorder.is_finished:
+                workorder.button_finish()
 
     @api.depends(
         "production_id.sequential_production_ids.workorder_ids.state",

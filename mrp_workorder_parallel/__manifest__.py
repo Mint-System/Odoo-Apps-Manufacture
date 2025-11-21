@@ -9,11 +9,12 @@
     "category": "Repository",
     "version": "18.0.1.0.0",
     "license": "AGPL-3",
-    "depends": ["mrp", "mrp_workorder", "mrp_production_parallel"],
+    "depends": ["mrp", "mrp_workorder", "mrp_production_parallel", "repair"],
     "data": [
         "views/mrp_production_views.xml",
         "views/workorder_action_views.xml",
         "views/mrp_workcenter_views.xml",
+        "views/repair_order_views.xml",
     ],
     "installable": True,
     "application": False,

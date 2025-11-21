@@ -20,6 +20,7 @@ patch(MrpDisplayRecord.prototype, {
         const bus_service = this.env.services.bus_service;
         const workorderId = this.props.record.resId;
         const { resModel, resId, data } = this.props.record;
+        this.currentMode = useState({ barcode_action: "normal" });
         // if (!this._busSubscribed) {
         if (!window._parallel_bus_subscribed) {
             bus_service.subscribe("page_refresh", (payload) => {
@@ -274,10 +275,15 @@ patch(MrpDisplayRecord.prototype, {
         const bodyHTML = serials.length
             ? serials.map(serial => {
             let colorClass = "text-dark";
+            let buttonSymbol = "";
             if (serial.state === 'done') colorClass = "bg-success text-white";
             else if (serial.registered) colorClass = "bg-primary text-white";
+            else if (serial.on_repair) {
+                colorClass = "bg-info text-white";
+                buttonSymbol = "🛠";
+            }
 
-            return `<span class="badge ${colorClass} me-1 mb-1">${serial.serial}</span>`;
+            return `<span class="badge ${colorClass} me-1 mb-1">${serial.serial}${buttonSymbol}</span>`;
              }).join(" ")
             : `<div class="text-muted">No active serials for this workcenter.</div>`;
 
@@ -301,6 +307,11 @@ patch(MrpDisplayRecord.prototype, {
 		});
     },
 
+    get buttonText() {
+        return this.currentMode.barcode_action === "normal" ? "Move Serial to Repair" : "Back to Normal Mode";
+    },
+
+
     async onClickOpenStatementModal() {
         const { resModel, resId } = this.props.record;
         const productionId = this.props.record.data.production_id?.[0];
@@ -322,6 +333,37 @@ patch(MrpDisplayRecord.prototype, {
                 },
             }
         );
+
+    },
+
+    async onClickToggleMode(ev) {
+        ev.stopPropagation();
+        
+        // if (this.props.context) {
+        //     this.props.context.barcode_action = "move_to_repair";
+        // }
+        const newMode =
+            this.currentMode.barcode_action === "normal"
+                ? "move_to_repair"
+                : "normal";
+
+        this.currentMode.barcode_action = newMode;
+
+        await this.model.orm.call(
+            "res.users",
+            "set_barcode_mode",
+            [newMode],
+        );
+
+
+        const msg =
+            newMode === "move_to_repair"
+                ? "RRRepair mode activated: scan a workorder to move it to repair."
+                : "Returned to normal scanning mode.";
+        this.env.services.notification.add(msg, {
+            type: newMode === "move_to_repair" ? "warning" : "info",
+        });
+
 
     },
     

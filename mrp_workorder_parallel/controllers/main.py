@@ -8,10 +8,24 @@ from odoo.addons.stock_barcode.controllers.stock_barcode import StockBarcodeCont
 _logger = logging.getLogger(__name__)
 
 
+class ShopfloorBarcodeMode(http.Controller):
+    @http.route('/shopfloor/set_barcode_mode', type='json', auth='user')
+    def set_barcode_mode(self, mode):
+        request.session['barcode_action'] = mode
+        return {"status": "ok"}
+
+
 class StockBarcodeSerialController(StockBarcodeController):
 	@http.route()
 	def main_menu(self, barcode, **kw):
 		_logger.warning("#### Controller Called")
+
+		mode = request.session.get("barcode_action", "normal")
+		_logger.warning(f"#### barcode_action mode: {mode}")
+
+		if mode == "move_to_repair":
+			return self.try_move_workorder_to_repair(barcode)
+
 		ret_open_mo_by_serial = self.try_open_mo_by_serial(barcode)
 		if ret_open_mo_by_serial:
 			return ret_open_mo_by_serial
@@ -20,8 +34,8 @@ class StockBarcodeSerialController(StockBarcodeController):
 
 	def try_open_mo_by_serial(self, barcode):
 		corresponding_mo = request.env["mrp.production"].search(
-            [("lot_producing_id", "=", barcode)], limit=1
-            )
+			[("lot_producing_id", "=", barcode)], limit=1
+		)
 		_logger.warning(f"corresponding_mo: {corresponding_mo}")
 
 		if corresponding_mo:
@@ -31,6 +45,21 @@ class StockBarcodeSerialController(StockBarcodeController):
 			active_wo.action_register_serial_test()
 			action = corresponding_mo.action_open_barcode_client_action()
 			return {'action': action}
+		return False
+
+	def try_move_workorder_to_repair(self, barcode):
+		corresponding_mo = request.env["mrp.production"].search(
+			[("lot_producing_id", "=", barcode)], limit=1
+		)
+		if corresponding_mo:
+			active_wo = corresponding_mo.get_active_workorder()
+			if active_wo:
+				_logger.warning(f"### Moving WO {active_wo.id} to repair")
+				active_wo.action_move_to_repair(barcode)  # your custom method
+				# Reset mode after action if desired
+				request.session["barcode_action"] = "normal"
+			action = corresponding_mo.action_open_barcode_client_action()
+			return {"action": action}
 		return False
 
 

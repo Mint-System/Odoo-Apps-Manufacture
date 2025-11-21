@@ -45,7 +45,7 @@ class MgmtStatementWizard(models.TransientModel):
         compute="_compute_statement_ids",
         string="Existing Statements"
     )
-    create_mr = fields.Boolean(string="MR", default=False)
+    
 
     @api.depends("parallel_production_id")
     def _compute_statement_ids(self):

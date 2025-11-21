@@ -62,6 +62,11 @@
 					                    t-on-click="onClickOpenStatementModal">
 					                Fehler
 					            </button>
+					            <button type="button"
+								        class="btn btn-info btn-sm mt-2"
+								        t-on-click="onClickToggleMode"
+								        t-esc="buttonText">
+								</button>
 	                    	</div>
 	                    </div>
 		            </div>

@@ -10,7 +10,7 @@
     "development_status": "Production/Stable",
     "version": "18.0.1.0.0",
     "license": "AGPL-3",
-    "depends": ["base", "mgmt_audit"],
+    "depends": ["base", "mgmt_audit", "mrp_workorder_parallel"],
     "data": [
         "security/ir.model.access.csv",
         "views/mrp_production_views.xml",
