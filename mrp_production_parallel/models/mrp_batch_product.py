@@ -1,5 +1,5 @@
 
-from odoo import models
+from odoo import models, _
 from odoo.exceptions import UserError
 from collections import defaultdict, deque
 from odoo.tools import OrderedSet
