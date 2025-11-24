@@ -44,6 +44,13 @@ class MrpProduction(models.Model):
         store=False
     )
 
+    parallel_total_units = fields.Integer(
+        string="Total Units (Parallel)",
+        compute="_compute_parallel_total_units",
+        store=True,
+        readonly=True,
+    )
+
     show_validate_button = fields.Boolean(
         string="Show Validate Button",
         compute="_compute_show_validate_button",
@@ -78,6 +85,14 @@ class MrpProduction(models.Model):
             else:
                 production.sequential_picking_ids = production.picking_ids
                 production.sequential_picking_count = len(production.picking_ids)
+
+    @api.depends("sequential_production_ids.product_qty")
+    def _compute_parallel_total_units(self):
+        for rec in self:
+            if rec.type != "parallel":
+                rec.parallel_total_units = 0
+            else:
+                rec.parallel_total_units = len(rec.sequential_production_ids)
 
 
     @api.depends('state', 'product_qty', 'qty_producing', 'type')

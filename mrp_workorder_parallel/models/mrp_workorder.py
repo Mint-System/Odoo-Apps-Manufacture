@@ -413,8 +413,12 @@ class MrpWorkorder(models.Model):
     def _compute_workorder_infos(self):
         for wo in self:
             if wo.production_id.type == "parallel":
+                serials = ""
                 sequential_productions = wo.production_id.sequential_production_ids
-                serials = "\n".join([p.lot_producing_id.name for p in sequential_productions])
+                if sequential_productions:
+                    serials = "\n".join(
+                        [p.lot_producing_id.name if p.lot_producing_id else "" for p in sequential_productions]
+                    )
                 wo.workorder_infos = {
                     "parent_production": wo.production_id.name,
                     "workcenter": wo.workcenter_id.name,
