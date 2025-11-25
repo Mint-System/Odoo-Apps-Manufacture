@@ -71,9 +71,10 @@ patch(MrpDisplayRecord.prototype, {
 		if (resModel !== "mrp.workorder") return;
 
 		const hasReady = this.props.record.data.has_ready;
+        console.log("hasReady: ", hasReady)
 		
 		if (hasReady){
-            this.startBatchWorking(true);
+            this.startBatchWorkingSimple(true);
         }
     },
 
@@ -168,6 +169,19 @@ patch(MrpDisplayRecord.prototype, {
         } else if (shouldStop) {
             await this.model.orm.call(resModel, "stop_employee", [resId, [admin_id]]);
         }
+        await this.env.reload(this.props.production);
+    },
+    async startBatchWorkingSimple(shouldStop = false) {
+        const { resModel, resId } = this.props.record;
+        if (resModel !== "mrp.workorder") {
+            return;
+        }
+        console.log("resId:", [resId])
+        console.log("startBatchWorkingSimple called")
+        
+        await this.model.orm.call(resModel, "action_handle_parallel_start", [resId], {
+                context: { mrp_display: true },
+        });
         await this.env.reload(this.props.production);
     },
 

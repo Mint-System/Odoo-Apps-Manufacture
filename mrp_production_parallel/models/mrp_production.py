@@ -180,11 +180,24 @@ class MrpProduction(models.Model):
             else:
                 production.picking_state = "draft"
 
+    
+    # original method up to 2025-11-24
     def _split_productions(self, amounts=False, cancel_remaining_qty=False, set_consumed_qty=False):
+        _logger.warning(f"######### SELF IN SPLIT: {self}")
         for production in self:
             new_production_name = f"{production.name} - Parallel"
+            orig_workorders = production.workorder_ids
+            _logger.warning(f"##### original duration_expected: {orig_workorders.mapped('duration_expected')}")
         sequential_productions = super()._split_productions(amounts, cancel_remaining_qty, set_consumed_qty)
         sequential_productions._compute_show_produce()
+        for prod in sequential_productions:
+            _logger.warning(f"{prod.name} qty: {prod.product_qty}, duration_expected: {prod.workorder_ids.mapped('duration_expected')}")
+        # because the first seq production has no duration_expected set we copy it from the first seq production workorders
+        first_prod = sequential_productions[0]
+        second_prod = sequential_productions[1]
+        for first_wo, second_wo in zip(first_prod.workorder_ids, second_prod.workorder_ids):
+            first_wo.duration_expected = second_wo.duration_expected
+
         for production in self:
             prod_type = production.type
             if prod_type == 'parallel':
@@ -197,6 +210,9 @@ class MrpProduction(models.Model):
 
                 parallel_workorders = parallel_production.workorder_ids
                 parallel_workorders.write({"type": "parallel"})
+
+                for prod in sequential_productions:
+                    _logger.warning(f"2.call: {prod.name} qty: {prod.product_qty}, duration_expected: {prod.workorder_ids.mapped('duration_expected')}")
 
                 # correct the qty_production to the sum of seq workorders
                 # does not work for workorders of serial production
@@ -214,6 +230,8 @@ class MrpProduction(models.Model):
 
                 # Update all related workorders to type = sequential
                 sequential_workorders = sequential_productions.mapped('workorder_ids')
+                for seq_wo in sequential_workorders:
+                    _logger.warning(f"######### erw. Dauer von {seq_wo.name}: {seq_wo.duration_expected}")
                 sequential_workorders.write({'type': 'sequential'})
 
                 self = self.with_context(default_production_id=parallel_production.id)
@@ -233,6 +251,65 @@ class MrpProduction(models.Model):
                     seq_wo.parallel_workorder_id = parallel_wo.id
         
         return sequential_productions
+
+    def _perhaps_better_split_productions(self, amounts=False, cancel_remaining_qty=False, set_consumed_qty=False):
+        _logger.warning(f"######### SELF IN SPLIT: {self}")
+        for production in self:
+        
+            prod_type = production.type
+            if prod_type == 'parallel':
+                res = self._generate_sequential_productions()
+            else:
+                res = super()._split_productions(amounts, cancel_remaining_qty, set_consumed_qty)
+
+        return res
+
+    def copy_data(self, default=None):
+        data = super().copy_data(default)[0]
+        _logger.warning(f"##### DATA: {data}")
+        _logger.warning(f"##### CONTEXT: {self.env.context}")
+
+        if self.env.context.get("no_copy_workorders"):
+            data.pop('workorder_ids', None)
+
+        _logger.warning(f"##### CONTEXT: {self.env.context}")
+
+        if self.env.context.get("no_copy_move_lines"):
+            data.pop('move_raw_ids', None)
+            data.pop('move_finished_ids', None)
+            data.pop('move_finished_move_ids', None)
+            data.pop('move_raw_move_ids', None)
+
+        return [data]
+
+               
+
+    def _generate_sequential_productions(self):
+        """
+        Create one sequential production per unit of the product.
+        Used when production.type == 'parallel'.
+        """
+
+        self.ensure_one()
+        qty = int(self.product_qty)
+        seq_productions = self.env['mrp.production']
+        orig_name = self.name
+        self.name = orig_name + "-P"
+
+        for i in range(qty):
+            seq = self.with_context(no_copy_workorders=True, no_copy_move_lines=True).copy({
+                'name': f"{orig_name}-S{i+1}",
+                'type': 'sequential',
+                'parallel_production_id': self.id,
+                'product_qty': 1,
+                'lot_producing_id': False,  # each unit gets its own serial later
+            })
+
+
+            seq_productions |= seq
+
+        return seq_productions
+
 
     @api.depends('state', 'product_qty', 'qty_producing', 'type', 'sequential_production_ids')
     def _compute_show_produce(self):

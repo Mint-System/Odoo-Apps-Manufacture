@@ -91,7 +91,7 @@ class MrpWorkorder(models.Model):
                 'parallel_workorder_id': parallel_workorder.id,
                 'updated_field': 'registered',
                 'channel': channel,
-                'serial': self.production_id.lot_producing_id.name
+                'serial': self.production_id.lot_producing_id.name,
         }
         _logger.info("Sending reload trigger to frontend")
         self.env["bus.bus"].sudo()._sendone(
@@ -110,6 +110,7 @@ class MrpWorkorder(models.Model):
                 raise UserError(_("This Serial is under repair."))
 
             wo.registered = not wo.registered  # Toggle registration
+            wo._compute_sequential_stats()
             wo.sudo().reload()
             parallel_workorder = self.env['mrp.workorder'].search([
                 ('production_id', '=', wo.production_id.parallel_production_id.id),
@@ -251,9 +252,6 @@ class MrpWorkorder(models.Model):
                 wo.all_time_ids = wo.time_ids
 
 
-    
-
-
 
     @api.depends('production_id.sequential_production_ids.workorder_ids.state')
     def _compute_sequential_productions_in_step(self):
@@ -281,7 +279,8 @@ class MrpWorkorder(models.Model):
     @api.depends(
         "production_id.sequential_production_ids",
         "production_id.sequential_production_ids.workorder_ids",
-        "production_id.type"
+        "production_id.type",
+        "production_id.sequential_production_ids.workorder_ids.registered"
     )
     def _compute_sequential_infos(self):
         for wo in self:
@@ -327,7 +326,8 @@ class MrpWorkorder(models.Model):
     @api.depends(
         'production_id', 
         'production_id.sequential_production_ids',
-        'production_id.sequential_production_ids.workorder_ids'
+        'production_id.sequential_production_ids.workorder_ids',
+        'production_id.sequential_production_ids.workorder_ids.registered'
         )
     def _compute_sequential_stats(self):
         for wo in self:
@@ -357,7 +357,7 @@ class MrpWorkorder(models.Model):
                 'current_wo_serials': current_wo_serials,
                 'registered_serials': registered_serials,
             }
-
+           
 
     @api.depends(
         'production_id', 
@@ -446,6 +446,7 @@ class MrpWorkorder(models.Model):
         for wo in self:
             _logger.warning(f"### >>>>> WO: {wo.id}, {wo.name}, {wo.date_start}, {wo.date_finished}, mode: {mode}")
             if mode == "start":
+                _logger.warning("#### PAR WO STARTED")
                 wo.with_context(from_production=True).button_start()    
             elif mode == "stop":
                 wo.with_context(from_production=True).button_pending()   

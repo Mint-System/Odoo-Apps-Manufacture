@@ -22,8 +22,8 @@
 	                    	<t t-if="record.sequential_stats">
 							  <div class="flex flex-row gap-2 mt-2">
 							    <span class="badge bg-secondary"><t t-esc="record.sequential_infos.active_wo_count"/> / <t t-esc="record.sequential_stats.total_serials"/></span>
-							    <span class="badge bg-success"><t t-esc="record.sequential_stats.done_serials"/></span>
-							    <span class="badge bg-info"><t t-esc="record.sequential_stats.current_wo_serials"/></span>
+							   <!--  <span class="badge bg-success"><t t-esc="record.sequential_stats.done_serials"/></span>
+							    <span class="badge bg-info"><t t-esc="record.sequential_stats.current_wo_serials"/></span> -->
 							    <span class="badge bg-primary"><t t-esc="record.sequential_stats.registered_serials"/></span>
 							  </div>
 							</t>
@@ -94,7 +94,7 @@
 								<span><i class="fa fa-pause"/></span>
 							</button>
 						</t>
-						<t t-if="!record.is_finished and record.has_registered_serial">
+						<t t-if="!record.is_finished and record.has_running and record.has_registered_serial">
 							<button class="btn btn-lg text-nowrap btn-secondary" t-on-click="onClickFinishBatch" title="Finish Batch">
 								<span><i class="fa fa-stop"/></span>
 							</button>
