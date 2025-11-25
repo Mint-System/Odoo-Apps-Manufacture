@@ -514,6 +514,7 @@ class MrpWorkorder(models.Model):
             _logger.warning(f"##########  STATE: {workorder.state}")
             if workorder.is_finished:
                 workorder.button_finish()
+                
 
     def action_quick_finish_batch(self):
         """Finish all sequential workorders registered for this parallel step."""

@@ -9,7 +9,7 @@ class MrpProduction(models.Model):
     previous_workorder_id = fields.Many2one(
         'mrp.workorder',
         string="Previous Workorder",
-        help="The prevoius workorder."
+        help="The previous workorder."
     )
 
 
