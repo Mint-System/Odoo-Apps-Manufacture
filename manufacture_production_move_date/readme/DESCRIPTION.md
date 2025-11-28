@@ -1,0 +1,1 @@
+Make stock move dates editable.

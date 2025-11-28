@@ -4,7 +4,7 @@
         Show nested traceability report data as list.
     """,
     "author": "Mint System GmbH",
-    "website": "https://www.mint-system.ch",
+    "website": "https://github.com/OCA/sale-workflow",
     "category": "Manufacturing",
     "version": "17.0.1.0.0",
     "license": "AGPL-3",

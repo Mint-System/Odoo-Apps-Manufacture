@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <odoo noupdate="1">
 
     <record id="product_product_a" model="product.product">
@@ -11,8 +11,10 @@
     </record>
 
     <record id="product_product_a_product_template" model="product.template">
-        <field name="route_ids"
-            eval="[(6, 0, [ref('stock.route_warehouse0_mto'), ref('mrp.route_warehouse0_manufacture')])]" />
+        <field
+            name="route_ids"
+            eval="[(6, 0, [ref('stock.route_warehouse0_mto'), ref('mrp.route_warehouse0_manufacture')])]"
+        />
     </record>
 
     <record id="mrp_bom_product_a" model="mrp.bom">
@@ -33,8 +35,8 @@
 
     <record id="lot_product_b_1" model="stock.lot">
         <field name="name">0000001</field>
-        <field name="product_id" ref="product_product_b"/>
-        <field name="company_id" ref="base.main_company"/>
+        <field name="product_id" ref="product_product_b" />
+        <field name="company_id" ref="base.main_company" />
     </record>
 
     <record id="product_product_c" model="product.product">
@@ -47,8 +49,10 @@
     </record>
 
     <record id="product_product_c_product_template" model="product.template">
-        <field name="route_ids"
-            eval="[(6, 0, [ref('stock.route_warehouse0_mto'), ref('mrp.route_warehouse0_manufacture')])]" />
+        <field
+            name="route_ids"
+            eval="[(6, 0, [ref('stock.route_warehouse0_mto'), ref('mrp.route_warehouse0_manufacture')])]"
+        />
     </record>
 
     <record id="mrp_bom_product_a_line_1" model="mrp.bom.line">
@@ -85,8 +89,8 @@
 
     <record id="lot_product_d_1" model="stock.lot">
         <field name="name">0000001</field>
-        <field name="product_id" ref="product_product_d"/>
-        <field name="company_id" ref="base.main_company"/>
+        <field name="product_id" ref="product_product_d" />
+        <field name="company_id" ref="base.main_company" />
     </record>
 
     <record id="mrp_bom_product_c_line_1" model="mrp.bom.line">

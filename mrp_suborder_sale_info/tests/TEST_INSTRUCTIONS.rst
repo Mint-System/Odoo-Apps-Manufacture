@@ -2,7 +2,7 @@ Setup:
 
 - Install module *mrp_workorder_suborder_sale_info*
 - Create Product A and B and enable routes *MTO* and *Manufacture* for both.
-- Create BoM for Product A with at least Product B.   
+- Create BoM for Product A with at least Product B.
 
 
 Check Sale Order and MTO:

@@ -4,7 +4,7 @@
         Module summary.
     """,
     "author": "Mint System GmbH",
-    "website": "https://www.mint-system.ch",
+    "website": "https://github.com/OCA/sale-workflow",
     "category": "Purchase,Technical,Accounting,Invoicing,Sales,Human Resources,Services,Helpdesk,Manufacturing,Website,Inventory,Administration,Productivity",
     "version": "17.0.1.0.0",
     "license": "AGPL-3",

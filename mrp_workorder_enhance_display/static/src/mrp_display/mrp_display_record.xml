@@ -1,25 +1,19 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
+<?xml version="1.0" encoding="UTF-8" ?>
 <templates xml:space="preserve">
-    
+
    <t t-inherit="mrp_workorder.MrpDisplayRecord" t-inherit-mode="extension" owl="1">
    <xpath expr="//div[hasclass('card-title')]" position="before">
-   
-        <t t-if="saleId"><t t-esc="record.sale_id[1]"/></t>
-        
-        <t t-else=""> <t>fehlt</t> </t> 
-        |
-        <t t-if="partnerId"><t t-esc="record.partner_id[1]"/> </t>
-        
+
+        <t t-if="saleId"><t t-esc="record.sale_id[1]" /></t>
+
         <t t-else=""> <t>fehlt</t> </t>
-        <hr/>
-       
+        |
+        <t t-if="partnerId"><t t-esc="record.partner_id[1]" /> </t>
+
+        <t t-else=""> <t>fehlt</t> </t>
+        <hr />
+
     </xpath>
-    
+
     </t>
 </templates>
-
-
-
-
-

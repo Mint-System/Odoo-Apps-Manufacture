@@ -4,7 +4,7 @@
         Share product drawing and step files with vendors and link them in the workorder tablet view.
     """,
     "author": "Mint System GmbH",
-    "website": "https://www.mint-system.ch",
+    "website": "https://github.com/OCA/sale-workflow",
     "category": "Manufacturing",
     "version": "17.0.1.0.0",
     "license": "OPL-1",

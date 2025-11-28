@@ -1,17 +1,17 @@
 {
-    "name": "Maintenance Plan Request Name",
+    "name": "Manufacture Production Move Date",
     "summary": """
-        Use name of maintenance plan for maintenance requests.
+        Make stock move dates editable.
     """,
     "author": "Mint System GmbH",
     "website": "https://github.com/OCA/sale-workflow",
     "category": "Manufacturing",
     "version": "17.0.1.0.0",
     "license": "AGPL-3",
-    "depends": ["maintenance_plan"],
+    "depends": ["mrp"],
+    "data": ["views/mrp_production_form_view.xml"],
     "installable": True,
     "application": False,
     "auto_install": False,
-    # "data": ["views/maintenance_equipment.xml"],
     "images": ["images/screen.png"],
 }
