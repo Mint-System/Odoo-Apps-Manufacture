@@ -57,6 +57,12 @@ class MrpProduction(models.Model):
         store=False
     )
 
+    show_button_mark_done_parallel = fields.Boolean(
+        string="Show Button Mark Done Parallel",
+        compute="_compute_show_button_mark_done_parallel",
+        store=False
+    )
+
     link_mo_id = fields.Many2one(
         'mrp.production',
         string='MO link',
@@ -380,7 +386,6 @@ class MrpProduction(models.Model):
         }
 
 
-
     def action_view_parallel_production(self):
         self.ensure_one()
         if not self.parallel_production_id:
@@ -393,6 +398,19 @@ class MrpProduction(models.Model):
             "res_id": self.parallel_production_id.id,
             "target": "current",
         }
+
+    def action_view_sequential_pickings(self):
+        self.ensure_one()
+        pickings = self.sequential_production_ids.mapped("sequential_picking_ids")
+        _logger.warning(f"pickings: {pickings}")
+        action = self.env["ir.actions.actions"]._for_xml_id("stock.action_picking_tree_all")
+        if len(pickings) == 1:
+            action["views"] = [(self.env.ref("stock.view_picking_form").id, "form")]
+            action["res_id"] = pickings.id
+        else:
+            action["domain"] = [("id", "in", pickings.ids)]
+
+        return action
 
     def action_validate_all_sequential_pickings(self):
         for production in self:
@@ -481,6 +499,38 @@ class MrpProduction(models.Model):
                 seq_prod.move_finished_ids.filtered(lambda m: m.state not in ('done', 'cancel'))._action_done()
                 # Mark production as done
                 seq_prod.state = 'done'
+
+    def _compute_show_button_mark_done_parallel(self):
+        any_to_close_list = []
+        for production in self:
+            if production.type != "parallel":
+                continue
+            seq_productions = production.sequential_production_ids
+            any_to_close = any(p.state in ["to_close"] for p in seq_productions)
+            any_to_close_list.append(any_to_close)
+        _logger.warning(f"any_to_close_list: {any_to_close_list}")
+        if any(a == True for a in any_to_close_list):
+            self.show_button_mark_done_parallel = True
+        else:
+            self.show_button_mark_done_parallel = False
+
+
+    def button_mark_done_parallel(self):
+        for production in self:
+            if production.type != "parallel":
+                continue
+            seq_productions = production.sequential_production_ids
+            any_to_close = any(p.state in ["to_close"] for p in seq_productions)
+            all_done = all(p.state in ["done"] for p in seq_productions)
+            if any_to_close:
+                for prod in seq_productions.filtered(lambda p: p.state=="to_close"):
+                    prod.button_mark_done()
+            if all_done:
+                production.state = "done"
+
+
+
+
 
 
 

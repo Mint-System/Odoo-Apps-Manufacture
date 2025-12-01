@@ -7,11 +7,17 @@
          <field name="arch" type="xml">
              <xpath expr="//header" position="inside">
                   <field name="show_validate_button" invisible="1"/>
+                  <field name="show_button_mark_done_parallel" invisible="1"/>
                   <button name="action_validate_all_sequential_pickings"
                         string="Validate Pickings"
                         type="object"
                         class="oe_highlight"
                         invisible="type != 'parallel' or not show_validate_button"/>
+                   <button name="button_mark_done_parallel"
+                        string="Close Par. Prod."
+                        type="object"
+                        class="oe_highlight"
+                        invisible="type != 'parallel' or not show_button_mark_done_parallel"/>
              </xpath>
 
              <xpath expr="//div[@class='oe_button_box']" position="inside">
@@ -30,6 +36,15 @@
                         icon="fa-link"
                         invisible="type != 'sequential'">
                     <field name="parallel_production_id" widget="statinfo" string="Parallel"/>
+                </button>
+            </xpath>
+            <xpath expr="//div[@class='oe_button_box']" position="inside">
+                <button name="action_view_sequential_pickings"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-truck"
+                        invisible="type != 'parallel'">
+                    <field name="sequential_picking_ids" widget="statinfo" string="Seq. Pickings"/>
                 </button>
             </xpath>
              <xpath expr="//group[@name='group_extra_info']" position="after">
