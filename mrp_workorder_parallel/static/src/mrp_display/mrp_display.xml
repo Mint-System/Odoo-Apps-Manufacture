@@ -112,6 +112,8 @@
 	            </t>
 	        </ul>
 	    </xpath>
+
+
 	</t>
 
 	<t t-inherit="mrp_workorder.MrpDisplayWorkorderHeader" t-inherit-mode="extension">
@@ -120,5 +122,17 @@
 		</xpath>
 	</t>
 
+
+	<t t-inherit="mrp_workorder.MrpDisplayProductionFooter" t-inherit-mode="extension">
+		<xpath expr="//button" position="replace">
+		   <!--  <button t-if="displayDoneButton" t-attf-class="btn #{_btn_type}"
+	                t-on-click="onClickValidateButton" t-att-barcode_trigger="props.barcodeTarget ? 'CLMO' : false">
+	            <t t-if="state.underValidation">Undo</t>
+	            <t t-elif="trackingMode === 'mass_produce'">Mass Produce</t>
+	            <t t-else="">Prepare Close Production</t>
+	        </button> -->
+	        <span>Please close Production in backend.</span>
+		</xpath>
+	</t>
 
 </templates>
