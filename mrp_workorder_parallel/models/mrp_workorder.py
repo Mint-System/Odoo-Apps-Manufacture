@@ -150,7 +150,6 @@ class MrpWorkorder(models.Model):
     def action_move_to_repair(self, barcode):
         for wo in self:
             product_id = wo.production_id.product_id
-            _logger.warning(f"product: {product_id}, lot: {barcode}")
             lot_id = self.env["stock.lot"].search([("name", "=", barcode)])[0]
             new_ro = self.env["repair.order"].create(
                     {
@@ -169,17 +168,17 @@ class MrpWorkorder(models.Model):
                     wcp.button_block()
 
             # get repair workorder
-            repair_wo = wo.production_id.workorder_ids.filtered(lambda w: w.operation_id.name == 'Repair')[:1]\
+            # repair_wo = wo.production_id.workorder_ids.filtered(lambda w: w.operation_id.name == 'Repair')[:1]\
 
             # stop current workorder
-            if wo.state == 'progress':
-                wo.button_finish()
-            elif wo.state in ('ready', 'pending'):
-                wo.button_done()
+            # if wo.state == 'progress':
+            #     wo.button_finish()
+            # elif wo.state in ('ready', 'pending'):
+            #     wo.button_done()
 
             # start repair
-            if repair_wo.state in ('pending', 'ready'):
-                repair_wo.button_start()
+            # if repair_wo.state in ('pending', 'ready'):
+            #     repair_wo.button_start()
 
             # set previous workorder for production
             wo.production_id.previous_workorder_id = wo.id

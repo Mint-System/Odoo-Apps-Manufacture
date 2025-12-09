@@ -121,7 +121,7 @@ class MrpProduction(models.Model):
 
 
 
-    @api.depends('type', 'sequential_production_ids.reservation_state')
+    @api.depends('state', 'move_raw_ids.state', 'type', 'sequential_production_ids.reservation_state')
     def _compute_reservation_state(self):
         for production in self:
             if production.type == 'parallel':
@@ -143,7 +143,7 @@ class MrpProduction(models.Model):
                     production.reservation_state = 'confirmed'
             else:
                 # Fall back to the normal MRP behavior for sequential or regular MOs
-                super(MrpProduction, production)._compute_reservation_state()
+                super()._compute_reservation_state()
 
 
     @api.depends() 
@@ -330,6 +330,25 @@ class MrpProduction(models.Model):
 
             production.show_produce_all = show_all
             production.show_produce = show_single
+
+
+    # @api.depends('state', 'product_qty', 'qty_producing', 'type')
+    # def _compute_show_produce(self):
+    #     _logger.warning("#### is called")
+    #     for production in self:
+    #         # Original logic
+    #         state_ok = production.state in ('confirmed', 'progress', 'to_close')
+    #         qty_none_or_all = production.qty_producing in (0, production.product_qty)
+    #         show_produce_all = state_ok and qty_none_or_all
+    #         show_produce = state_ok and not qty_none_or_all
+
+    #         # New condition: hide buttons for sequential productions
+    #         if production.type == 'sequential':
+    #             production.show_produce_all = False
+    #             production.show_produce = False
+    #         else:
+    #             production.show_produce_all = show_produce_all
+    #             production.show_produce = show_produce
 
     def button_mark_done(self):
         action = super().button_mark_done()
