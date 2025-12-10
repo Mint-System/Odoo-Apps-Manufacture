@@ -14,14 +14,11 @@ class MrpProduction(models.Model):
         default='default'
     )
 
-    @api.onchange('product_id')
-    def _onchange_product_id_set_type(self):
-        for production in self:
-            if production.product_id:
-                tmpl = production.product_id.product_tmpl_id
-                if tmpl.has_parallel_production:
-                    production.type = 'parallel'
-
+    summary_id = fields.Many2one(
+        'mrp.parallel.summary',
+        string="Parallel Summary",
+        readonly=True
+    )
 
     parallel_production_id = fields.Many2one(
         'mrp.production',
@@ -81,6 +78,34 @@ class MrpProduction(models.Model):
         help="Manufacturing readiness for this MO, based on sequential productions."
     )
 
+    @api.onchange('product_id')
+    def _onchange_product_id_set_type(self):
+        for production in self:
+            if production.product_id:
+                tmpl = production.product_id.product_tmpl_id
+                if tmpl.has_parallel_production and tmpl.tracking == "serial":
+                    production.type = 'parallel'
+
+    @api.onchange('product_id', 'type')
+    def _onchange_parallel_production(self):
+        for production in self:
+            if not production.product_id:
+                return
+        
+            tracking = production.product_id.tracking   # 'serial', 'lot', or 'none'
+
+            # If product is NOT serial-tracked, force type = default
+            if production.type == 'parallel' and tracking != 'serial':
+                production.type = 'default'
+                return {
+                    'warning': {
+                        'title': "Forced Default Production",
+                        'message': "This product is not tracked by serial numbers. "
+                                   "Production type has been changed to 'Default'.",
+                    }
+                }
+
+
     @api.depends('sequential_production_ids')
     def _compute_sequential_picking_ids(self):
         for production in self:
@@ -96,7 +121,7 @@ class MrpProduction(models.Model):
     def _compute_parallel_total_units(self):
         for rec in self:
             if rec.type != "parallel":
-                rec.parallel_total_units = 0
+                rec.parallel_total_units = rec.product_qty
             else:
                 rec.parallel_total_units = len(rec.sequential_production_ids)
 
@@ -546,8 +571,44 @@ class MrpProduction(models.Model):
                     prod.button_mark_done()
             if all_done:
                 production.state = "done"
+                production._generate_parallel_summary()
+
+    def _generate_parallel_summary(self):
+        # Create summary if missing
+        summary = self.summary_id
+        if not summary:
+            summary = self.env['mrp.parallel.summary'].create({
+                'production_id': self.id,
+            })
+
+        # If the user already modified (summary exists), do NOT override
+        if summary.total_duration or summary.total_cost:
+            return
+
+        # Collect values from child production orders
+        seq_productions = self.sequential_production_ids
+        total_cost = sum(children.mapped('total_cost'))
+        date_start = production.date_start
+        date_finished = production.date_finished
+        duration = production.duration
+
+        # Write values once
+        summary.write({
+            'total_cost': total_cost,
+            'date_start': date_start,
+            'date_finished': date_finished,
+            'duration': duration,
+        })
 
 
+    def action_generate_parallel_summary(self):
+        """
+        Called when user presses "Recalculate Summary".
+        """
+        for prod in self:
+            if prod.production_type != 'parallel':
+                continue
+            prod._generate_parallel_summary()
 
 
 

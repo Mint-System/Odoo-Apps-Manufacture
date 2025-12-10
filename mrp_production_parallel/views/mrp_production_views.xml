@@ -20,6 +20,59 @@
                         invisible="type != 'parallel' or not show_button_mark_done_parallel"/>
              </xpath>
 
+            <xpath expr="//div[field[@name='qty_producing']]" position="attributes">
+                <attribute name="invisible">state == 'draft' or type == 'parallel'</attribute>
+            </xpath>
+
+            <xpath expr="//div//field[@name='product_qty']" position="attributes">
+                <attribute name="invisible">state not in ('draft', 'done') or type == 'parallel'</attribute>
+            </xpath>
+
+            <xpath expr="//button[field[@name='product_qty']]" position="attributes">
+                <attribute name="invisible">state in ('draft', 'done', 'cancel') or not id or type == 'parallel'</attribute>
+            </xpath>
+
+            <xpath expr="//label[@for='product_qty']" position="attributes">
+                <attribute name="invisible">state != 'draft' and type == 'parallel'</attribute>
+            </xpath>
+
+            <xpath expr="//span[@class='fw-bold text-nowrap']" position="attributes">
+                <attribute name="invisible">state != 'draft' and type == 'parallel'</attribute>
+            </xpath>
+
+            <xpath expr="(//button[@name='action_product_forecast_report'])[1]" position="attributes">
+                <attribute name="invisible">state != 'draft' and type == 'parallel'</attribute>
+            </xpath>  
+
+            <xpath expr="(//button[@name='action_product_forecast_report'])[2]" position="attributes">
+                <attribute name="invisible">state != 'draft' and type == 'parallel'</attribute>
+            </xpath>  
+
+            <xpath expr="(//field[@name='move_raw_ids']//list//field[@name='product_uom_qty'])[1]" position="attributes">
+                <attribute name="column_invisible">(not parent.show_produce_all) or parent.type == 'parallel'</attribute>
+            </xpath>
+
+            <xpath expr="(//field[@name='move_raw_ids']//list//field[@name='product_uom_qty'])[2]" position="attributes">
+                <attribute name="column_invisible">parent.show_produce_all or parent.type == 'parallel'</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='move_raw_ids']//list//field[@name='quantity']" position="attributes">
+                <attribute name="column_invisible">parent.state == 'draft' or parent.type == 'parallel' </attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='move_raw_ids']//list//field[@name='picked']" position="attributes">
+                <attribute name="column_invisible">parent.state == 'draft' or parent.type == 'parallel' </attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='move_raw_ids']//list//field[@name='lot_ids']" position="attributes">
+                <attribute name="column_invisible">(not parent.show_lot_ids) or parent.state == 'draft' or parent.type == 'parallel' </attribute>
+                <attribute name="invisible">(not show_details_visible) or parent.type == 'parallel' </attribute>
+            </xpath>
+
+             <xpath expr="//field[@name='move_raw_ids']" position="attributes">
+                <attribute name="widget"></attribute>
+            </xpath>
+
              <xpath expr="//div[@class='oe_button_box']" position="inside">
                 <button name="action_view_sequential_productions"
                         type="object"
@@ -96,12 +149,7 @@
                     </field>
                 </page>
                 <page string="Post Calculation" invisible="type != 'parallel'">   
-                    <group>
-                        <span>Produktionsdaten </span>
-                    </group>
-
-                    <separator string="Components Used"/>
-                    <span>Material, Zeiten, Kosten </span>
+                    <field name="summary_id" context="{'form_view_ref':'my_module.view_mrp_parallel_summary_form'}"/>
                 </page>
             </xpath>
             <xpath expr="//field[@name='show_produce_all']" position="after">
@@ -143,6 +191,22 @@
             </xpath>
         </field>
     </record>
+
+<record id="view_mrp_production_form_inherit_parallel" model="ir.ui.view">
+    <field name="name">mrp.production.form.parallel.summary</field>
+    <field name="model">mrp.production</field>
+    <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+    <field name="arch" type="xml">
+        <xpath expr="//header" position="inside">
+            <button name="action_generate_parallel_summary"
+                    type="object"
+                    string="Summary"
+                    class="btn-secondary"
+                    invisible="state not in ('done')"/>
+        </xpath>
+    </field>
+</record>
+
 
     
 
