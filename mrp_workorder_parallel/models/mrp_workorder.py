@@ -663,11 +663,12 @@ class MrpWorkorder(models.Model):
                 # Ensure both have dates
                 if workorder.date_finished and parallel_wo.date_finished:
                     if workorder.date_finished > parallel_wo.date_finished:
+                        pass
                         # Prevent recursive update
                         # parallel_wo.with_context(skip_seq_date_update=True).write({
                         #     "date_finished": workorder.date_finished
                         # })
-                        self.env.context['skip_seq_date_update'] = False
+                        #self.env.context['skip_seq_date_update'] = False
 
         return res
 
