@@ -11,7 +11,7 @@
                 </group>
                 <group>
                     <field name="duration"/>
-                    <field name="cost"/>
+                    <field name="total_cost"/>
                 </group>
                 <group>
                     <field name="date_start"/>

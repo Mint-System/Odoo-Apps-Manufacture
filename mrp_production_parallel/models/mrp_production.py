@@ -121,9 +121,11 @@ class MrpProduction(models.Model):
     def _compute_parallel_total_units(self):
         for rec in self:
             if rec.type != "parallel":
-                rec.parallel_total_units = rec.product_qty
+                rec.parallel_total_units = 0
             else:
-                rec.parallel_total_units = len(rec.sequential_production_ids)
+                rec.parallel_total_units = len(rec.sequential_production_ids) if len(rec.sequential_production_ids) > 0 else rec.product_qty
+
+
 
 
     @api.depends('state', 'product_qty', 'qty_producing', 'type')
@@ -569,46 +571,77 @@ class MrpProduction(models.Model):
             if any_to_close:
                 for prod in seq_productions.filtered(lambda p: p.state=="to_close"):
                     prod.button_mark_done()
+                production.state = "done"
             if all_done:
                 production.state = "done"
-                production._generate_parallel_summary()
+            
+            production._generate_parallel_summary()
 
     def _generate_parallel_summary(self):
         # Create summary if missing
-        summary = self.summary_id
-        if not summary:
-            summary = self.env['mrp.parallel.summary'].create({
-                'production_id': self.id,
+        for production in self:
+            _logger.warning("_generate_parallel_summary called")
+            summary = production.summary_id
+            _logger.warning(f"summary: {summary}")
+            if not summary:
+                summary = self.env['mrp.parallel.summary'].create({
+                    'production_id': production.id,
+                })
+                production.summary_id = summary.id
+
+
+            _logger.warning(f"summary after creation: {summary}")
+
+            # If the user already modified (summary exists), do NOT override
+            if summary.duration or summary.total_cost:
+                return
+
+            # Collect values from child production orders
+            seq_productions = self.sequential_production_ids
+            total_cost = sum(seq_prod._compute_total_cost() for seq_prod in seq_productions)
+            date_start = self.date_start
+            date_finished = self.date_finished
+            duration = self.duration
+
+            # Write values once
+            summary.write({
+                'total_cost': total_cost,
+                'date_start': date_start,
+                'date_finished': date_finished,
+                'duration': duration,
             })
-
-        # If the user already modified (summary exists), do NOT override
-        if summary.total_duration or summary.total_cost:
-            return
-
-        # Collect values from child production orders
-        seq_productions = self.sequential_production_ids
-        total_cost = sum(children.mapped('total_cost'))
-        date_start = production.date_start
-        date_finished = production.date_finished
-        duration = production.duration
-
-        # Write values once
-        summary.write({
-            'total_cost': total_cost,
-            'date_start': date_start,
-            'date_finished': date_finished,
-            'duration': duration,
-        })
 
 
     def action_generate_parallel_summary(self):
         """
         Called when user presses "Recalculate Summary".
         """
+        _logger.warning("##### action_generate_parallel_summary called")
         for prod in self:
-            if prod.production_type != 'parallel':
+            if prod.type != 'parallel':
                 continue
             prod._generate_parallel_summary()
+
+
+    def _compute_total_cost(self):
+        self.ensure_one()
+        production = self
+
+        # Work center costs
+        workorder_cost = 0.0
+        for wo in production.workorder_ids:
+            hours = (wo.duration or 0.0) / 60.0
+            workorder_cost += hours * (wo.workcenter_id.costs_hour or 0.0)
+
+        # Material costs
+        material_cost = 0.0
+        for move in production.move_raw_ids:
+            qty = move.quantity or 0.0
+            cost = move.product_id.standard_price or 0.0
+            material_cost += qty * cost
+
+        return workorder_cost + material_cost
+
 
 
 

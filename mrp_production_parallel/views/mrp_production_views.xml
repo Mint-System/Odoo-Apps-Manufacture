@@ -18,6 +18,13 @@
                         type="object"
                         class="oe_highlight"
                         invisible="type != 'parallel' or not show_button_mark_done_parallel"/>
+
+                    <button name="action_generate_parallel_summary"
+                            type="object"
+                            string="Summary"
+                            class="btn-secondary"
+                            invisible="state not in ('done')"/>
+          
              </xpath>
 
             <xpath expr="//div[field[@name='qty_producing']]" position="attributes">
@@ -25,7 +32,7 @@
             </xpath>
 
             <xpath expr="//div//field[@name='product_qty']" position="attributes">
-                <attribute name="invisible">state not in ('draft', 'done') or type == 'parallel'</attribute>
+                <attribute name="invisible">state not in ('draft', 'done')</attribute>
             </xpath>
 
             <xpath expr="//button[field[@name='product_qty']]" position="attributes">
@@ -149,7 +156,7 @@
                     </field>
                 </page>
                 <page string="Post Calculation" invisible="type != 'parallel'">   
-                    <field name="summary_id" context="{'form_view_ref':'my_module.view_mrp_parallel_summary_form'}"/>
+                    <field name="summary_id" context="{'form_view_ref':'mrp_production_parallel.view_mrp_parallel_summary_form'}"/>
                 </page>
             </xpath>
             <xpath expr="//field[@name='show_produce_all']" position="after">
@@ -191,25 +198,5 @@
             </xpath>
         </field>
     </record>
-
-<record id="view_mrp_production_form_inherit_parallel" model="ir.ui.view">
-    <field name="name">mrp.production.form.parallel.summary</field>
-    <field name="model">mrp.production</field>
-    <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
-    <field name="arch" type="xml">
-        <xpath expr="//header" position="inside">
-            <button name="action_generate_parallel_summary"
-                    type="object"
-                    string="Summary"
-                    class="btn-secondary"
-                    invisible="state not in ('done')"/>
-        </xpath>
-    </field>
-</record>
-
-
-    
-
-    
 
 </odoo>

@@ -15,7 +15,7 @@ class MrpParallelSummary(models.Model):
 
 
     duration = fields.Float()
-    cost = fields.Float()
+    total_cost = fields.Float()
 
     date_start = fields.Date("Start Date")
     date_finished = fields.Date("End Date")
@@ -23,4 +23,12 @@ class MrpParallelSummary(models.Model):
 
 
     def action_recalculate_summary(self):
-        pass
+        """
+        Called when user presses "Recalculate Summary".
+        """
+        _logger.warning("##### action_recalculate_summary called")
+        for summary in self:
+            production = summary.production_id
+            if production.type != 'parallel':
+                continue
+            production._generate_parallel_summary()
