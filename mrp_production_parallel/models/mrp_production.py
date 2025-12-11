@@ -505,11 +505,19 @@ class MrpProduction(models.Model):
 
     def action_confirm(self):
         for production in self:
+            _logger.warning(f"type, bom, ops: {production.type}, {production.bom_id}, {production.bom_id.operation_ids}")
             if production.type == 'parallel' and production.product_qty <= 1:
                 raise UserError(
                     "A parallel production must have a quantity greater than 1.\n"
                     "Please increase the quantity or choose another production type."
                 )
+
+            if production.type == "parallel" and production.bom_id and not production.bom_id.operation_ids:
+                raise UserError(
+                    "This Bill of Materials has no operations.\n"
+                    "Parallel production requires at least one work order."
+                )
+                
         return super().action_confirm()
 
     def pre_button_mark_done(self):
