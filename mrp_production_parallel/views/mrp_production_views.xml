@@ -71,6 +71,11 @@
                 <attribute name="column_invisible">parent.state == 'draft' or parent.type == 'parallel' </attribute>
             </xpath>
 
+            <xpath expr="//field[@name='move_raw_ids']//list//field[@name='quantity']" position="after">
+                <field name="parallel_product_uom_qty" invisible="parent.type != 'parallel'"/>
+                <field name="parallel_quantity" invisible="parent.type != 'parallel'"/>
+            </xpath>
+
             <xpath expr="//field[@name='move_raw_ids']//list//field[@name='picked']" position="attributes">
                 <attribute name="column_invisible">parent.state == 'draft' or parent.type == 'parallel' </attribute>
             </xpath>
@@ -79,6 +84,8 @@
                 <attribute name="column_invisible">(not parent.show_lot_ids) or parent.state == 'draft' or parent.type == 'parallel' </attribute>
                 <attribute name="invisible">(not show_details_visible) or parent.type == 'parallel' </attribute>
             </xpath>
+
+
 
              <xpath expr="//field[@name='move_raw_ids']" position="attributes">
                 <attribute name="widget"></attribute>

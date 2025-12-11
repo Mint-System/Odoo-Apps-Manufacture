@@ -13,12 +13,14 @@ class MrpParallelSummary(models.Model):
     name = fields.Char(related="production_id.name")
     default_code = fields.Char(related="production_id.product_id.default_code")
 
+    total_units = fields.Float()
+
 
     duration = fields.Float()
     total_cost = fields.Float()
 
-    date_start = fields.Date("Start Date")
-    date_finished = fields.Date("End Date")
+    date_start = fields.Datetime("Start Date")
+    date_finished = fields.Datetime("End Date")
 
 
 

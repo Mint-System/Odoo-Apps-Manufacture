@@ -621,15 +621,17 @@ class MrpProduction(models.Model):
             _logger.warning(f"summary after creation: {summary}")
 
             # If the user already modified (summary exists), do NOT override
-            if summary.duration or summary.total_cost:
-                return
+            # if summary.duration or summary.total_cost:
+            #     return
 
-            # Collect values from child production orders
-            seq_productions = self.sequential_production_ids
+            # Collect values from seq production orders
+            seq_productions = production.sequential_production_ids
+            par_workorders = production.workorder_ids.filtered(lambda wo: wo.type=='parallel')
             total_cost = sum(seq_prod._compute_total_cost() for seq_prod in seq_productions)
-            date_start = self.date_start
-            date_finished = self.date_finished
-            duration = self.duration
+            date_start = production.date_start
+            date_finished = production.date_finished
+            duration = sum(par_wo.duration for par_wo in par_workorders)
+            total_units = production.parallel_total_units
 
             # Write values once
             summary.write({
