@@ -31,8 +31,12 @@
                 <attribute name="invisible">state == 'draft' or type == 'parallel'</attribute>
             </xpath>
 
+            <xpath expr="//div//field[@name='product_qty']" position="before">
+                <field name="show_product_qty" invisible="1" />
+            </xpath>
+
             <xpath expr="//div//field[@name='product_qty']" position="attributes">
-                <attribute name="invisible">state not in ('draft', 'done')</attribute>
+                <attribute name="invisible">not show_product_qty</attribute>
             </xpath>
 
             <xpath expr="//button[field[@name='product_qty']]" position="attributes">

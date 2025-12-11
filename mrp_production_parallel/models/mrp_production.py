@@ -60,6 +60,12 @@ class MrpProduction(models.Model):
         store=False
     )
 
+    show_product_qty = fields.Boolean(
+        string="Show product qty",
+        compute="_compute_show_product_qty",
+        store=False
+    )
+
     link_mo_id = fields.Many2one(
         'mrp.production',
         string='MO link',
@@ -191,6 +197,20 @@ class MrpProduction(models.Model):
 
             production.show_validate_button = show
 
+
+    @api.depends("state", "type")
+    def _compute_show_product_qty(self):
+        for production in self:
+            show = False
+            if production.type == 'parallel':
+                if production.state in ('draft'):
+                    show = True
+                elif production.state in ('done'):
+                    show = False
+            else:
+                if production.state in ('draft', 'done'):
+                    show = True
+            production.show_product_qty = show
 
     @api.depends(
         "sequential_production_ids.move_raw_ids.state",
