@@ -122,6 +122,7 @@ class MrpProduction(models.Model):
             else:
                 production.sequential_picking_ids = production.picking_ids
                 production.sequential_picking_count = len(production.picking_ids)
+                
 
     @api.depends("sequential_production_ids.product_qty")
     def _compute_parallel_total_units(self):
@@ -582,7 +583,6 @@ class MrpProduction(models.Model):
             seq_productions = production.sequential_production_ids
             any_to_close = any(p.state in ["to_close"] for p in seq_productions)
             any_to_close_list.append(any_to_close)
-        _logger.warning(f"any_to_close_list: {any_to_close_list}")
         if any(a == True for a in any_to_close_list):
             self.show_button_mark_done_parallel = True
         else:
@@ -594,6 +594,9 @@ class MrpProduction(models.Model):
             if production.type != "parallel":
                 continue
             seq_productions = production.sequential_production_ids
+            nothing_to_close = all(p.state not in ["to_close"] for p in seq_productions)
+            if nothing_to_close:
+                raise UserError("No sequentiqal production to close")
             any_to_close = any(p.state in ["to_close"] for p in seq_productions)
             all_done = all(p.state in ["done"] for p in seq_productions)
             if any_to_close:

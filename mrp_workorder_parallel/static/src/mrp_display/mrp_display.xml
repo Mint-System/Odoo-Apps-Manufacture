@@ -135,4 +135,17 @@
 		</xpath>
 	</t>
 
+
+	<t t-inherit="mrp_workorder.MrpDisplayWorkorderFooter" t-inherit-mode="extension">
+		<xpath expr="//button[@t-if='displayDoneButton']" position="replace">
+			<span></span>
+		</xpath>
+		<xpath expr="//button[@t-if='displayCloseProductionButton']" position="replace">
+			<span>Please close Production in backend.</span>
+		</xpath>
+		<xpath expr="//button[@t-elif='state.underValidation']" position="replace">
+			<span></span>
+		</xpath>
+    </t>
+
 </templates>
