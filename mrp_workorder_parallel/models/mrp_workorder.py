@@ -681,7 +681,7 @@ class MrpWorkorder(models.Model):
         # Add the filter for type = 'parallel' to the domain      
         _logger.warning("domain: %s" % (domain,))                                                                                
         domain = domain or []                                                                                                                     
-        domain.append(('type', '=', 'parallel'))                                                                                    
+        domain.append(('type', '!=', 'sequential'))                                                                                    
         return super().get_gantt_data(domain, groupby, read_specification, **kwargs) 
 
 
