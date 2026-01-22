@@ -56,15 +56,27 @@ patch(MrpDisplayRecord.prototype, {
       },
 
     async onClickHeader() {
-        const { resModel, resId } = this.props.record;
-        if (resModel !== "mrp.workorder") return;
+        if (this.props.record.type === 'parallel') {
+            const { resModel, resId } = this.props.record;
+            if (resModel !== "mrp.workorder") return;
 
-        const hasReady = this.props.record.data.has_ready;
-        
-        if (hasReady){
-            this.startBatchWorking(true);
+            const hasReady = this.props.record.data.has_ready;
+            
+            if (hasReady){
+                this.startBatchWorking(true);
+            }
+        } else {
+            const { resModel, resId } = this.props.record;
+            if (resModel === "mrp.workorder"){
+                this.startWorking(true);
+            }
+            if (resModel === "mrp.production"){
+                await this.model.orm.call(resModel, "action_start", [resId]);
+                await this.env.reload();
+            }
         }
     },
+
 
 	async onClickStartBatch() {
 		const { resModel, resId } = this.props.record;
