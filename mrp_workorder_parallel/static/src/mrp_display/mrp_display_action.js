@@ -52,7 +52,7 @@ patch(MrpDisplayAction.prototype, {
         const { context } = this.props.action;
         const domain = [
             // ["state", "in", ["confirmed", "progress", "to_close"]],
-            ["type", "in", ["parallel"]],
+            ["type", "not in", ["sequential"]],
             // "|",
             // ["bom_id", "=", false],
             // ["bom_id.type", "in", ["normal", "phantom"]],
