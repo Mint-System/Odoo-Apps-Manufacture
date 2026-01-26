@@ -79,7 +79,7 @@
 		                	<t t-if="record.is_finished">
 		                		<span>All done</span>
 		                	</t>
-		                	
+
 	                    	<t t-if="record.has_ready">
 	                    		<button class="btn btn-lg text-nowrap btn-secondary" t-on-click="onClickStartBatch" title="Start Batch">
 									<span><i class="fa fa-play"/></span>
@@ -108,7 +108,7 @@
 									<span>Quick Finish</span>
 								</button>
 		                    </t>
-			                
+
 		                </div>
 		            </t>
 		        </ul>
@@ -119,37 +119,22 @@
 	    </xpath>
 	</t>
 
+
 	<t t-inherit="mrp_workorder.MrpDisplayWorkorderHeader" t-inherit-mode="extension">
 		<xpath expr="//span[@class='h5 text-truncate']" position="replace">
 			<t t-if="record.type == 'parallel'">
 				<span class="h5 text-truncate" t-esc="record.workorder_infos.parent_production"/>
 			</t>
 			<t t-else="">
-				<t t-name="mrp_workorder.MrpDisplayWorkorderHeader">
-			        <span class="h5 text-truncate" t-esc="record.display_name"/>
-			        <span class="text-capitalize d-flex flex-column ms-1">
-			            <div t-if="this.props.record.data.employee_assigned_ids.records.length > 0" class="pt-1">
-			                <t t-foreach="this.props.record.data.employee_assigned_ids.records" t-as="employee" t-key="employee.resId">
-			                    <img t-attf-src="/web/image/hr.employee/{{employee.resId}}/avatar_128" class="rounded o_avatar_connected me-1"/>
-			                </t>
-			            </div>
-			        </span>
-			        <i class="fa" t-att-class="this.active ? 'fa-pause' : 'fa-play'"></i>
-			    </t>
+				<span class="h5 text-truncate" t-esc="record.display_name"/>
 			</t>
-
 		</xpath>
 	</t>
 
 
+
 	<t t-inherit="mrp_workorder.MrpDisplayProductionFooter" t-inherit-mode="extension">
 		<xpath expr="//button" position="replace">
-		   <!--  <button t-if="displayDoneButton" t-attf-class="btn #{_btn_type}"
-	                t-on-click="onClickValidateButton" t-att-barcode_trigger="props.barcodeTarget ? 'CLMO' : false">
-	            <t t-if="state.underValidation">Undo</t>
-	            <t t-elif="trackingMode === 'mass_produce'">Mass Produce</t>
-	            <t t-else="">Prepare Close Production</t>
-	        </button> -->
 	        <t t-if="record.type == 'parallel'">
 	        	<span>Please close Production in backend.</span>
 	        </t>
@@ -157,78 +142,69 @@
 				<t t-if="state.underValidation" t-set="_btn_type" t-value="'btn-outline-secondary'"/>
 		        <t t-elif="props.record.data.state === 'to_close'" t-set="_btn_type" t-value="'btn-primary'"/>
 		        <t t-else="" t-set="_btn_type" t-value="'btn-secondary'"/>
-		        <button t-if="displayDoneButton" t-attf-class="btn #{_btn_type}"
-		                t-on-click="onClickValidateButton" t-att-barcode_trigger="props.barcodeTarget ? 'CLMO' : false">
-		            <t t-if="state.underValidation">Undo</t>
-		            <t t-elif="trackingMode === 'mass_produce'">Mass Produce</t>
-		            <t t-else="">Close Production</t>
-		        </button>
+		        <t t-if="displayDoneButton">
+			        <button t-attf-class="btn #{_btn_type}"
+			                t-on-click="onClickValidateButton" t-att-barcode_trigger="props.barcodeTarget ? 'CLMO' : false">
+			            <t t-if="state.underValidation">Undo</t>
+			            <t t-elif="trackingMode === 'mass_produce'">Mass Produce</t>
+			            <t t-else="">Close Production</t>
+			        </button>
+		        </t>
 	        </t>
 		</xpath>
 	</t>
 
+    <t t-inherit="mrp_workorder.MrpDisplayRecord"
+       t-inherit-mode="extension"
+       owl="1">
 
-	<t t-inherit="mrp_workorder.MrpDisplayWorkorderFooter" t-inherit-mode="extension">
-		<xpath expr="//button[@t-if='displayDoneButton']" position="replace">
-			<t t-if="record.type == 'parallel'">
-				<span></span>
-			</t>
-			<t t-else="">
-				<t t-if="displayDoneButton">
-					<button t-attf-class="btn #{_btn_type}"
-			                t-on-click="onClickValidateButton" t-att-barcode_trigger="props.barcodeTarget ? 'CLWO' : false">
-			            <t t-if="state.underValidation">Undo</t>
-			            <t t-else="">Mark as Done</t>
-			        </button>
-			    </t>
-			</t>
-		</xpath>
-		<!-- <xpath expr="//button[@t-if='displayCloseProductionButton']" position="replace">
-			<t t-if="record.type == 'parallel'">
-				<span>Please close Production in backend.</span>
-			</t>
-			<t t-else="">
-				<button t-if="displayCloseProductionButton" class="btn btn-primary flex-grow-1 ms-5"
-                barcode_trigger="CLMO" t-on-click="onClickCloseProduction">
-           		 Close Production
-      			</button>
-			</t>
-		</xpath>
-		<xpath expr="//button[@t-elif='state.underValidation']" position="replace">
-			<t t-if="record.type == 'parallel'">
-				<span></span>
-			</t>
-			<t t-else="">
-				<button t-elif="state.underValidation" class="me-4" t-attf-class="btn #{_btn_type}" t-on-click="nextOperation">Next Operation</button>
-			</t>
-		</xpath> -->
+        <xpath expr="//div[contains(@class,'card-footer')]" position="replace">
 
-		<xpath expr="//button[@t-if='displayCloseProductionButton']" position="replace">
-			<t t-if="record.type == 'parallel'">
-				<span>Please close Production in backend.</span>
-			</t>
-			<t t-else="">
-			    <t t-if="displayCloseProductionButton">
-			        <button class="btn btn-primary flex-grow-1 ms-5"
-			                barcode_trigger="CLMO"
-			                t-on-click="onClickCloseProduction">
-			            Close Production
-			        </button>
-			    </t>
-			    <t t-elif="state.underValidation">
-			        <button class="me-4 btn #{_btn_type}"
-			                t-on-click="nextOperation">
-			            Next Operation
-			        </button>
-			    </t>
-			</t>
+            <div class="card-footer d-flex justify-content-between align-items-center my-1"
+                 t-att-class="{'py-0': !state.underValidation, 'pe-0': !displayCloseProductionButton}">
 
-		</xpath>
+                <!-- PRODUCTION -->
+                <t t-if="props.record.resModel == 'mrp.production'">
+                    <t t-if="props.record.data.type == 'parallel'">
+                        <t t-call="mrp_workorder_parallel.MrpDisplayProductionFooterParallel"/>
+                    </t>
+                    <t t-else="">
+                        <t t-call="mrp_workorder.MrpDisplayProductionFooter"/>
+                    </t>
+                </t>
 
+                <!-- WORKORDER -->
+                <t t-if="props.record.resModel == 'mrp.workorder'">
+                    <t t-if="props.record.data.type == 'parallel'">
+                        <t t-call="mrp_workorder_parallel.MrpDisplayWorkorderFooterParallel"/>
+                    </t>
+                    <t t-else="">
+                        <t t-call="mrp_workorder.MrpDisplayWorkorderFooter"/>
+                    </t>
+                </t>
 
+                <!-- GEAR MENU (unchanged) -->
+                <button t-if="!state.underValidation"
+                        class="btn btn-light py-3 px-4 ms-auto rounded-0 fa fa-gear"
+                        t-on-click="onClickOpenMenu"/>
+            </div>
 
-
-
+        </xpath>
     </t>
+
+
+    <t t-name="mrp_workorder_parallel.MrpDisplayWorkorderFooterParallel" owl="1">
+        <div class="text-center my-2">
+            <span>Please close Production in backend.</span>
+        </div>
+    </t>
+
+    <t t-name="mrp_workorder_parallel.MrpDisplayProductionFooterParallel" owl="1">
+        <div class="text-center my-2">
+            <span>Please close Production in backend.</span>
+        </div>
+    </t>
+
+
 
 </templates>
