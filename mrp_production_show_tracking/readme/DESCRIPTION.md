@@ -1,1 +1,1 @@
-$MODULE_SUMMARY
+Shows tracking type on Stock Move.

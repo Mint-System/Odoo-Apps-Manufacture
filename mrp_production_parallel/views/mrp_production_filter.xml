@@ -4,20 +4,24 @@
         <record id="view_mrp_production_search_inherit" model="ir.ui.view">
             <field name="name">mrp.production.search.inherit</field>
             <field name="model">mrp.production</field>
-            <field name="inherit_id" ref="mrp.view_mrp_production_filter"/>
+            <field name="inherit_id" ref="mrp.view_mrp_production_filter" />
             <field name="arch" type="xml">
                 <xpath expr="//filter[@name='starred']" position="after">
-                    <filter name="todo_non_sequential"
-                            string="To do (Non Sequential)"
-                            domain="[('state', 'not in', ('done', 'cancel')), ('type', '!=', 'sequential')]"/>
+                    <filter
+                        name="todo_non_sequential"
+                        string="To do (Non Sequential)"
+                        domain="[('state', 'not in', ('done', 'cancel')), ('type', '!=', 'sequential')]"
+                    />
                 </xpath>
             </field>
         </record>
 
-        <record id="mrp.mrp_production_action" model="ir.actions.act_window" forcecreate="False">
+        <record
+            id="mrp.mrp_production_action"
+            model="ir.actions.act_window"
+            forcecreate="False"
+        >
             <field name="context">{'search_default_todo_non_sequential': True}</field>
         </record>
-
     </data>
 </odoo>
-

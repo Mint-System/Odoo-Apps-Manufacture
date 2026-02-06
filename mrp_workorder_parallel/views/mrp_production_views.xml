@@ -3,7 +3,10 @@
     <record id="view_mrp_workorder_tree_inherit_register" model="ir.ui.view">
         <field name="name">mrp.workorder.tree.inherit.register</field>
         <field name="model">mrp.workorder</field>
-        <field name="inherit_id" ref="mrp.mrp_production_workorder_tree_editable_view"/>
+        <field
+            name="inherit_id"
+            ref="mrp.mrp_production_workorder_tree_editable_view"
+        />
         <field name="arch" type="xml">
             <xpath expr="//field[@name='state']" position="after">
                 <!-- <button name="action_register_serial_test"
@@ -22,54 +25,74 @@
     <record id="view_mrp_production_form_inherit_parallel" model="ir.ui.view">
         <field name="name">mrp.production.form.parallel.workorders</field>
         <field name="model">mrp.production</field>
-        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view" />
         <field name="arch" type="xml">
             <xpath expr="//page[@name='operations']" position="attributes">
                 <attribute name="invisible">type == 'parallel'</attribute>
             </xpath>
             <xpath expr="//page[@name='operations']" position="after">
-                <page name="parallel_workorders" string="Parallel Work Orders"
-                      invisible="type != 'parallel'">
-                    <field name="workorder_ids" domain="[('type','=','parallel')]"
-                           context="{'default_type':'parallel'}">
+                <page
+                    name="parallel_workorders"
+                    string="Parallel Work Orders"
+                    invisible="type != 'parallel'"
+                >
+                    <field
+                        name="workorder_ids"
+                        domain="[('type','=','parallel')]"
+                        context="{'default_type':'parallel'}"
+                    >
                         <list>
-                            <field name="type" widget="badge" invisible="type != 'parallel'"/>
-                            <field name="name"/>
-                            <field name="id"/>
-                            <field name="workcenter_id"/>
+                            <field
+                                name="type"
+                                widget="badge"
+                                invisible="type != 'parallel'"
+                            />
+                            <field name="name" />
+                            <field name="id" />
+                            <field name="workcenter_id" />
                             <!-- <field name="sequential_serials_in_step"/> -->
-                          <!--   <field name="registered_serials_info"
+                            <!--   <field name="registered_serials_info"
                                string="Registered Serials"
                                invisible="type != 'parallel'"/> -->
-                            <field name="duration_expected"/>
+                            <field name="duration_expected" />
                             <field name="duration" />
                             <field name="date_start" />
                             <field name="date_finished" />
                             <field name="state" />
-                            <button name="action_finish_batch"
-                                        type="object"
-                                        string="BATCH FINISH"
-                                        icon="fa-check" />
-                            <button name="action_handle_parallel_start"
-                                        type="object"
-                                        string="Start"
-                                        icon="fa-play"
-                                        invisible="has_ready == False" />
-                            <button name="action_handle_parallel_continue"
-                                    type="object"
-                                    string="Continue"
-                                    icon="fa-play-circle"
-                                    invisible="has_paused == False" />
-                            <button name="action_handle_parallel_stop"
-                                    type="object"
-                                    string="Stop"
-                                    icon="fa-stop"
-                                    invisible="has_running == False" />
-                            <button name="action_handle_parallel_finish"
-                                    type="object"
-                                    string="Finish"
-                                    icon="fa-check"
-                                    invisible="has_running == False" />
+                            <button
+                                name="action_finish_batch"
+                                type="object"
+                                string="BATCH FINISH"
+                                icon="fa-check"
+                            />
+                            <button
+                                name="action_handle_parallel_start"
+                                type="object"
+                                string="Start"
+                                icon="fa-play"
+                                invisible="has_ready == False"
+                            />
+                            <button
+                                name="action_handle_parallel_continue"
+                                type="object"
+                                string="Continue"
+                                icon="fa-play-circle"
+                                invisible="has_paused == False"
+                            />
+                            <button
+                                name="action_handle_parallel_stop"
+                                type="object"
+                                string="Stop"
+                                icon="fa-stop"
+                                invisible="has_running == False"
+                            />
+                            <button
+                                name="action_handle_parallel_finish"
+                                type="object"
+                                string="Finish"
+                                icon="fa-check"
+                                invisible="has_running == False"
+                            />
                         </list>
                     </field>
                 </page>
@@ -77,10 +100,13 @@
         </field>
     </record>
 
-    <record id="view_mrp_production_search_inherit_exclude_sequential" model="ir.ui.view">
+    <record
+        id="view_mrp_production_search_inherit_exclude_sequential"
+        model="ir.ui.view"
+    >
         <field name="name">mrp.production.search.inherit.exclude.sequential</field>
         <field name="model">mrp.production</field>
-        <field name="inherit_id" ref="mrp.view_mrp_production_filter"/>
+        <field name="inherit_id" ref="mrp.view_mrp_production_filter" />
         <field name="arch" type="xml">
             <xpath expr="//filter[@name='todo']" position="after">
                 <filter
@@ -92,10 +118,9 @@
         </field>
     </record>
 
-<!-- 
+    <!--
 
 <record id="mrp_production_action" model="ir.actions.act_window">
     <field name="context" eval="{'search_default_todo_non_sequential': True}"/>
 </record> -->
-
 </odoo>

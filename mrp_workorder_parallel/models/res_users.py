@@ -1,4 +1,5 @@
-from odoo import models, api, http, _
+from odoo import api, models
+
 
 class ResUsers(models.Model):
     _inherit = "res.users"
@@ -11,5 +12,6 @@ class ResUsers(models.Model):
         'move_to_repair' = move workorder to repair
         """
         from odoo.http import request
+
         request.session["barcode_action"] = mode
         return True

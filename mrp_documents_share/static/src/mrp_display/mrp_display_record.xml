@@ -1,25 +1,22 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
+<?xml version="1.0" encoding="UTF-8" ?>
 <templates xml:space="preserve">
-    
+
    <t t-inherit="mrp_workorder.MrpDisplayRecord" t-inherit-mode="extension" owl="1">
-   <xpath expr="//div[hasclass('card-header')]" position="after">
-        <ul class="list-group list-group-flush">
-        <li class="o_mrp_display list-group-item d-flex justify-content-between align-items-center">
-        <span style="font-size:8pt;">
-        <t t-if="this.drawingFileUrl">
-        <a t-attf-href="#{this.drawingFileUrl}" target="_blank">Zeichnung</a>
-        </t>
-        </span>
-        </li>
-        </ul>
-       
-    </xpath>
-    
+        <xpath expr="//div[hasclass('card-header')]" position="after">
+            <ul class="list-group list-group-flush">
+                <li
+                    class="o_mrp_display list-group-item d-flex justify-content-between align-items-center"
+                >
+                    <span style="font-size:8pt;">
+                        <t t-if="this.drawingFileUrl">
+                            <a
+                                t-attf-href="#{this.drawingFileUrl}"
+                                target="_blank"
+                            >Zeichnung</a>
+                        </t>
+                    </span>
+                </li>
+            </ul>
+        </xpath>
     </t>
 </templates>
-
-
-
-
-

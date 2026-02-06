@@ -267,7 +267,7 @@ class MrpProduction(models.Model):
         first_prod = sequential_productions[0]
         second_prod = sequential_productions[1]
         for first_wo, second_wo in zip(
-            first_prod.workorder_ids, second_prod.workorder_ids
+            first_prod.workorder_ids, second_prod.workorder_ids, strict=False
         ):
             first_wo.duration_expected = second_wo.duration_expected
 

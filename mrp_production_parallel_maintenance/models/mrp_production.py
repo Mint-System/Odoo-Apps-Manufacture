@@ -1,13 +1,13 @@
-from odoo import models, fields, api
-
 import logging
+
+from odoo import fields, models
+
 _logger = logging.getLogger(__name__)
 
+
 class MrpProduction(models.Model):
-    _inherit = 'mrp.production'
+    _inherit = "mrp.production"
 
     maintenance_request_ids = fields.One2many(
-        "maintenance.request",
-        "production_id",
-        string="Maintenance Requests"
+        "maintenance.request", "production_id", string="Maintenance Requests"
     )

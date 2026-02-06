@@ -1,6 +1,6 @@
 /** @odoo-module **/
-import { browser } from "@web/core/browser/browser";
-import { registry } from "@web/core/registry";
+import {browser} from "@web/core/browser/browser";
+import {registry} from "@web/core/registry";
 
 // Define service
 // export const pageRefreshService = {
@@ -18,11 +18,11 @@ import { registry } from "@web/core/registry";
 //             // Hard & soft refresh actions are already defined
 //             // in odoo.
 //             const actionService = env.services.action;
-            
-//             // Note : Change the logic according to your specific 
+
+//             // Note : Change the logic according to your specific
 //             // usecase.
 //             // Remove the '#' character
-//             const hash = window.location.hash.slice(1); 
+//             const hash = window.location.hash.slice(1);
 //             const urlParams = new URLSearchParams(hash);
 
 //             if (urlParams.has('view_type') && urlParams.get('view_type') === 'form') {

@@ -6,20 +6,24 @@
         <field name="arch" type="xml">
             <form string="Parallel Production Summary">
                 <group>
-                    <field name="name"/>
-                    <field name="default_code"/>
+                    <field name="name" />
+                    <field name="default_code" />
                 </group>
                 <group>
-                    <field name="duration"/>
-                    <field name="total_cost"/>
+                    <field name="duration" />
+                    <field name="total_cost" />
                 </group>
                 <group>
-                    <field name="date_start"/>
-                    <field name="date_finished"/>
+                    <field name="date_start" />
+                    <field name="date_finished" />
                 </group>
                 <footer>
-                    <button string="Recalculate" type="object" name="action_recalculate_summary"/>
-                    <button string="Close" class="btn-secondary" special="cancel"/>
+                    <button
+                        string="Recalculate"
+                        type="object"
+                        name="action_recalculate_summary"
+                    />
+                    <button string="Close" class="btn-secondary" special="cancel" />
                 </footer>
             </form>
         </field>

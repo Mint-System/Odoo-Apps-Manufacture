@@ -1,8 +1,7 @@
 /** @odoo-module **/
 
-import { MrpDisplay } from "@mrp_workorder/mrp_display/mrp_display";
-import { patch } from "@web/core/utils/patch";
-
+import {MrpDisplay} from "@mrp_workorder/mrp_display/mrp_display";
+import {patch} from "@web/core/utils/patch";
 
 // patch(MrpDisplay.prototype, {
 

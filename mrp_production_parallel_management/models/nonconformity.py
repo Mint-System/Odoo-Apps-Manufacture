@@ -12,11 +12,11 @@ class MgmtNonconformity(models.Model):
     nc_type = fields.Selection(
         string="NC Type",
         selection=[
-            ('inv', 'Inventory'),
-            ('smt', 'SMT'),
-            ('tht', 'THT'),
-            ('prod', 'Production')
+            ("inv", "Inventory"),
+            ("smt", "SMT"),
+            ("tht", "THT"),
+            ("prod", "Production"),
         ],
-        default='prod',
+        default="prod",
         required=True,
     )

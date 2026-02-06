@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
-
     <record id="statement_form_view" model="ir.ui.view">
         <field name="name">mrp_workorder_parallel.statement_form_view</field>
         <field name="model">mgmt.statement</field>
-        <field name="inherit_id" ref="mgmt_audit.statement_form_view"/>
+        <field name="inherit_id" ref="mgmt_audit.statement_form_view" />
         <field name="arch" type="xml">
             <xpath expr="//field[@name='audit_id']" position="after">
-                <field name="parallel_production_id" readonly="1"/>
-                <field name="workorder_id" readonly="1"/>
-                <field name="lot_id" readonly="1"/>
-                <field name="component_id" domain="[('id', 'in', bom_component_ids)]"/>
-                <field name="component_lot_id"/>
+                <field name="parallel_production_id" readonly="1" />
+                <field name="workorder_id" readonly="1" />
+                <field name="lot_id" readonly="1" />
+                <field name="component_id" domain="[('id', 'in', bom_component_ids)]" />
+                <field name="component_lot_id" />
             </xpath>
         </field>
     </record>
-
 </odoo>

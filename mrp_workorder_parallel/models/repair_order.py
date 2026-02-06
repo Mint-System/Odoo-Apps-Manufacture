@@ -1,26 +1,23 @@
-from odoo import api, fields, models, _
-from odoo.exceptions import UserError
-from odoo.osv.expression import AND
+from odoo import fields, models
 
 
 class Repair(models.Model):
     _inherit = "repair.order"
 
-
     workorder_id = fields.Many2one(
-        'mrp.workorder',
+        "mrp.workorder",
         string="Related Work Order",
-        help="Link this repair order to an MRP work order"
+        help="Link this repair order to an MRP work order",
     )
 
     production_id = fields.Many2one(
-        'mrp.production',
+        "mrp.production",
         string="Related Production Order",
-        help="Link this repair order to an MRP production order"
+        help="Link this repair order to an MRP production order",
     )
 
     parallel_production_id = fields.Many2one(
         string="Related Parallel Production Order",
         related="production_id.parallel_production_id",
-        depends=['production_id']
+        depends=["production_id"],
     )

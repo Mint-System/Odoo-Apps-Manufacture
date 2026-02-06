@@ -1,92 +1,120 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <odoo>
-
-
-	<!--  <record id="mrp.action_mrp_workorder_production" model="ir.actions.act_window">
+    <!--  <record id="mrp.action_mrp_workorder_production" model="ir.actions.act_window">
         <field name="domain">[('production_id.parallel_production_id', '=', False), ('production_state','not in',('done','cancel'))]</field>
     </record>
  -->
 
-    <record id="mrp_workorder_parallel.view_mrp_production_workorder_form_view_filter" model="ir.ui.view">
-	    <field name="name">mrp.workorder.search.parallel.filter</field>
-	    <field name="model">mrp.workorder</field>
-	    <field name="inherit_id" ref="mrp.view_mrp_production_workorder_form_view_filter"/>
-	    <field name="arch" type="xml">
-	        <filter name="finish" position="after">
-	            <filter string="Parallel Only"
-	                name="filter_parallel"
-	                domain="[('production_id.parallel_production_id', '=', False)]" />
-	            <filter string="Sequential Only"
-	                name="filter_sequential"
-	                domain="[('production_id.parallel_production_id', '!=', False)]"/>
-	        </filter>
-	    </field>
-	</record>
+    <record
+        id="mrp_workorder_parallel.view_mrp_production_workorder_form_view_filter"
+        model="ir.ui.view"
+    >
+        <field name="name">mrp.workorder.search.parallel.filter</field>
+        <field name="model">mrp.workorder</field>
+        <field
+            name="inherit_id"
+            ref="mrp.view_mrp_production_workorder_form_view_filter"
+        />
+        <field name="arch" type="xml">
+            <filter name="finish" position="after">
+                <filter
+                    string="Parallel Only"
+                    name="filter_parallel"
+                    domain="[('production_id.parallel_production_id', '=', False)]"
+                />
+                <filter
+                    string="Sequential Only"
+                    name="filter_sequential"
+                    domain="[('production_id.parallel_production_id', '!=', False)]"
+                />
+            </filter>
+        </field>
+    </record>
 
-
-	<record id="mrp_workorder_parallel.mrp_production_workorder_form_view_inherit" model="ir.ui.view" >
-		<field name="name">mrp.workorder.form.view.parallel</field>
-	    <field name="model">mrp.workorder</field>
-	    <field name="inherit_id" ref="mrp.mrp_production_workorder_form_view_inherit"/>
-	    <field name="arch" type="xml">
-	    	<!-- <xpath expr="//field[@name='duration_expected']/ancestor::div[contains(@class, 'o_row')]" position="after">
+    <record
+        id="mrp_workorder_parallel.mrp_production_workorder_form_view_inherit"
+        model="ir.ui.view"
+    >
+        <field name="name">mrp.workorder.form.view.parallel</field>
+        <field name="model">mrp.workorder</field>
+        <field name="inherit_id" ref="mrp.mrp_production_workorder_form_view_inherit" />
+        <field name="arch" type="xml">
+            <!-- <xpath expr="//field[@name='duration_expected']/ancestor::div[contains(@class, 'o_row')]" position="after">
 	    		<label for="total_duration_expected"/>
 	            <div class="o_row">
 	                <field name="total_duration_expected" widget="float_time" readonly="state in ['cancel', 'done']"/>
 	                <span>minutes</span>
 	            </div>
 	        </xpath> -->
-	        <xpath expr="//page[@name='time_tracking']" position="attributes">
+            <xpath expr="//page[@name='time_tracking']" position="attributes">
                 <attribute name="invisible">type == 'parallel'</attribute>
             </xpath>
-	        <xpath expr="//page[@name='time_tracking']" position="after">
-	            <page name="sequential_times" string="Sequential Workorder Times" 
-	                  invisible="type != 'parallel'">
-	                <field name="sequential_time_entries" nolabel="1" context="{'default_workcenter_id': workcenter_id, 'default_workorder_id': id}">
-	                    <list editable="bottom">
-	                    	<field name="production_serial"/>
-	                        <field name="workorder_id"/>
-	                        <field name="employee_id"/>
-	                        <field name="date_start"/>
-	                        <field name="date_end"/>
-	                        <field name="duration" widget="float_time" sum="Gesamtdauer"/>
-	                        <field name="loss_type"/>
-	                    </list>
-	                </field>
-	            </page>
-	        </xpath>
-	    </field>
-	</record>
+            <xpath expr="//page[@name='time_tracking']" position="after">
+                <page
+                    name="sequential_times"
+                    string="Sequential Workorder Times"
+                    invisible="type != 'parallel'"
+                >
+                    <field
+                        name="sequential_time_entries"
+                        nolabel="1"
+                        context="{'default_workcenter_id': workcenter_id, 'default_workorder_id': id}"
+                    >
+                        <list editable="bottom">
+                            <field name="production_serial" />
+                            <field name="workorder_id" />
+                            <field name="employee_id" />
+                            <field name="date_start" />
+                            <field name="date_end" />
+                            <field
+                                name="duration"
+                                widget="float_time"
+                                sum="Gesamtdauer"
+                            />
+                            <field name="loss_type" />
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
 
+    <record id="mrp_workorder_parallel.mrp_workorder_view_gantt" model="ir.ui.view">
+        <field name="name">mrp_workorder_parallel.mrp_workorder_view_gantt</field>
+        <field name="model">mrp.workorder</field>
+        <field name="inherit_id" ref="mrp_workorder.mrp_workorder_view_gantt" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='workcenter_id']" position="after">
+                <field name="total_serials" />
+            </xpath>
+            <xpath expr="//div[@t-name='gantt-popover']//ul" position="inside">
+                <li>
+                    <strong>Tot. Units: </strong>
+                    <t t-esc="total_serials" />
+                </li>
+            </xpath>
+        </field>
+    </record>
 
-	<record id="mrp_workorder_parallel.mrp_workorder_view_gantt" model="ir.ui.view">
-	    <field name="name">mrp_workorder_parallel.mrp_workorder_view_gantt</field>
-	    <field name="model">mrp.workorder</field>
-	    <field name="inherit_id" ref="mrp_workorder.mrp_workorder_view_gantt"/>
-	    <field name="arch" type="xml">
-	    	<xpath expr="//field[@name='workcenter_id']" position="after">
-	            <field name="total_serials"/>
-	        </xpath>
-	        <xpath expr="//div[@t-name='gantt-popover']//ul" position="inside">
-	            <li><strong>Tot. Units: </strong><t t-esc="total_serials"/></li>
-	        </xpath>
-	    </field>
-	</record>
-
-
-	<record id="mrp_workorder_parallel.workcenter_line_gantt_production" model="ir.ui.view">
-	    <field name="name">mrp_workorder_parallel.workcenter_line_gantt_production</field>
-	    <field name="model">mrp.workorder</field>
-	    <field name="inherit_id" ref="mrp_workorder.workcenter_line_gantt_production"/>
-	    <field name="arch" type="xml">
-	    	   <xpath expr="//field[@name='workcenter_id']" position="after">
-	            <field name="total_serials"/>
-	        </xpath>
-	        <xpath expr="//div[@t-name='gantt-popover']//ul" position="inside">
-	            <li><strong>Tot. Units: </strong><t t-esc="total_serials"/></li>
-	        </xpath>
-	    </field>
-	</record>
-
-
+    <record
+        id="mrp_workorder_parallel.workcenter_line_gantt_production"
+        model="ir.ui.view"
+    >
+        <field
+            name="name"
+        >mrp_workorder_parallel.workcenter_line_gantt_production</field>
+        <field name="model">mrp.workorder</field>
+        <field name="inherit_id" ref="mrp_workorder.workcenter_line_gantt_production" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='workcenter_id']" position="after">
+                <field name="total_serials" />
+            </xpath>
+            <xpath expr="//div[@t-name='gantt-popover']//ul" position="inside">
+                <li>
+                    <strong>Tot. Units: </strong>
+                    <t t-esc="total_serials" />
+                </li>
+            </xpath>
+        </field>
+    </record>
 </odoo>
