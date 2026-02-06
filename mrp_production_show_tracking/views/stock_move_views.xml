@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_picking_form" model="ir.ui.view">
+        <field name="name">stock.view.picking.form</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//list/field[@name='product_id']" position="before">
+                <field name="tracking_type_badge" widget="html" string="T" />
+                <!-- <field name="tracking_type_code" string="T" /> -->
+            </xpath>
+        </field>
+    </record>
+</odoo>
