@@ -62,22 +62,14 @@
                 >state != 'draft' and type == 'parallel'</attribute>
             </xpath>
 
-            <xpath
-                expr="(//button[@name='action_product_forecast_report'])[1]"
-                position="attributes"
-            >
-                <attribute
-                    name="invisible"
-                >state != 'draft' and type == 'parallel'</attribute>
+           
+            <xpath expr="//button[@name='action_product_forecast_report'][1]" position="attributes">
+                <attribute name="invisible">forecasted_issue or (state != 'draft' and type == 'parallel')</attribute>
             </xpath>
 
-            <xpath
-                expr="(//button[@name='action_product_forecast_report'])[2]"
-                position="attributes"
-            >
-                <attribute
-                    name="invisible"
-                >state != 'draft' and type == 'parallel'</attribute>
+            
+            <xpath expr="//button[@name='action_product_forecast_report'][2]" position="attributes">
+                <attribute name="invisible">not forecasted_issue or (state != 'draft' and type == 'parallel')</attribute>
             </xpath>
 
             <xpath
