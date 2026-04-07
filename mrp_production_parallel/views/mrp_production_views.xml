@@ -132,8 +132,9 @@
             </xpath>
 
             <xpath expr="//field[@name='move_raw_ids']" position="attributes">
-                <attribute name="widget" />
+                <attribute name="readonly">state == 'cancel' or (state == 'done' and is_locked) or parent.type == 'parallel'</attribute>
             </xpath>
+
 
             <xpath expr="//div[@class='oe_button_box']" position="inside">
                 <button
