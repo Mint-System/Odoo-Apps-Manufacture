@@ -105,9 +105,9 @@
             >
                 <field
                     name="parallel_product_uom_qty"
-                    invisible="parent.type != 'parallel'"
+                    column_invisible="parent.type != 'parallel'"
                 />
-                <field name="parallel_quantity" invisible="parent.type != 'parallel'" />
+                <field name="parallel_quantity" column_invisible="parent.type != 'parallel'" />
             </xpath>
 
             <xpath
@@ -132,7 +132,7 @@
             </xpath>
 
             <xpath expr="//field[@name='move_raw_ids']" position="attributes">
-                <attribute name="readonly">state == 'cancel' or (state == 'done' and is_locked) or parent.type == 'parallel'</attribute>
+                <attribute name="readonly">state == 'cancel' or (state == 'done' and is_locked) or type == 'parallel'</attribute>
             </xpath>
 
 
