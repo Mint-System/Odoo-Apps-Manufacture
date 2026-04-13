@@ -71,23 +71,6 @@ class MrpProduction(models.Model):
         store=False,  # no DB column needed
     )
 
-    reservation_state = fields.Selection(
-        selection=[
-            ("confirmed", "Waiting"),
-            ("assigned", "Ready"),
-            ("waiting", "Waiting Another Operation"),
-        ],
-        string="MO Readiness",
-        compute="_compute_reservation_state",
-        store=True,
-        copy=False,
-        index=True,
-        readonly=True,
-        tracking=True,
-        recursive=True,
-        help="Manufacturing readiness for this MO, based on sequential productions.",
-    )
-
     @api.onchange("product_id")
     def _onchange_product_id_set_type(self):
         for production in self:
@@ -160,34 +143,50 @@ class MrpProduction(models.Model):
         "state",
         "move_raw_ids.state",
         "type",
+        "sequential_production_ids",
         "sequential_production_ids.reservation_state",
     )
     def _compute_reservation_state(self):
+        super()._compute_reservation_state()
+        # for production in self:
+        #     if production.type == "parallel":
+        #         sequential_productions = production.sequential_production_ids.filtered(
+        #             lambda c: c.type == "sequential"
+        #         )
+        #         if not sequential_productions:
+        #             # production.reservation_state = "confirmed"
+        #             continue
+
+        #         sequential_states = set(
+        #             sequential_productions.mapped("reservation_state")
+        #         )
+
+        #         # Priority: waiting > confirmed > assigned
+        #         if "waiting" in sequential_states:
+        #             production.reservation_state = "waiting"
+        #         elif "confirmed" in sequential_states:
+        #             production.reservation_state = "confirmed"
+        #         elif all(state == "assigned" for state in sequential_states):
+        #             production.reservation_state = "assigned"
+        #         else:
+        #             production.reservation_state = "confirmed"
+
         for production in self:
-            if production.type == "parallel":
-                sequential_productions = production.sequential_production_ids.filtered(
-                    lambda c: c.type == "sequential"
-                )
-                if not sequential_productions:
-                    production.reservation_state = "confirmed"
-                    continue
+            if production.type != "parallel":
+                continue
 
-                sequential_states = set(
-                    sequential_productions.mapped("reservation_state")
-                )
+            sequential_productions = production.sequential_production_ids
+            if not sequential_productions:
+                continue  # fallback to standard behavior
 
-                # Priority: waiting > confirmed > assigned
-                if "waiting" in sequential_states:
-                    production.reservation_state = "waiting"
-                elif "confirmed" in sequential_states:
-                    production.reservation_state = "confirmed"
-                elif all(state == "assigned" for state in sequential_states):
-                    production.reservation_state = "assigned"
-                else:
-                    production.reservation_state = "confirmed"
-            else:
-                # Fall back to the normal MRP behavior for sequential or regular MOs
-                super()._compute_reservation_state()
+            sequential_states = set(sequential_productions.mapped("reservation_state"))
+
+            # Odoo 18 priority
+            for state in ["waiting", "confirmed", "assigned"]:
+                if state in sequential_states:
+                    production.reservation_state = state
+                    break
+                
 
     @api.depends()
     def _compute_link_mo(self):
