@@ -48,6 +48,10 @@ class MrpProduction(models.Model):
         readonly=True,
     )
 
+    reservation_state = fields.Selection(
+        recursive=True,
+    )
+
     show_validate_button = fields.Boolean(
         string="Show Validate Button",
         compute="_compute_show_validate_button",
@@ -247,90 +251,106 @@ class MrpProduction(models.Model):
     def _split_productions(
         self, amounts=False, cancel_remaining_qty=False, set_consumed_qty=False
     ):
-        _logger.warning(f"######### SELF IN SPLIT: {self}")
-        for production in self:
-            new_production_name = f"{production.name} - Parallel"
-            orig_workorders = production.workorder_ids
-            _logger.warning(
-                f"##### original duration_expected: {orig_workorders.mapped('duration_expected')}"
-            )
+        self.ensure_one()
+        production = self
+        new_production_name = f"{production.name} - Parallel"
+        orig_workorders = production.workorder_ids
+
+        _logger.debug(
+            "SPLIT: original duration_expected: %s",
+            orig_workorders.mapped("duration_expected"),
+        )
+       
         sequential_productions = super()._split_productions(
             amounts, cancel_remaining_qty, set_consumed_qty
         )
         sequential_productions._compute_show_produce()
-        for prod in sequential_productions:
-            _logger.warning(
-                f"{prod.name} qty: {prod.product_qty}, duration_expected: {prod.workorder_ids.mapped('duration_expected')}"
-            )
-        # because the first seq production has no duration_expected set we copy it from the first seq production workorders
-        first_prod = sequential_productions[0]
-        second_prod = sequential_productions[1]
-        for first_wo, second_wo in zip(
-            first_prod.workorder_ids, second_prod.workorder_ids, strict=False
-        ):
-            first_wo.duration_expected = second_wo.duration_expected
 
-        for production in self:
-            prod_type = production.type
-            if prod_type == "parallel":
-                parallel_production = production.copy(
-                    {
-                        "name": new_production_name,
-                        "type": "parallel",
-                        "state": "confirmed",
-                        "product_tracking": "none",
-                    }
-                )
+        # Ensure workorder durations are copied correctly from first to second (if needed)
+        if len(sequential_productions) >= 2:
+            # because the first seq production has no duration_expected set we copy it from the first seq production workorders
+            first_prod, second_prod = sequential_productions[0], sequential_productions[1]
+            for first_wo, second_wo in zip(
+                first_prod.workorder_ids, second_prod.workorder_ids, strict=False
+            ):
+                if not first_wo.duration_expected and second_wo.duration_expected:
+                    first_wo.duration_expected = second_wo.duration_expected
 
-                parallel_workorders = parallel_production.workorder_ids
-                parallel_workorders.write({"type": "parallel"})
+        if production.type != "parallel":
+            return sequential_productions
 
-                for prod in sequential_productions:
-                    _logger.warning(
-                        f"2.call: {prod.name} qty: {prod.product_qty}, duration_expected: {prod.workorder_ids.mapped('duration_expected')}"
-                    )
+        parallel_production = production.copy(
+            {
+                "name": new_production_name,
+                "type": "parallel",
+                "state": "confirmed",
+                "product_tracking": "none",
+            }
+        )
 
-                # correct the qty_production to the sum of seq workorders
-                # does not work for workorders of serial production
-                # for par_wo in parallel_workorders:
-                #     total_qty_production = sum(par_wo.sequential_workorder_ids.mapped("qty_production"))
-                #     _logger.warning(f"#### parallel wo qty_production: {total_qty_production}")
-                #     par_wo.write({'qty_production': total_qty_production})
+        parallel_production.workorder_ids.write({"type": "parallel"})
 
-                # set type of seq prod and link to parallel production
-                for prod in sequential_productions:
-                    prod.write(
-                        {
-                            "type": "sequential",
-                            "parallel_production_id": parallel_production.id,
-                        }
-                    )
+        # --- Link sequential productions to parallel ---
+        sequential_productions.write(
+            {
+                "type": "sequential",
+                "parallel_production_id": parallel_production.id,
+            }
+        )
 
-                # Update all related workorders to type = sequential
-                sequential_workorders = sequential_productions.mapped("workorder_ids")
-                for seq_wo in sequential_workorders:
-                    _logger.warning(
-                        f"######### erw. Dauer von {seq_wo.name}: {seq_wo.duration_expected}"
-                    )
-                sequential_workorders.write({"type": "sequential"})
+        sequential_productions.mapped("workorder_ids").write({"type": "sequential"})
 
-                self = self.with_context(default_production_id=parallel_production.id)
-
-        # set relation between sep workorders and parallel workorder
-        for seq_production in sequential_productions:
-            parallel_production = seq_production.parallel_production_id
-            if not parallel_production:
-                continue
-
-            for seq_wo in seq_production.workorder_ids:
+        # --- Link seq workorders to their parallel counterpart ---
+        for seq_prod in sequential_productions:
+            for seq_wo in seq_prod.workorder_ids:
                 # find the matching parallel WO by operation
                 parallel_wo = parallel_production.workorder_ids.filtered(
-                    lambda w: w.operation_id.id == seq_wo.operation_id.id
+                    lambda w, s=seq_wo: w.operation_id.id == s.operation_id.id
                 )
                 if parallel_wo:
-                    seq_wo.parallel_workorder_id = parallel_wo.id
+                    seq_wo.parallel_workorder_id = parallel_wo[:1].id
+
+        for seq_prod in sequential_productions:
+            for orig_move in production.move_raw_ids:
+                new_move = seq_prod.move_raw_ids.filtered(
+                    lambda m: m.product_id == orig_move.product_id
+                )
+                if new_move and orig_move.product_id.tracking in ("serial", "lot"):
+                    for move_line in orig_move.move_line_ids:
+                        new_move.move_line_ids |= new_move.move_line_ids.create(
+                            {
+                                "product_id": move_line.product_id.id,
+                                "lot_id": move_line.lot_id.id,
+                                "qty_done": move_line.qty_done,
+                                "location_id": move_line.location_id.id,
+                                "location_dest_id": move_line.location_dest_id.id,
+                                "move_id": new_move.id,
+                            }
+                        )
+
+        sequential_productions.action_assign()
 
         return sequential_productions
+
+    def _sync_move_availability(self, source_mo, target_mo):
+        for target_move in target_mo.move_raw_ids:
+            source_move = source_mo.move_raw_ids.filtered(
+                lambda m: m.product_id == target_move.product_id
+            )[:1]
+            if not source_move:
+                continue
+
+            # Copy move lines (lot/serial assignments) first
+            # so the state write is consistent with actual line data
+            target_move.move_line_ids.unlink()
+            for src_line in source_move.move_line_ids:
+                src_line.copy({
+                    'move_id': target_move.id,
+                    'qty_done': 0,  # not done yet, just reserved
+                })
+
+            # Now writing 'assigned' is stable because move_line_ids back it up
+            target_move.write({'state': 'assigned'})
 
     def _perhaps_better_split_productions(
         self, amounts=False, cancel_remaining_qty=False, set_consumed_qty=False
