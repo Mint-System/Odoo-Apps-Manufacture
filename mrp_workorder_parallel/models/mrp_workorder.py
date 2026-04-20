@@ -89,8 +89,8 @@ class MrpWorkorder(models.Model):
         string="All Workorder Times",
     )
 
-    def reload(self):
-        channel = "serial_update_channel"
+
+    def action_test_bus_simple(self):
         parallel_workorder = self.env["mrp.workorder"].search(
             [
                 ("production_id", "=", self.production_id.parallel_production_id.id),
@@ -98,14 +98,44 @@ class MrpWorkorder(models.Model):
             ],
             limit=1,
         )
+        _logger.warning("test bus called")
+        channel = (self._cr.dbname, 'mrp_workorder_parallel.notification', parallel_workorder.id)
+        payload = {
+            'type': 'status_update',
+            'record_id': parallel_workorder.id,
+            'name': parallel_workorder.name,
+            'message': f'Record {parallel_workorder.name} was updated!',
+        }
+        self.env['bus.bus'].sudo()._sendone(channel, 'mrp_workorder_parallel.notification', payload)
+
+    def reload(self):
+        parallel_workorder = self.env["mrp.workorder"].search(
+            [
+                ("production_id", "=", self.production_id.parallel_production_id.id),
+                ("name", "=", self.name),
+            ],
+            limit=1,
+        )
+        channel = f"workorder_{parallel_workorder.id}"
         payload = {
             "parallel_workorder_id": parallel_workorder.id,
             "updated_field": "registered",
-            "channel": channel,
+            # "channel": channel,
             "serial": self.production_id.lot_producing_id.name,
         }
         _logger.info("Sending reload trigger to frontend")
-        self.env["bus.bus"].sudo()._sendone("broadcast", "page_refresh", payload)
+        # self.env["bus.bus"].sudo()._sendone("broadcast", "page_refresh", payload)
+        # self.env["bus.bus"].sudo()._sendone("broadcast", "test", {"hello": 1})
+        # self.env["bus.bus"].sudo()._sendone(channel, "update", payload)
+        self.env["bus.bus"].sudo()._sendone(
+            channel,
+                "notification",
+                {
+                    "channel": channel,
+                    "parallel_workorder_id": parallel_workorder.id,
+                    "serial": self.production_id.lot_producing_id.name,
+                }
+            )
         _logger.info("Reload trigger sent successfully")
 
     def action_register_serial_test(self):

@@ -6,7 +6,7 @@ import {patch} from "@web/core/utils/patch";
 import {Dialog} from "@web/core/dialog/dialog";
 import {ConfirmationDialog} from "@web/core/confirmation_dialog/confirmation_dialog";
 import {useService} from "@web/core/utils/hooks";
-import {Component, markup, useState} from "@odoo/owl";
+import {Component, markup, useState, xml} from "@odoo/owl";
 import {useBus} from "@web/core/utils/hooks";
 import {onMounted, onWillUnmount} from "@odoo/owl";
 
@@ -16,26 +16,32 @@ patch(MrpDisplayRecord.prototype, {
         this.notification = useService("notification");
         this.dialogService = useService("dialog");
         this.action = useService("action");
-        const bus_service = this.env.services.bus_service;
-        const workorderId = this.props.record.resId;
+        this.busService = this.env.services.bus_service;
+        console.log("Bus before start:", this.busService);
+        this.busService.start();
+        console.log("Bus service:", this.busService);
+        this.workorderId = this.props.record.resId;
         const {resModel, resId, data} = this.props.record;
         this.currentMode = useState({barcode_action: "normal"});
-        // if (!this._busSubscribed) {
-        if (!window._parallel_bus_subscribed) {
-            bus_service.subscribe("page_refresh", (payload) => {
-                console.log("bus service established");
-                console.log(
-                    "Reloading production for workorder",
-                    payload.parallel_workorder_id
-                );
-                this.handleBusRefresh(payload);
-                console.log(
-                    "sequential_stats:",
-                    this.props.record.data.sequential_stats
-                );
-                window._parallel_bus_subscribed = true;
-            });
-        }
+        const channel = `workorder_${this.workorderId}`;
+        // testing
+        // this.testChannel = "your_channel"
+        // this.busService.addChannel(this.testChannel)
+        // this.busService.addEventListener("notification", this.onMessage.bind(this))
+        // Add the channel first
+        this.busService.addChannel(channel);
+        this.busService.addChannel("broadcast");
+        this.busService.subscribe("broadcast", (payload) => {
+            console.log("🔥 RECEIVED:", payload);
+        });
+
+        this.busService.subscribe("test_channel", (payload) => {
+            console.log("BUS MESSAGE RECEIVED:", payload);
+        });
+        this.busService.subscribe(channel, (payload) => {
+            console.log("Received update for workorder:", payload.parallel_workorder_id);
+            this.handleBusRefresh(payload);
+        });
     },
 
     async handleBusRefresh(payload) {
@@ -43,7 +49,8 @@ patch(MrpDisplayRecord.prototype, {
         if (payload.parallel_workorder_id === record.resId) {
             console.log("Reloading production for workorder", record.resId);
             try {
-                await this.env.reload(this.props.production);
+                // await this.env.reload(this.props.production);
+                await this.props.record.reload();  
                 console.log(
                     "Reload complete, sequential_stats:",
                     record.data.sequential_stats
@@ -54,15 +61,19 @@ patch(MrpDisplayRecord.prototype, {
         }
     },
 
-    onMessage({detail: notifications}) {
-        notifications = notifications.filter(
-            (item) => item.payload.channel === this.channel
-        );
-        console.log("notification:", notifications);
-        notifications.forEach((item) => {
-            this.state.data.push(item.payload.data);
-        });
-    },
+
+    // onMessage({ detail: notifications }) {
+    //     notifications = notifications.filter(
+    //         (item) => item.payload.channel === this.testChannel
+    //     );
+
+    //     console.log("Shop floor notification:", notifications);
+
+    //     notifications.forEach((item) => {
+    //         this.handleBusRefresh(item.payload);
+    //     });
+    // },
+    
 
     async onClickHeader() {
         if (this.props.record.type === "parallel") {
@@ -428,29 +439,33 @@ patch(MrpDisplayRecord.prototype, {
     },
 });
 
-class MyCompoenent extends owl.Component {
+class MyComponent extends Component {
     static template = owl.xml`
     <div>
-      <t t-foreach="state.data" t-as="data" t-key="data_index">
+      <t t-foreach="state.data" t-as="data" t-key="$index">
         <span t-out="data.name"/>
       </t>
     </div>`;
 
     setup() {
-        this.state = owl.useState({data: []});
+        this.state = owl.useState({ data: [] });
 
         this.busService = this.env.services.bus_service;
         this.channel = "serial_update_channel";
+
         this.busService.addChannel(this.channel);
         this.busService.addEventListener("notification", this.onMessage.bind(this));
+
+        console.log("busService:", this.busService);
     }
-    onMessage({detail: notifications}) {
+
+    onMessage({ detail: notifications }) {
         console.log("called");
-        notifications = notifications.filter(
-            (item) => item.payload.channel === this.channel
-        );
-        notifications.forEach((item) => {
-            this.state.data.push(item.payload.data);
-        });
+
+        notifications
+            .filter(item => item.payload.channel === this.channel)
+            .forEach(item => {
+                this.state.data.push(item.payload.data);
+            });
     }
 }

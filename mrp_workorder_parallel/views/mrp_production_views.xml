@@ -60,6 +60,12 @@
                             <field name="date_finished" />
                             <field name="state" />
                             <button
+                                name="action_test_bus_simple"
+                                type="object"
+                                string="TEST BUS"
+                                icon="fa-arrow"
+                            />
+                            <button
                                 name="action_finish_batch"
                                 type="object"
                                 string="BATCH FINISH"

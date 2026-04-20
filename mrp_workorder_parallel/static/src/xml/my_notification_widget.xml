@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_workorder_parallel.MyNotificationWidget">
+        <div class="my_notification_widget">
+            <t t-if="state.lastMessage">
+                <div class="alert alert-info" role="alert">
+                    <strong>Live update:</strong>
+                    <t t-esc="state.lastMessage"/>
+                </div>
+            </t>
+            <t t-else="">
+                <span class="text-muted">Waiting for updates…</span>
+            </t>
+        </div>
+    </t>
+</templates>
