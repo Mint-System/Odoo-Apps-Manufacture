@@ -120,6 +120,7 @@ class MrpWorkorder(models.Model):
         if not parallel_workorder:
             _logger.warning("No parallel workorder found for reload")
             return
+            
         channel = f"workorder_{parallel_workorder.id}"
         payload = {
             "parallel_workorder_id": parallel_workorder.id,
