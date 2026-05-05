@@ -98,6 +98,7 @@ class MrpWorkorder(models.Model):
             ],
             limit=1,
         )
+
         _logger.warning("test bus called")
         channel = (self._cr.dbname, 'mrp_workorder_parallel.notification', parallel_workorder.id)
         payload = {
@@ -116,26 +117,21 @@ class MrpWorkorder(models.Model):
             ],
             limit=1,
         )
+        if not parallel_workorder:
+            _logger.warning("No parallel workorder found for reload")
+            return
         channel = f"workorder_{parallel_workorder.id}"
         payload = {
             "parallel_workorder_id": parallel_workorder.id,
-            "updated_field": "registered",
-            # "channel": channel,
             "serial": self.production_id.lot_producing_id.name,
         }
-        _logger.info("Sending reload trigger to frontend")
-        # self.env["bus.bus"].sudo()._sendone("broadcast", "page_refresh", payload)
-        # self.env["bus.bus"].sudo()._sendone("broadcast", "test", {"hello": 1})
-        # self.env["bus.bus"].sudo()._sendone(channel, "update", payload)
+        _logger.info("Sending reload trigger on channel %s", channel)
+       
         self.env["bus.bus"].sudo()._sendone(
             channel,
-                "notification",
-                {
-                    "channel": channel,
-                    "parallel_workorder_id": parallel_workorder.id,
-                    "serial": self.production_id.lot_producing_id.name,
-                }
-            )
+            "workorder_update",
+            payload,
+        )
         _logger.info("Reload trigger sent successfully")
 
     def action_register_serial_test(self):

@@ -17,35 +17,26 @@ patch(MrpDisplayRecord.prototype, {
         this.dialogService = useService("dialog");
         this.action = useService("action");
         this.busService = this.env.services.bus_service;
-        console.log("Bus before start:", this.busService);
-        this.busService.start();
-        console.log("Bus service:", this.busService);
         this.workorderId = this.props.record.resId;
         const {resModel, resId, data} = this.props.record;
         this.currentMode = useState({barcode_action: "normal"});
         const channel = `workorder_${this.workorderId}`;
-        // testing
-        // this.testChannel = "your_channel"
-        // this.busService.addChannel(this.testChannel)
-        // this.busService.addEventListener("notification", this.onMessage.bind(this))
-        // Add the channel first
+        
         this.busService.addChannel(channel);
-        this.busService.addChannel("broadcast");
-        this.busService.subscribe("broadcast", (payload) => {
-            console.log("🔥 RECEIVED:", payload);
-        });
-
-        this.busService.subscribe("test_channel", (payload) => {
-            console.log("BUS MESSAGE RECEIVED:", payload);
-        });
-        this.busService.subscribe(channel, (payload) => {
-            console.log("Received update for workorder:", payload.parallel_workorder_id);
+        
+        this.busService.subscribe("workorder_update", (payload) => {
+            console.log("Bus message received:", payload);
             this.handleBusRefresh(payload);
         });
+        this.busService.start();
     },
 
     async handleBusRefresh(payload) {
         const record = this.props.record;
+        if (payload.parallel_workorder_id !== record.resId) {
+            return;
+        }
+        
         if (payload.parallel_workorder_id === record.resId) {
             console.log("Reloading production for workorder", record.resId);
             try {
