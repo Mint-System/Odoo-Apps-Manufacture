@@ -156,7 +156,7 @@ class MrpWorkorder(models.Model):
                 ],
                 limit=1,
             )
-            _logger.warning(f"### parallel wo: {parallel_workorder}")
+            
 
         # Return empty action since bus message will handle frontend update
         return {}
@@ -317,13 +317,11 @@ class MrpWorkorder(models.Model):
     @api.depends("production_id", "sequential_workorder_ids")
     def _compute_duration_expected(self):
         super()._compute_duration_expected()
-        _logger.warning("######### COMPUTE DUR EXP CALLED")
+    
         for wo in self:
             if wo.production_id.type == "parallel":
                 # Sum expected durations of all sequential WOs
-                _logger.warning(
-                    f"########## nr of seq wo: {len(wo.sequential_workorder_ids)}"
-                )
+               
                 seq_expected = sum(
                     wo.sequential_workorder_ids.mapped("duration_expected")
                 )
@@ -557,11 +555,8 @@ class MrpWorkorder(models.Model):
     def _handle_parallel_action(self, mode):
         _logger.warning("_handle_parallel_action called")
         for wo in self:
-            _logger.warning(
-                f"### >>>>> WO: {wo.id}, {wo.name}, {wo.date_start}, {wo.date_finished}, mode: {mode}"
-            )
+            
             if mode == "start":
-                _logger.warning("#### PAR WO STARTED")
                 wo.with_context(from_production=True).button_start()
             elif mode == "stop":
                 wo.with_context(from_production=True).button_pending()
@@ -574,9 +569,6 @@ class MrpWorkorder(models.Model):
             _logger.warning(f"SEQ WO of wo {wo.id}: sequential_workorders")
 
             for workorder in sequential_workorders:
-                _logger.warning(
-                    f"#### started wo: {workorder.id}, {workorder.name}, {workorder.registered}"
-                )
                 if mode == "start" and (
                     workorder.state == "ready" or workorder.state == "waiting"
                 ):
@@ -628,8 +620,7 @@ class MrpWorkorder(models.Model):
                     # rise quantity
 
             # what to do with parallel workorder
-            _logger.warning(f"##########  IS FINISHED: {workorder.is_finished}")
-            _logger.warning(f"##########  STATE: {workorder.state}")
+            
             if workorder.is_finished:
                 workorder.button_finish()
 
@@ -699,8 +690,6 @@ class MrpWorkorder(models.Model):
         if "date_finished" in vals:
             vals["date_finished"] = self._normalize_date(vals["date_finished"])
         res = super().write(vals)
-        _logger.warning("#### res: %s" % (res,))
-        _logger.warning("#### vals: %s" % (vals,))
         if not {"date_start", "date_finished"} & set(vals.keys()):
             return res
 
@@ -720,9 +709,7 @@ class MrpWorkorder(models.Model):
                             ("name", "=", workorder.name),
                         ]
                     )
-                    _logger.warning(
-                        "#### sequential workorders: %s" % (seq_workorders,)
-                    )
+                    
 
                     for wo in seq_workorders:
                         seq_wo_vals = {}
@@ -759,7 +746,6 @@ class MrpWorkorder(models.Model):
                         ("state", "=", "ready"),
                     ]
                 )
-                _logger.warning("##### ready seq wos %s" % (ready_seq_wos,))
 
                 # get the corresponding parallel wo at this workcenter
                 for ready_wo in ready_seq_wos:
@@ -770,9 +756,7 @@ class MrpWorkorder(models.Model):
                         ],
                         limit=1,
                     )
-                    _logger.warning(
-                        f"#### parallel_wo: {parallel_wo}, {parallel_wo.name}"
-                    )
+                
 
                     if parallel_wo and parallel_wo.state in ["waiting", "pending"]:
                         parallel_wo._compute_state()

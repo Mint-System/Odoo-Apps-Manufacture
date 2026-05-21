@@ -127,7 +127,6 @@ class MrpProduction(models.Model):
 
     @api.depends("state", "product_qty", "qty_producing", "type")
     def _compute_show_produce(self):
-        _logger.warning("#### is called")
         for production in self:
             # Original logic
             state_ok = production.state in ("confirmed", "progress", "to_close")
@@ -247,8 +246,16 @@ class MrpProduction(models.Model):
             else:
                 production.picking_state = "draft"
 
+    def _split_productions(self, amounts=False, cancel_remaining_qty=False, set_consumed_qty=False):
+        _logger.warning(f"_split_productions called with amounts: {amounts}")
+        res = super()._split_productions(amounts, ...)
+        _logger.warning(f"#### _split_productions called from my module returning ids: {res.ids}")
+        return res
+
+    
+
     # original method up to 2025-11-24
-    def _split_productions(
+    def _my_split_productions(
         self, amounts=False, cancel_remaining_qty=False, set_consumed_qty=False
     ):
         self.ensure_one()
@@ -264,6 +271,7 @@ class MrpProduction(models.Model):
         sequential_productions = super()._split_productions(
             amounts, cancel_remaining_qty, set_consumed_qty
         )
+        _logger.warning(f"#### seq mo coming from original: {sequential_productions}")
         sequential_productions._compute_show_produce()
 
         # Ensure workorder durations are copied correctly from first to second (if needed)
@@ -310,25 +318,25 @@ class MrpProduction(models.Model):
                 if parallel_wo:
                     seq_wo.parallel_workorder_id = parallel_wo[:1].id
 
-        for seq_prod in sequential_productions:
-            for orig_move in production.move_raw_ids:
-                new_move = seq_prod.move_raw_ids.filtered(
-                    lambda m: m.product_id == orig_move.product_id
-                )
-                if new_move and orig_move.product_id.tracking in ("serial", "lot"):
-                    for move_line in orig_move.move_line_ids:
-                        new_move.move_line_ids |= new_move.move_line_ids.create(
-                            {
-                                "product_id": move_line.product_id.id,
-                                "lot_id": move_line.lot_id.id,
-                                "qty_done": move_line.qty_done,
-                                "location_id": move_line.location_id.id,
-                                "location_dest_id": move_line.location_dest_id.id,
-                                "move_id": new_move.id,
-                            }
-                        )
+        # for seq_prod in sequential_productions:
+        #     for orig_move in production.move_raw_ids:
+        #         new_move = seq_prod.move_raw_ids.filtered(
+        #             lambda m: m.product_id == orig_move.product_id
+        #         )
+        #         if new_move and orig_move.product_id.tracking in ("serial", "lot"):
+        #             for move_line in orig_move.move_line_ids:
+        #                 new_move.move_line_ids |= new_move.move_line_ids.create(
+        #                     {
+        #                         "product_id": move_line.product_id.id,
+        #                         "lot_id": move_line.lot_id.id,
+        #                         "qty_done": move_line.qty_done,
+        #                         "location_id": move_line.location_id.id,
+        #                         "location_dest_id": move_line.location_dest_id.id,
+        #                         "move_id": new_move.id,
+        #                     }
+        #                 )
 
-        sequential_productions.action_assign()
+        # sequential_productions.action_assign()
 
         return sequential_productions
 
@@ -355,7 +363,6 @@ class MrpProduction(models.Model):
     def _perhaps_better_split_productions(
         self, amounts=False, cancel_remaining_qty=False, set_consumed_qty=False
     ):
-        _logger.warning(f"######### SELF IN SPLIT: {self}")
         for production in self:
             prod_type = production.type
             if prod_type == "parallel":
@@ -369,13 +376,11 @@ class MrpProduction(models.Model):
 
     def copy_data(self, default=None):
         data = super().copy_data(default)[0]
-        _logger.warning(f"##### DATA: {data}")
-        _logger.warning(f"##### CONTEXT: {self.env.context}")
+        
 
         if self.env.context.get("no_copy_workorders"):
             data.pop("workorder_ids", None)
 
-        _logger.warning(f"##### CONTEXT: {self.env.context}")
 
         if self.env.context.get("no_copy_move_lines"):
             data.pop("move_raw_ids", None)
@@ -469,7 +474,6 @@ class MrpProduction(models.Model):
 
     def button_mark_done(self):
         action = super().button_mark_done()
-        _logger.warning("### action: %s" % (action))
 
         # #     # If you want to detect parallel backorders from your custom _split_productions:
         #     parallel_mos = self.env['mrp.production'].search([("type", "=", "parallel")])
@@ -730,7 +734,6 @@ class MrpProduction(models.Model):
         """
         Called when user presses "Recalculate Summary".
         """
-        _logger.warning("##### action_generate_parallel_summary called")
         for prod in self:
             if prod.type != "parallel":
                 continue
