@@ -18,6 +18,7 @@ class StockMove(models.Model):
         "raw_material_production_id.sequential_production_ids",
     )
     def _compute_quantities(self):
+        _logger.warning("#### _stock.move _compute_quantities called")
         for move in self:
             production = move.raw_material_production_id
             if production.state == "draft" and production.type == "parallel":

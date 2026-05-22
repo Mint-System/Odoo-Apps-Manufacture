@@ -1,8 +1,11 @@
+import logging
 from collections import deque
 
 from odoo import _, models
 from odoo.exceptions import UserError
 from odoo.tools import OrderedSet
+
+_logger = logging.getLogger(__name__)
 
 
 class MrpBatchProduct(models.TransientModel):
@@ -26,6 +29,7 @@ class MrpBatchProduct(models.TransientModel):
         return {}
 
     def _production_text_to_object(self, mark_done=False):
+        _logger.warning("#### mrp.batch.produce  _production_text_to_object called")
         self.ensure_one()
         if not self.production_text:
             raise UserError(
