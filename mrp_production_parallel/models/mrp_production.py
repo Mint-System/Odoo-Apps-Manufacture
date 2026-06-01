@@ -571,15 +571,6 @@ class MrpProduction(models.Model):
 
     def action_confirm(self):
         for production in self:
-            _logger.warning(
-                f"type, bom, ops: {production.type}, {production.bom_id}, {production.bom_id.operation_ids}"
-            )
-            if production.type == "parallel" and production.product_qty <= 1:
-                raise UserError(
-                    "A parallel production must have a quantity greater than 1.\n"
-                    "Please increase the quantity or choose another production type."
-                )
-
             if (
                 production.type == "parallel"
                 and production.bom_id
