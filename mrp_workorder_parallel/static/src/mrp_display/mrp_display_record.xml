@@ -76,13 +76,13 @@
                         >
                             <div class="ml-4 mr-4 mt-2">
                                 <div class="mb-1">
-                                    <button
+                                    <!-- <button
                                         type="button"
                                         class="btn btn-outline-warning btn-sm mt-2"
                                         t-on-click="onClickOpenStatementModal"
                                     >
 						                Fehler
-						            </button>
+						            </button> -->
                                     <button
                                         type="button"
                                         class="btn btn-info btn-sm mt-2"
@@ -173,6 +173,9 @@
                 <span />
             </t>
         </xpath>
+
+        <xpath expr="//li[@t-if='this.displayRegisterProduction']" position="replace" />
+
     </t>
 
 
@@ -188,8 +191,8 @@
                 <span class="h5 text-truncate" t-esc="record.display_name" />
             </t>
         </xpath>
+        <xpath expr="//i[@class='fa']" position="replace" />
     </t>
-
 
 
 	<t t-inherit="mrp_workorder.MrpDisplayProductionFooter" t-inherit-mode="extension">

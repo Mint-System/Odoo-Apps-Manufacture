@@ -11,6 +11,7 @@
     "license": "AGPL-3",
     "depends": ["mrp", "mrp_workorder", "mrp_production_parallel", "repair"],
     "data": [
+        "views/res_config_settings_views.xml",
         "views/mrp_production_views.xml",
         "views/workorder_action_views.xml",
         "views/mrp_workcenter_views.xml",
