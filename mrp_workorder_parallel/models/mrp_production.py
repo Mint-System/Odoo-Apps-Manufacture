@@ -12,11 +12,30 @@ class MrpProduction(models.Model):
         "mrp.workorder", string="Previous Workorder", help="The previous workorder."
     )
 
+    # def get_active_workorder(self):
+    #     """Register the active workorder (the one in progress or ready)."""
+    #     self.ensure_one()
+    #     active_wo = self.workorder_ids.filtered(
+    #         lambda wo: wo.state in ("ready", "progress")
+    #     )[:1]
+
+    #     return active_wo
+
     def get_active_workorder(self):
         """Register the active workorder (the one in progress or ready)."""
         self.ensure_one()
         active_wo = self.workorder_ids.filtered(
             lambda wo: wo.state in ("ready", "progress")
+            and not wo.is_repair_wo    
+            and not wo.on_repair  
         )[:1]
-
         return active_wo
+
+    def get_active_repair_workorder(self):
+        """Get the repair WO for a serial currently in repair."""
+        self.ensure_one()
+        repair_wo = self.workorder_ids.filtered(
+            lambda wo: wo.is_repair_wo
+            and wo.state in ('ready', 'progress')
+        )[:1]
+        return repair_wo

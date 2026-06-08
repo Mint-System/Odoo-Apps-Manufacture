@@ -62,6 +62,7 @@ class MrpWorkorder(models.Model):
         string="Sequential Productions currently in this step",
     )
 
+
     sequential_serials_in_step = fields.Char(
         "Serials in step", compute="_compute_sequential_serials_in_step"
     )
@@ -96,12 +97,19 @@ class MrpWorkorder(models.Model):
         readonly=True,
         copy=False,
     )
+
     repair_workorder_id = fields.Many2one(
         "mrp.workorder",
         string="Repair Work Order",
         readonly=True,
         copy=False,
     )
+    origin_workorder_id = fields.Many2one(
+        "mrp.workorder",
+        string="Origin Workorder",
+        help="The standard workorder which was marked for repair",
+    )
+
     on_repair = fields.Boolean(string="On Repair", default=False)
     is_repair_wo = fields.Boolean(
         string="Is Repair Work Order",
@@ -315,14 +323,12 @@ class MrpWorkorder(models.Model):
     def _get_or_create_repair_wo(self, lot_id):
         """Get existing repair WO or create one for the parent MO."""
         self.ensure_one()
-        parent_mo = self.production_id 
-        parallel_production = self.parallel_workorder_id.production_id
+        parallel_production = self.self.production_id.parallel_production_id
 
         repair_workcenter = self._get_repair_workcenter()
 
         repair_parallel_wo = parallel_production.workorder_ids.filtered(
             lambda w: w.workcenter_id == self._get_repair_workcenter()
-            and w.state not in ('done', 'cancel')
             and w.is_repair_wo
             and w.type == 'parallel'
         )
@@ -344,15 +350,12 @@ class MrpWorkorder(models.Model):
             }
             repair_parallel_wo = self.env["mrp.workorder"].create(repair_parallel_wo_vals)
             
-        repair_workorder = parallel_production.workorder_ids.filtered(
-            lambda w: w.workcenter_id == self._get_repair_workcenter()
-            and w.state not in ('done', 'cancel')
-            and w.is_repair_wo
-        )
+        
         repair_wo = self.env['mrp.workorder'].create({
             'name': f'Repair',
             'production_id': parent_mo.id,
             'parallel_workorder_id': repair_parallel_wo.id,
+            "origin_workorder_id": self.id,
             'type': 'sequential',
             'workcenter_id': self._get_repair_workcenter().id,
             'product_uom_id': parent_mo.product_uom_id.id,
@@ -366,59 +369,6 @@ class MrpWorkorder(models.Model):
 
 
 
-    def _inject_repair_workorder(self):
-        """
-        Dynamically insert a repair WO after the current WO,
-        pushing subsequent WOs down in sequence.
-        """
-        self.ensure_one()
-        repair_workcenter = self._get_repair_workcenter()
-
-        # Push all subsequent WOs down by 1
-        later_wos = self.production_id.workorder_ids.filtered(
-            lambda w: w.sequence > self.sequence and not w.is_repair_wo
-        )
-        for wo in later_wos:
-            wo.sequence += 1
-
-        parallel_production = self.parallel_workorder_id.production_id
-
-        repair_parallel_wo_vals = {
-            "name": f"Repair - {parallel_production.name}",
-            "type": "parallel",
-            "production_id": parallel_production.id,
-            "workcenter_id": repair_workcenter.id,
-            "product_uom_id": self.production_id.product_uom_id.id,
-            "qty_production": 1.0,
-            # "lot_id": self.lot_id.id,
-            "sequence": self.sequence + 1,
-            "state": "pending",
-            "is_repair_wo": True,
-            "duration_expected": 30.0,  # default estimate, operator updates
-            "date_start": False,
-        }
-        repair_parallel_wo = self.env["mrp.workorder"].create(repair_parallel_wo_vals)
-
-        repair_wo_vals = {
-            "name": f"Repair — {self.lot_id.name}",
-            "type": "sequential",
-            "parallel_workorder_id": repair_parallel_wo.id,
-            "production_id": self.production_id.id,
-            "workcenter_id": repair_workcenter.id,
-            "product_uom_id": self.production_id.product_uom_id.id,
-            "qty_production": 1.0,
-            "lot_id": self.lot_id.id,
-            "sequence": self.sequence + 1,
-            "state": "pending",
-            "is_repair_wo": True,
-            "duration_expected": 30.0,  # default estimate, operator updates
-            "date_start": False,
-        }
-        _logger.warning(f"repair wo vals: {repair_wo_vals}")
-
-        repair_wo = self.env["mrp.workorder"].create(repair_wo_vals)
-
-        return repair_wo
 
 
     def _create_repair_order(self, repair_location, source_location, lot_id):
@@ -935,6 +885,21 @@ class MrpWorkorder(models.Model):
             # what to do with parallel workorder
             if workorder.is_finished:
                 workorder.button_finish()
+
+    def button_finish(self):
+        if self.is_repair_wo:
+            # date_finished = fields.Datetime.now()
+            # vals = {
+            #     'qty_produced': self.qty_produced or self.qty_producing or self.qty_production,
+            #     'state': 'done',
+            #     'date_finished': date_finished,
+            #     'costs_hour': self.workcenter_id.costs_hour
+            # }
+            # self.write(vals)
+            original_wo = self.origin_workorder_id
+            original_wo.write({"on_repair": False})
+            # return True
+        return super().button_finish()
 
     @api.depends(
         "production_id.sequential_production_ids.workorder_ids.state",

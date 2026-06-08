@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <templates id="template" xml:space="preserve">
 	<t t-inherit="mrp_workorder.MrpDisplayRecord" t-inherit-mode="extension">
+        <xpath expr="//li[@t-on-click='registerProduction']" position="replace" />
         <xpath expr="//ul[@class='list-group list-group-flush']" position="before">
             <t t-if="record.type == 'parallel'">
                 <ul class="list-group list-group-flush">
@@ -83,12 +84,14 @@
                                     >
 						                Fehler
 						            </button> -->
-                                    <button
-                                        type="button"
-                                        class="btn btn-info btn-sm mt-2"
-                                        t-on-click="onClickToggleMode"
-                                        t-esc="buttonText"
-                                    />
+                                    <t t-if="!record.is_repair_wo">
+                                        <button
+                                            type="button"
+                                            class="btn btn-info btn-sm mt-2"
+                                            t-on-click="onClickToggleMode"
+                                            t-esc="buttonText"
+                                        />
+                                   </t>
                                 </div>
                             </div>
                         </div>
@@ -174,7 +177,7 @@
             </t>
         </xpath>
 
-        <xpath expr="//li[@t-if='this.displayRegisterProduction']" position="replace" />
+
 
     </t>
 
