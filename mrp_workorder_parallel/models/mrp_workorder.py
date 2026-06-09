@@ -872,11 +872,12 @@ class MrpWorkorder(models.Model):
 
     def button_finish(self):
         res = super().button_finish()
-        _logger.warning(f"button finish is repair wo: {self.is_repair_wo}")
-        if self.is_repair_wo:
-            original_wo = self.origin_workorder_id
-            original_wo.write({"on_repair": False})
-            self._create_account_analytic_line()
+        for workorder in self:
+            _logger.warning(f"button finish is repair wo: {workorder.is_repair_wo}")
+            if workorder.is_repair_wo:
+                original_wo = workorder.origin_workorder_id
+                original_wo.write({"on_repair": False})
+                workorder._create_account_analytic_line()
 
         return res
 

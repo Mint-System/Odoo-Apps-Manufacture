@@ -57,8 +57,8 @@
                             <!--   <field name="registered_serials_info"
                                string="Registered Serials"
                                invisible="type != 'parallel'"/> -->
-                            <field name="duration_expected" />
-                            <field name="duration" />
+                            <field name="duration_expected" widget="float_time"/>
+                            <field name="duration" widget="float_time" />
                             <field name="date_start" />
                             <field name="date_finished" />
                             <field name="state" />
