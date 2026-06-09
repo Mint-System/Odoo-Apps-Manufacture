@@ -61,6 +61,16 @@
 			                    </t> -->
                                 <button
                                     type="button"
+                                    class="btn btn-outline-info btn-sm mt-2"
+                                    t-on-click="onClickReload"
+                                >
+                                    <span>
+                                            <i class="fa fa-refresh" />
+                                    </span>
+                                </button>
+
+                                <button
+                                    type="button"
                                     class="btn btn-outline-primary btn-sm mt-2"
                                     t-on-click="onClickOpenSequentialModal"
                                 >
@@ -84,6 +94,7 @@
                                     >
 						                Fehler
 						            </button> -->
+                                    <t t-esc="props.record.is_repair_wo"/>
                                     <t t-if="!record.is_repair_wo">
                                         <button
                                             type="button"

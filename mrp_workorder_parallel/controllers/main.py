@@ -35,6 +35,10 @@ class StockBarcodeSerialController(StockBarcodeController):
         return super().main_menu(barcode)
 
     def try_open_mo_by_serial(self, barcode, corresponding_mo):
+        _logger.warning(f"### self in try_open_mo_by_serial: {self}")
+        _logger.warning(f"### workorders: {corresponding_mo.workorder_ids}")
+        for wo in corresponding_mo.workorder_ids:
+            _logger.warning(f"{wo.name}, on repair: {wo.on_repair}, is repair wo: {wo.is_repair_wo}, Status: {wo.state}")
         on_repair = corresponding_mo.workorder_ids.filtered(
             lambda wo: wo.on_repair
         )[:1]

@@ -320,10 +320,10 @@ class MrpWorkorder(models.Model):
         )
         return repair_is_blocking
 
-    def _get_or_create_repair_wo(self, lot_id):
+    def _get_or_create_repair_wo(self, lot_id, repair_order):
         """Get existing repair WO or create one for the parent MO."""
         self.ensure_one()
-        parallel_production = self.self.production_id.parallel_production_id
+        parallel_production = self.production_id.parallel_production_id
 
         repair_workcenter = self._get_repair_workcenter()
 
@@ -350,25 +350,22 @@ class MrpWorkorder(models.Model):
             }
             repair_parallel_wo = self.env["mrp.workorder"].create(repair_parallel_wo_vals)
             
-        
         repair_wo = self.env['mrp.workorder'].create({
             'name': f'Repair',
-            'production_id': parent_mo.id,
+            'production_id': self.production_id.id,
             'parallel_workorder_id': repair_parallel_wo.id,
             "origin_workorder_id": self.id,
             'type': 'sequential',
             'workcenter_id': self._get_repair_workcenter().id,
-            'product_uom_id': parent_mo.product_uom_id.id,
+            'product_uom_id': self.production_id.product_uom_id.id,
             'qty_production': 1,
             'state': 'ready',
             'is_repair_wo': True,
+            'repair_order_id': repair_order.id,
             'sequence': 9999,
         })
         _logger.warning(f"##### repair_wo: {repair_wo}")
         return repair_wo
-
-
-
 
 
     def _create_repair_order(self, repair_location, source_location, lot_id):
@@ -379,44 +376,26 @@ class MrpWorkorder(models.Model):
             "product_id": product_id.id,
             "product_qty": 1.0,
             "lot_id": lot_id.id,
-            "product_location_src_id": repair_location.id,               # WIP Repair
-            "product_location_dest_id": source_location.id,  # ← correct field
+            "product_location_src_id": repair_location.id,
+            "product_location_dest_id": source_location.id,
             "location_id": source_location.id,
-            "workorder_id": self.id,
         })
-        # block workcenter productivity
-        
-
-        # get repair workorder
-        # repair_wo = wo.production_id.workorder_ids.filtered(lambda w: w.operation_id.name == "Repair")[:1]\
-
-        # stop current workorder
-        # if wo.state == "progress":
-        #     wo.button_finish()
-        # elif wo.state in ("ready", "pending"):
-        #     wo.button_done()
-
-        # start repair
-        # if repair_wo.state in ("pending", "ready"):
-        #     repair_wo.button_start()
-
-        # set previous workorder for production
         self.production_id.previous_workorder_id = self.id
         return new_ro
 
-        
-
-    # def _block_workcenter_productivity(self):
-    #     wcps = self.env["mrp.workcenter.productivity"].search(
-    #         [
-    #             ("workorder_id", "=", self.id),
-    #             ("workcenter_id", "=", self.workcenter_id.id),
-    #         ]
-    #     )
-    #     _logger.warning(f"workorder, workcenter to block: {self.name}, {self.workcenter_id.name}")
-    #     if wcps:
-    #         for wcp in wcps:
-    #             wcp.button_block()
+    
+    def _create_account_analytic_line(self):
+        duration = self.duration
+        _logger.warning(f"### repair order: {self.repair_order_id}, duration: {duration}, is repair wo: {self.is_repair_wo}")
+        if self.repair_order_id and duration and self.is_repair_wo:
+            _logger.warning(f"#### repair duration: {duration}")
+            self.env['account.analytic.line'].create({
+                'repair_order_id': self.repair_order_id.id,
+                'name': f"Repair of {self.production_id.product_id.name}, WO: {self.name}",
+                'unit_amount': duration / 60,
+            })
+            return True
+        return False
 
 
     def _block_workorder_for_repair(self):
@@ -462,27 +441,24 @@ class MrpWorkorder(models.Model):
         repair_location, source_location = self._move_serial_to_repair_location(lot_id)
         # repair_wo = self._inject_repair_workorder()
         repair_order = self._create_repair_order(repair_location, source_location, lot_id)
-        repair_wo = self._get_or_create_repair_wo(lot_id)
+        repair_wo = self._get_or_create_repair_wo(lot_id, repair_order)
 
 
-        # Cross-link
+        # Cross-linking
         repair_order.workorder_id = repair_wo.id
+        repair_wo.repair_order_id = repair_order.id
 
-        self.write({
-            'repair_workorder_id': repair_wo.id,
-            'repair_order_id': repair_order.id,
-        })
 
         # block active wo
         repair_is_blocking = self._get_repair_blocking_behaviour()
         if repair_is_blocking:
             wo._block_workorder_for_repair()
 
-        # finish active wo 
-        # wo.button_finish()
-
         # set active wo on repair
         wo.on_repair = True
+
+        # set active wo's state on pending
+        wo.button_pending()
 
 
     def _get_sequential_workorders(self):
@@ -632,6 +608,13 @@ class MrpWorkorder(models.Model):
                 seq_wos = seq_prod.workorder_ids.filtered(lambda w: w.name == wo.name)
                 if not seq_wos:
                     continue
+
+                # handling repair
+                if len(seq_wos) > 1:
+                    seq_wos = seq_wos.filtered(lambda w: w.state in ("ready", "progress"))
+                    if not seq_wos:
+                        continue
+                
                 seq_wo = seq_wos[0]
 
                 active_wos = seq_wos.filtered(
@@ -692,14 +675,15 @@ class MrpWorkorder(models.Model):
             registered_serials = 0
 
             for seq_prod in sequential_productions:
-                seq_wo = seq_prod.workorder_ids.filtered(lambda w: w.name == wo.name)
-                if not seq_wo:
+                seq_wos = seq_prod.workorder_ids.filtered(lambda w: w.name == wo.name)
+                if not seq_wos:
                     continue
-                _logger.warning(f"### seq_wo: {", ".join([wo.name for wo in seq_wo])}")
-                if seq_wo.state not in ("done", "cancel"):
-                    current_wo_serials += 1
-                if seq_wo.registered:
-                    registered_serials += 1
+                _logger.warning(f"### seq_wo: {", ".join([wo.name for wo in seq_wos])}")
+                for seq_wo in seq_wos:
+                    if seq_wo.state not in ("done", "cancel"):
+                        current_wo_serials += 1
+                    if seq_wo.registered:
+                        registered_serials += 1
 
             wo.sequential_stats = {
                 "total_serials": total_serials,
@@ -887,19 +871,14 @@ class MrpWorkorder(models.Model):
                 workorder.button_finish()
 
     def button_finish(self):
+        res = super().button_finish()
+        _logger.warning(f"button finish is repair wo: {self.is_repair_wo}")
         if self.is_repair_wo:
-            # date_finished = fields.Datetime.now()
-            # vals = {
-            #     'qty_produced': self.qty_produced or self.qty_producing or self.qty_production,
-            #     'state': 'done',
-            #     'date_finished': date_finished,
-            #     'costs_hour': self.workcenter_id.costs_hour
-            # }
-            # self.write(vals)
             original_wo = self.origin_workorder_id
             original_wo.write({"on_repair": False})
-            # return True
-        return super().button_finish()
+            self._create_account_analytic_line()
+
+        return res
 
     @api.depends(
         "production_id.sequential_production_ids.workorder_ids.state",

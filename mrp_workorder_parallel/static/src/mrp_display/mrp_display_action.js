@@ -21,6 +21,8 @@ patch(MrpDisplayAction.prototype, {
             result["mrp.workorder"].push("has_paused");
             result["mrp.workorder"].push("has_ready");
             result["mrp.workorder"].push("is_finished");
+            result["mrp.workorder"].push("is_repair_wo");
+            result["mrp.workorder"].push("on_repair");
             result["mrp.workorder"].push("enable_quick_finish");
             result["mrp.workorder"].push("has_registered_serial");
         } else {
@@ -33,6 +35,8 @@ patch(MrpDisplayAction.prototype, {
                 "has_pauised",
                 "has_ready",
                 "is_finished",
+                "is_repair_wo",
+                "on_repair",
                 "enable_quick_finish",
                 "has_registered_serial",
             ];

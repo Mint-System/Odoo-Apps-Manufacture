@@ -17,6 +17,8 @@
                 <field name="registered" widget="boolean_toggle"/> -->
                 <field name="id" />
                 <field name="parallel_workorder_id" readonly="1" />
+                <field name="is_repair_wo" readonly="1" />
+                <field name="repair_order_id" readonly="1" />
                 <field name="date_start" />
                 <field name="date_finished" />
             </xpath>
@@ -50,6 +52,7 @@
                             <field name="name" />
                             <field name="id" />
                             <field name="workcenter_id" />
+                            <field name="is_repair_wo" readonly="1" />
                             <!-- <field name="sequential_serials_in_step"/> -->
                             <!--   <field name="registered_serials_info"
                                string="Registered Serials"

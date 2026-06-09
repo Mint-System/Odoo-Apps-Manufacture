@@ -64,6 +64,10 @@ patch(MrpDisplayRecord.prototype, {
     //         this.handleBusRefresh(item.payload);
     //     });
     // },
+
+    async onClickReload() {
+        await this.env.reload(this.props.production);
+    },
     
 
     async onClickHeader() {
