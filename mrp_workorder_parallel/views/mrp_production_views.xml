@@ -62,46 +62,6 @@
                             <field name="date_start" />
                             <field name="date_finished" />
                             <field name="state" />
-                            <button
-                                name="action_test_bus_simple"
-                                type="object"
-                                string="TEST BUS"
-                                icon="fa-arrow"
-                            />
-                            <button
-                                name="action_finish_batch"
-                                type="object"
-                                string="BATCH FINISH"
-                                icon="fa-check"
-                            />
-                            <button
-                                name="action_handle_parallel_start"
-                                type="object"
-                                string="Start"
-                                icon="fa-play"
-                                invisible="has_ready == False"
-                            />
-                            <button
-                                name="action_handle_parallel_continue"
-                                type="object"
-                                string="Continue"
-                                icon="fa-play-circle"
-                                invisible="has_paused == False"
-                            />
-                            <button
-                                name="action_handle_parallel_stop"
-                                type="object"
-                                string="Stop"
-                                icon="fa-stop"
-                                invisible="has_running == False"
-                            />
-                            <button
-                                name="action_handle_parallel_finish"
-                                type="object"
-                                string="Finish"
-                                icon="fa-check"
-                                invisible="has_running == False"
-                            />
                         </list>
                     </field>
                 </page>
