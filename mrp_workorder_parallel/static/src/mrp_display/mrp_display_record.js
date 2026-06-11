@@ -9,6 +9,8 @@ import {useService} from "@web/core/utils/hooks";
 import {Component, markup, useState, xml} from "@odoo/owl";
 import {useBus} from "@web/core/utils/hooks";
 import {onMounted, onWillUnmount} from "@odoo/owl";
+import { useInterval } from "@mrp_workorder_parallel/mrp_display/useInterval";
+
 
 patch(MrpDisplayRecord.prototype, {
     setup() {
@@ -28,7 +30,10 @@ patch(MrpDisplayRecord.prototype, {
             console.log("Bus message received:", payload);
             this.handleBusRefresh(payload);
         });
-        this.busService.start();
+
+        // fallback: Every 5 seconds, refresh
+        this._reloading = false;
+        useInterval(this.refreshView.bind(this), 5000); 
     },
 
     async handleBusRefresh(payload) {
@@ -51,6 +56,19 @@ patch(MrpDisplayRecord.prototype, {
             }
         }
     },
+
+    async refreshView() {
+        try {
+            await this.props.record.reload();
+            console.log(
+                "Reload complete, sequential_stats:",
+                this.props.record.data.sequential_stats
+            );
+        } catch (e) {
+            console.error("Reload failed:", e);
+        }
+    },
+
 
 
     // onMessage({ detail: notifications }) {
