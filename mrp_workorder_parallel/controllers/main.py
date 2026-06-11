@@ -49,7 +49,8 @@ class StockBarcodeSerialController(StockBarcodeController):
 
         if not active_wo:
             return False
-        active_wo.action_register_serial_test()
+            
+        active_wo.action_register_serial()
         action = corresponding_mo.action_open_barcode_client_action()
         return {"action": action}
 

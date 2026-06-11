@@ -163,7 +163,7 @@ class MrpWorkorder(models.Model):
         )
         _logger.info("Reload trigger sent successfully")
 
-    def action_register_serial_test(self):
+    def action_register_serial(self):
         """Mark non finished workorder as registered"""
         for wo in self:
             if wo.state == "done":
@@ -171,6 +171,8 @@ class MrpWorkorder(models.Model):
                     _("You cannot register a serial for a completed workorder.")
                 )
             _logger.info(f"##### wo : {wo.name}, repair_wo: {wo.is_repair_wo}, on repair: {wo.on_repair}, wo_registered: {wo.registered}")
+            
+            # a wo marked as repair and not on repair wo can 
             if wo.on_repair and not wo.is_repair_wo:
                 raise UserError(_("This Serial is under repair."))
 
@@ -188,45 +190,6 @@ class MrpWorkorder(models.Model):
 
         # Return empty action since bus message will handle frontend update
         return {}
-
-    def action_register_serial(self):
-        """Called when a serial barcode is scanned."""
-        scanned_serial = self.env.context.get("scanned_serial")
-        for wo in self:
-            if wo.state == "done":
-                raise UserError(
-                    _("Cannot register a serial for a completed workorder.")
-                )
-
-            if scanned_serial:
-                seq_prod = self.env["mrp.production"].search(
-                    [
-                        ("parallel_production_id", "=", wo.production_id.id),
-                        ("lot_producing_id.name", "=", scanned_serial),
-                    ],
-                    limit=1,
-                )
-
-                if not seq_prod:
-                    raise UserError(
-                        _("No production found for serial %s.") % scanned_serial
-                    )
-
-                seq_wo = self.env["mrp.workorder"].search(
-                    [
-                        ("production_id", "=", seq_prod.id),
-                        ("name", "=", wo.name),
-                    ],
-                    limit=1,
-                )
-
-                if seq_wo and seq_wo.state != "done":
-                    seq_wo.registered = True
-                else:
-                    raise UserError(
-                        _("Workorder already done or not found for serial %s.")
-                        % scanned_serial
-                    )
 
     def _get_repair_location(self):
         loc_id = int(self.env["ir.config_parameter"].sudo().get_param(
@@ -444,7 +407,7 @@ class MrpWorkorder(models.Model):
         repair_wo = self._get_or_create_repair_wo(lot_id, repair_order)
 
 
-        # Cross-linking
+        # Cross-linking repair order and repair workorder
         repair_order.workorder_id = repair_wo.id
         repair_wo.repair_order_id = repair_order.id
 
@@ -457,8 +420,13 @@ class MrpWorkorder(models.Model):
         # set active wo on repair
         wo.on_repair = True
 
-        # set active wo's state on pending
-        wo.button_pending()
+        # if wo is registered set it to unregistered
+        if wo.registered:
+            wo.registered = not wo.registered
+
+        # set active wo's state on pending if it is in progress
+        if wo.state in ("progress"):
+            wo.button_pending()
 
 
     def _get_sequential_workorders(self):
