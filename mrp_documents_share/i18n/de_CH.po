@@ -1,0 +1,90 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* mrp_documents_share
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 15.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-04-17 16:45+0000\n"
+"PO-Revision-Date: 2023-04-17 16:45+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: mrp_documents_share
+#: model_terms:ir.ui.view,arch_db:mrp_documents_share.purchase_order_portal_content
+#: model_terms:ir.ui.view,arch_db:mrp_documents_share.report_purchaseorder_document
+#: model_terms:ir.ui.view,arch_db:mrp_documents_share.report_purchasequotation_document
+msgid ""
+"<br/>\n"
+"                        <span>Drawing: </span>"
+msgstr ""
+"<br/>\n"
+"                        <span>Zeichnung: </span>"
+
+#. module: mrp_documents_share
+#: model_terms:ir.ui.view,arch_db:mrp_documents_share.purchase_order_portal_content
+#: model_terms:ir.ui.view,arch_db:mrp_documents_share.report_purchaseorder_document
+#: model_terms:ir.ui.view,arch_db:mrp_documents_share.report_purchasequotation_document
+msgid ""
+"<br/>\n"
+"                        <span>STEP file: </span>"
+msgstr ""
+"<br/>\n"
+"                        <span>STEP-Datei: </span>"
+
+#. module: mrp_documents_share
+#: model_terms:ir.ui.view,arch_db:mrp_documents_share.portal_my_purchase_order
+msgid ""
+"<br/>\n"
+"                <span>Drawing: </span>"
+msgstr ""
+"<br/>\n"
+"                <span>Zeichnung: </span>"
+
+#. module: mrp_documents_share
+#: model_terms:ir.ui.view,arch_db:mrp_documents_share.portal_my_purchase_order
+msgid ""
+"<br/>\n"
+"                <span>STEP file: </span>"
+msgstr ""
+"<br/>\n"
+"                <span>STEP-Datei: </span>"
+
+#. module: mrp_documents_share
+#: model:ir.model.fields,field_description:mrp_documents_share.field_mrp_workorder__drawing_file_url
+#: model:ir.model.fields,field_description:mrp_documents_share.field_product_product__drawing_file
+#: model:ir.model.fields,field_description:mrp_documents_share.field_product_template__drawing_file
+#: model_terms:ir.ui.view,arch_db:mrp_documents_share.mrp_workorder_view_form_tablet
+msgid "Drawing"
+msgstr "Zeichnung"
+
+#. module: mrp_documents_share
+#: model:ir.model,name:mrp_documents_share.model_product_template
+msgid "Product Template"
+msgstr "Produktvorlage"
+
+#. module: mrp_documents_share
+#: model:ir.model.fields,field_description:mrp_documents_share.field_product_product__step_file
+#: model:ir.model.fields,field_description:mrp_documents_share.field_product_template__step_file
+msgid "Step File"
+msgstr "STEP-Datei"
+
+#. module: mrp_documents_share
+#: model:ir.model,name:mrp_documents_share.model_mrp_workorder
+msgid "Work Order"
+msgstr "Arbeitsauftrag"
+
+#. module: mrp_documents_share
+#: model:ir.actions.act_window,name:mrp_documents_share.mrp_document_list_action
+msgid "mrp_documents_share.mrp_document_list_action"
+msgstr "Produktionsdokumente"
+
+#. module: mrp_documents_share
+#: model:ir.ui.menu,name:mrp_documents_share.mrp_document_menu
+msgid "mrp_documents_share.mrp_document_menu"
+msgstr "Produktionsdokumente"

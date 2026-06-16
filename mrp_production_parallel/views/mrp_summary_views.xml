@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<odoo>
+    <record id="view_mrp_parallel_summary_form" model="ir.ui.view">
+        <field name="name">mrp.parallel.summary.form</field>
+        <field name="model">mrp.parallel.summary</field>
+        <field name="arch" type="xml">
+            <form string="Parallel Production Summary">
+                <group>
+                    <field name="name" />
+                    <field name="default_code" />
+                </group>
+                <group>
+                    <field name="duration" />
+                    <field name="total_cost" />
+                </group>
+                <group>
+                    <field name="date_start" />
+                    <field name="date_finished" />
+                </group>
+                <footer>
+                    <button
+                        string="Recalculate"
+                        type="object"
+                        name="action_recalculate_summary"
+                    />
+                    <button string="Close" class="btn-secondary" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

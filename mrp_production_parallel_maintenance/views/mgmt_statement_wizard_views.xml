@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<odoo>
+    <record id="view_mgmt_statement_wizard_form_inherit" model="ir.ui.view">
+        <field name="name">mgmt.statement.wizard.form.inherit</field>
+        <field name="model">mgmt.statement.wizard</field>
+        <field
+            name="inherit_id"
+            ref="mrp_production_parallel_management.view_mgmt_statement_wizard_form"
+        />
+        <field name="arch" type="xml">
+            <xpath
+                expr="//group[@name='nc_form']//field[@name='component_id']"
+                position="after"
+            >
+                <field name="create_mr" />
+            </xpath>
+        </field>
+    </record>
+</odoo>
