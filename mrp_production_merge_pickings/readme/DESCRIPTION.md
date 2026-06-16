@@ -1,0 +1,1 @@
+Merge pickings of arbitrary manufacturing orders.
