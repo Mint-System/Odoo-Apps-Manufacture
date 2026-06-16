@@ -12,8 +12,7 @@
     "license": "AGPL-3",
     "depends": ["mrp"],
     "data": [
-        "security/ir.model.access.csv", 
-        "views/mrp_production_merge_wizard_views.xml"
+        "data/server_actions.xml",
     ],
     "installable": True,
     "application": False,

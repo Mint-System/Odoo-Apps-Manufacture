@@ -1,29 +1,56 @@
-# License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
-
 import logging
-
-from odoo import _, api, fields, models
+from collections import defaultdict
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
+class MrpProduction(models.Model):
+    _inherit = 'mrp.production'
 
-class MrpPproductionMergeWizard(models.TransientModel):
-    _name = "mrp.production.merge.wizard"
-    _description = "Mrp Production Merge Wizard"
 
-    production_ids = fields.Many2many(
-        'mrp.production',
-        string='Manufacturing Orders',
-        readonly=True,
-    )
+    def _merge_common_moves(self, picking):
+        """
+        Merge moves with same product/location/uom into one move with summed qty.
+        Used instead of _merge_moves() which cannot unlink MRP-linked moves.
+        """
+        moves = picking.move_ids.filtered(
+            lambda m: m.state not in ('done', 'cancel')
+        )
 
-    @api.model
-    def default_get(self, fields_list):
-        res = super().default_get(fields_list)
-        active_ids = self.env.context.get('active_ids', [])
-        if active_ids:
-            res['production_ids'] = [fields.Command.set(active_ids)]
-        return res
+        groups = defaultdict(list)
+        for move in moves:
+            key = (
+                move.product_id.id,
+                move.location_id.id,
+                move.location_dest_id.id,
+                move.product_uom.id,
+            )
+            groups[key].append(move)
+
+        for key, group_moves in groups.items():
+            if len(group_moves) < 2:
+                continue
+
+            master = group_moves[0]
+            total_qty = sum(m.product_uom_qty for m in group_moves)
+            master.product_uom_qty = total_qty
+
+            for move in group_moves[1:]:
+                # Relink dest moves to master before removing
+                master.move_dest_ids |= move.move_dest_ids
+                move.write({
+                    'move_dest_ids': [fields.Command.clear()],
+                    'move_orig_ids': [fields.Command.clear()],
+                })
+                move._action_cancel()
+                move.sudo().unlink()
+
+        picking.invalidate_recordset(['move_ids'])
+        picking._compute_state()
+        # Re-trigger reservation on merged moves
+        picking.action_assign()
+
 
 
     def _get_pickings(self, mo):
@@ -32,8 +59,7 @@ class MrpPproductionMergeWizard(models.TransientModel):
         )
 
     def action_merge_pickings(self):
-        self.ensure_one()
-        mos = self.production_ids.sorted('id')
+        mos = self.sorted('id')
         _logger.warning(f"##### MOs: {mos}")
 
         if len(mos) < 2:
@@ -109,9 +135,7 @@ class MrpPproductionMergeWizard(models.TransientModel):
             master_picking._compute_scheduled_date()
 
             # Aggregate moves for same component in MO boms
-            _logger.warning(f"### master_picking.move_ids: {master_picking.move_ids}")
-            for move in master_picking.move_ids:
-                move._merge_moves()
+            self._merge_common_moves(master_picking)
 
             return {
                 'type': 'ir.actions.act_window',
@@ -120,4 +144,5 @@ class MrpPproductionMergeWizard(models.TransientModel):
                 'res_id': master_picking.id,
             }
 
-    
+
+
