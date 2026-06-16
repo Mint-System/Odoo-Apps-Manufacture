@@ -1,7 +1,0 @@
-from odoo import fields, models
-
-
-class MrpWorkcenter(models.Model):
-    _inherit = "mrp.workcenter"
-
-    enable_quick_finish = fields.Boolean("Enable Quick Finish", default=False)

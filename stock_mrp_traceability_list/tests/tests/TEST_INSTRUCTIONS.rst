@@ -1,9 +1,0 @@
-- Create a new manufacturing order
-- Select product A and confirm
-- Select serial number of product B
-- Open product C and replenish
-- Select serial number of product D
-- Produce all and return to the original MO
-- Select serial number of product C
-- Product all and open the traceability list
-- Check if it matches the traceability report
