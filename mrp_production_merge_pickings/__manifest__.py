@@ -13,6 +13,7 @@
     "depends": ["mrp"],
     "data": [
         "data/server_actions.xml",
+        "views/stock_picking_views.xml",
     ],
     "installable": True,
     "application": False,
