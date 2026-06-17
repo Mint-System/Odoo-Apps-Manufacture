@@ -395,6 +395,14 @@ patch(MrpDisplayRecord.prototype, {
             : "Back to Normal Mode";
     },
 
+    get displayCloseProductionButton() {
+        return false;
+    },
+
+    get displayDoneButton() {
+        return false;
+    },
+
     async onClickOpenStatementModal() {
         const {resModel, resId} = this.props.record;
         const productionId = this.props.record.data.production_id?.[0];
