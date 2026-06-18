@@ -59,7 +59,8 @@ patch(MrpDisplayRecord.prototype, {
 
     async refreshView() {
         try {
-            await this.props.record.reload();
+            // await this.props.record.reload();
+            await this.onClickReload();
             console.log(
                 "Reload complete, sequential_stats:",
                 this.props.record.data.sequential_stats
@@ -393,14 +394,6 @@ patch(MrpDisplayRecord.prototype, {
         return this.currentMode.barcode_action === "normal"
             ? "Move Serial to Repair"
             : "Back to Normal Mode";
-    },
-
-    get displayCloseProductionButton() {
-        return false;
-    },
-
-    get displayDoneButton() {
-        return false;
     },
 
     async onClickOpenStatementModal() {
