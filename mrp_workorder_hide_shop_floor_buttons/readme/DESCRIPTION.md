@@ -1,0 +1,1 @@
+Hide buttons for closings productions in shop floor app.

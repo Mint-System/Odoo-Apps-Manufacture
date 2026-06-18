@@ -1,0 +1,2 @@
+- Enable Module "mrp_workorder_hide_shop_floor_buttons".
+- In the Shop Floor app, the close buttons in the production and work order cards have been replaced by the text "Please close production in the backend".
