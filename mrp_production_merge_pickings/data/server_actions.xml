@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <odoo>
     <record id="action_server_group_pickings" model="ir.actions.server">
         <field name="name">Merge Pickings</field>
-        <field name="model_id" ref="mrp.model_mrp_production"/>
-        <field name="binding_model_id" ref="mrp.model_mrp_production"/>
+        <field name="model_id" ref="mrp.model_mrp_production" />
+        <field name="binding_model_id" ref="mrp.model_mrp_production" />
         <field name="binding_view_types">list</field>
         <field name="state">code</field>
         <field name="code">

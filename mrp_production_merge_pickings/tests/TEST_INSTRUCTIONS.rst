@@ -1,0 +1,6 @@
+- Create two manufacturing orders (MO).
+- Validate Pickings.
+- Check the MOs in MO list view.
+- Call action "Merge Pickings".
+- Check if pickings are merged into single picking which is linked to both MOs.
+- The common production group is taken from the first of MOs. 

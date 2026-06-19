@@ -19,5 +19,4 @@
     "application": False,
     "auto_install": False,
     "images": ["images/screen.png"],
-    
 }
