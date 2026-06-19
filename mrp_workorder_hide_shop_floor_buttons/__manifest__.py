@@ -2,7 +2,7 @@
 {
     "name": "Mrp Workorder Hide Shop Floor Buttons",
     "summary": """
-        Hide buttons for closings productions in shop floor app.
+        Hides buttons for closing productions in shop floor app.
     """,
     "author": "Mint System GmbH",
     "website": "https://www.mint-system.ch/",
