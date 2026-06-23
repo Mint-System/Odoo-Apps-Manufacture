@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-inherit="mrp_workorder.MrpDisplayAction" t-inherit-mode="extension">
+        <xpath expr="//WithSearch" position="before">
+            <div class="o_serial_filter_banner alert alert-info mb-0 px-3 py-2 d-flex align-items-center gap-2"
+                 style="border-radius:0; border-left:none; border-right:none; border-top:none;">
+                <i class="fa fa-info-circle"/>
+                <span>Production orders with tracked products are only shown once a serial number is assigned to the order.</span>
+            </div>
+        </xpath>
+    </t>
+
+</templates>

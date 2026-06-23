@@ -65,11 +65,25 @@ patch(MrpDisplayAction.prototype, {
         this.models = [];
         const {context} = this.props.action;
         const domain = [
-            // ["state", "in", ["confirmed", "progress", "to_close"]],
+            ["state", "in", ["confirmed", "progress", "to_close"]],
+            "|",
+            ["bom_id", "=", false],
+            ["bom_id.type", "in", ["normal", "phantom"]],
             ["type", "not in", ["sequential"]],
-            // "|",
-            // ["bom_id", "=", false],
-            // ["bom_id.type", "in", ["normal", "phantom"]],
+            // Serial tracking filter has three possibilities:
+            // 1. non-serial → always show
+            // 2: serial + parallel + sequential mos exist → show
+            // 3: serial + default + serial assigned → show
+            "|", "|",
+            ["product_tracking", "!=", "serial"],
+            "&", "&",
+                ["product_tracking", "=", "serial"],
+                ["type", "=", "parallel"],
+                ["sequential_production_ids", "!=", false],
+            "&", "&",
+                ["product_tracking", "=", "serial"],
+                ["type", "!=", "parallel"],
+                ["lot_producing_id", "!=", false],
         ];
         if (context.active_model === "stock.picking.type" && context.active_id) {
             domain.push(["picking_type_id", "=", context.active_id]);
