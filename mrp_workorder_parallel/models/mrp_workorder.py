@@ -295,7 +295,6 @@ class MrpWorkorder(models.Model):
             and w.is_repair_wo
             and w.type == 'parallel'
         )
-        _logger.warning(f"existing par wo: {repair_parallel_wo}")
 
         if not repair_parallel_wo:
             repair_parallel_wo_vals = {
@@ -327,7 +326,6 @@ class MrpWorkorder(models.Model):
             'repair_order_id': repair_order.id,
             'sequence': 9999,
         })
-        _logger.warning(f"##### repair_wo: {repair_wo}")
         return repair_wo
 
 
@@ -349,9 +347,7 @@ class MrpWorkorder(models.Model):
     
     def _create_account_analytic_line(self):
         duration = self.duration
-        _logger.warning(f"### repair order: {self.repair_order_id}, duration: {duration}, is repair wo: {self.is_repair_wo}")
         if self.repair_order_id and duration and self.is_repair_wo:
-            _logger.warning(f"#### repair duration: {duration}")
             self.env['account.analytic.line'].create({
                 'repair_order_id': self.repair_order_id.id,
                 'name': f"Repair of {self.production_id.product_id.name}, WO: {self.name}",
@@ -838,6 +834,19 @@ class MrpWorkorder(models.Model):
             if workorder.is_finished:
                 workorder.button_finish()
 
+    def button_start(self, raise_on_invalid_state=False):
+        res = super().button_start()
+        for workorder in self:
+            if workorder.is_repair_wo:
+                repair_order = workorder.repair_order_id
+                if repair_order and repair_order.state == 'draft':
+                    repair_order.action_validate()
+
+                if repair_order and repair_order.state == 'confirmed':
+                    repair_order.action_repair_start()
+        return res
+
+
     def button_finish(self):
         res = super().button_finish()
         for workorder in self:
@@ -846,6 +855,10 @@ class MrpWorkorder(models.Model):
                 original_wo = workorder.origin_workorder_id
                 original_wo.write({"on_repair": False})
                 workorder._create_account_analytic_line()
+                repair_order = workorder.repair_order_id
+                if repair_order and repair_order.state == "under_repair":
+                    repair_order.action_repair_end()
+
 
         return res
 
@@ -1016,34 +1029,4 @@ class MrpWorkorder(models.Model):
         domain.append(("type", "!=", "sequential"))
         return super().get_gantt_data(domain, groupby, read_specification, **kwargs)
 
-    # @api.model
-    # def _gantt_progress_bar(self, field, res_ids, start, stop):
-    #     """
-    #     Calculate progress bar values only for parallel workorders
-    #     """
-    #     _logger.warning("res_ids: %s" % (res_ids,))
-    #     domain = [
-    #         (field, "in", res_ids),
-    #         ("type", "=", "parallel")
-    #     ]
-    #     result = {}
-    #     for res_id in res_ids:
-    #         count = self.search_count(domain + [(field, "=", res_id)])
-    #         result[res_id] = {
-    #             "value": count,
-    #             "max_value": count,  # This makes 100% represent parallel workorders only
-    #         }
-    #     return result
-
-    # @api.model
-    # def _gantt_unavailability(self, field, res_ids, start, stop, scale):
-    #     """
-    #     If you use unavailability features, override this too
-    #     """
-    #     # Similar filtering for unavailability if needed
-    #     domain = [
-    #         (field, "in", res_ids),
-    #         ("type", "=", "parallel")
-    #     ]
-    #     # Your custom logic here
-    #     return super()._gantt_unavailability(field, res_ids, start, stop, scale)
+    

@@ -6,22 +6,21 @@ import {patch} from "@web/core/utils/patch";
 import {Dialog} from "@web/core/dialog/dialog";
 import {ConfirmationDialog} from "@web/core/confirmation_dialog/confirmation_dialog";
 import {useService} from "@web/core/utils/hooks";
-import {Component, markup, useState, xml} from "@odoo/owl";
+import {Component, markup, useState, xml, onMounted, onWillUnmount } from "@odoo/owl";
 import {useBus} from "@web/core/utils/hooks";
-import {onMounted, onWillUnmount} from "@odoo/owl";
 import { useInterval } from "@mrp_workorder_parallel/mrp_display/useInterval";
 
 
 patch(MrpDisplayRecord.prototype, {
     setup() {
         super.setup();
+        this.currentMode = useState({ barcode_action: "normal" });
         this.notification = useService("notification");
         this.dialogService = useService("dialog");
         this.action = useService("action");
         this.busService = this.env.services.bus_service;
         this.workorderId = this.props.record.resId;
         const {resModel, resId, data} = this.props.record;
-        this.currentMode = useState({barcode_action: "normal"});
         const channel = `workorder_${this.workorderId}`;
         
         this.busService.addChannel(channel);
@@ -34,7 +33,16 @@ patch(MrpDisplayRecord.prototype, {
         // fallback: Every 5 seconds, refresh
         this._reloading = false;
         useInterval(this.refreshView.bind(this), 5000); 
+        onMounted(async () => {
+            const savedMode = await this.env.services.orm.call(
+                "res.users",
+                "get_barcode_mode",
+                []
+            );
+            this.currentMode.barcode_action = savedMode || "normal";
+        });
     },
+
 
     async handleBusRefresh(payload) {
         const record = this.props.record;
@@ -396,6 +404,12 @@ patch(MrpDisplayRecord.prototype, {
             : "Back to Normal Mode";
     },
 
+    get buttonClass() {
+        return this.currentMode.barcode_action === "move_to_repair"
+            ? "btn btn-warning btn-sm mt-2"
+            : "btn btn-info btn-sm mt-2";
+    },
+
     async onClickOpenStatementModal() {
         const {resModel, resId} = this.props.record;
         const productionId = this.props.record.data.production_id?.[0];
@@ -421,6 +435,7 @@ patch(MrpDisplayRecord.prototype, {
 
     async onClickToggleMode(ev) {
         ev.stopPropagation();
+        console.log("onClickToggleMode called");
 
         // if (this.props.context) {
         //     this.props.context.barcode_action = "move_to_repair";

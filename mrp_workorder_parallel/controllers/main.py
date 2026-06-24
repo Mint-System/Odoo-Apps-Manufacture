@@ -18,12 +18,19 @@ class ShopfloorBarcodeMode(http.Controller):
 class StockBarcodeSerialController(StockBarcodeController):
     @http.route()
     def main_menu(self, barcode, **kw):
-        mode = request.session.get("barcode_action", "normal")
+        mode = request.env.user.barcode_action_mode or "normal"
         corresponding_mo = request.env["mrp.production"].search(
             [("lot_producing_id", "=", barcode)], limit=1
         )
         if not corresponding_mo:
             return False
+
+        workorder = request.env["mrp.workorder"].search(
+            [("barcode", "=", barcode), ("is_repair_wo", "=", True)], limit=1
+        )
+        if workorder:
+            mode = "normal"
+            request.env.user.barcode_action_mode = "normal"
 
         if mode == "move_to_repair":
             return self.try_move_workorder_to_repair(barcode, corresponding_mo)
@@ -35,8 +42,6 @@ class StockBarcodeSerialController(StockBarcodeController):
         return super().main_menu(barcode)
 
     def try_open_mo_by_serial(self, barcode, corresponding_mo):
-        _logger.warning(f"### self in try_open_mo_by_serial: {self}")
-        _logger.warning(f"### workorders: {corresponding_mo.workorder_ids}")
         for wo in corresponding_mo.workorder_ids:
             _logger.warning(f"{wo.name}, on repair: {wo.on_repair}, is repair wo: {wo.is_repair_wo}, Status: {wo.state}")
         on_repair = corresponding_mo.workorder_ids.filtered(
@@ -62,7 +67,7 @@ class StockBarcodeSerialController(StockBarcodeController):
 
         active_wo.action_move_to_repair(barcode)  # your custom method
         # Reset mode after action if desired
-        request.session["barcode_action"] = "normal"
+        request.env.user.barcode_action_mode = "normal"
         action = corresponding_mo.action_open_barcode_client_action()
         return {"action": action}
 

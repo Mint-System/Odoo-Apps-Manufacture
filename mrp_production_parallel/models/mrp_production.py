@@ -254,19 +254,17 @@ class MrpProduction(models.Model):
     ):
         self.ensure_one()
         production = self
+
         new_production_name = f"{production.name} - Parallel"
         orig_workorders = production.workorder_ids
 
-        _logger.debug(
-            "SPLIT: original duration_expected: %s",
-            orig_workorders.mapped("duration_expected"),
-        )
        
         sequential_productions = super()._split_productions(
             amounts, cancel_remaining_qty, set_consumed_qty
         )
-        _logger.warning(f"#### seq mo coming from original: {sequential_productions}")
         sequential_productions._compute_show_produce()
+        if production.type != "parallel":
+            return sequential_productions
 
         # Ensure workorder durations are copied correctly from first to second (if needed)
         if len(sequential_productions) >= 2:
@@ -278,8 +276,7 @@ class MrpProduction(models.Model):
                 if not first_wo.duration_expected and second_wo.duration_expected:
                     first_wo.duration_expected = second_wo.duration_expected
 
-        if production.type != "parallel":
-            return sequential_productions
+        
 
         parallel_production = production.copy(
             {
@@ -289,6 +286,11 @@ class MrpProduction(models.Model):
                 "product_tracking": "none",
             }
         )
+        
+        # Re-confirm moves 
+        parallel_production.move_raw_ids.write({"state": "draft"})
+        parallel_production.action_confirm()   # re-confirms, sets move states properly
+        parallel_production.action_assign()    # computes availability
 
         parallel_production.workorder_ids.write({"type": "parallel"})
 

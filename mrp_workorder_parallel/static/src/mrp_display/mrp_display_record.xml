@@ -96,7 +96,7 @@
                                     <t t-if="!record.is_repair_wo">
                                         <button
                                             type="button"
-                                            class="btn btn-info btn-sm mt-2"
+                                            t-att-class="buttonClass"
                                             t-on-click="onClickToggleMode"
                                             t-esc="buttonText"
                                         />
