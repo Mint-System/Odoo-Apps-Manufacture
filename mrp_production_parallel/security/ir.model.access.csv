@@ -1,3 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_mrp_parallel_summary_user,mrp.parallel.summary user,model_mrp_parallel_summary,base.group_user,1,1,1,1
 access_mrp_parallel_summary_manager,mrp.parallel.summary manager,model_mrp_parallel_summary,base.group_system,1,1,1,1
+access_parallel_display_component_user,access.parallel.display.component.user,model_parallel_display_component,base.group_user,1,0,0,0
+access_parallel_display_component_manager,access.parallel.display.component.manager,model_parallel_display_component,base.group_erp_manager,1,1,1,1

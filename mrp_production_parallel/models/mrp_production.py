@@ -1,9 +1,20 @@
 import logging
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
+
+
+class ParallelDisplayComponent(models.Model):
+    _name = 'parallel.display.component'
+    _description = 'Display-only component line for parallel MO'
+
+    production_id = fields.Many2one('mrp.production', ondelete='cascade')
+    product_id = fields.Many2one('product.product', readonly=True)
+    location_id = fields.Many2one('stock.location', readonly=True)
+    product_uom_qty = fields.Float(readonly=True)
+    product_uom = fields.Many2one('uom.uom', readonly=True)
 
 
 class MrpProduction(models.Model):
@@ -51,6 +62,12 @@ class MrpProduction(models.Model):
     reservation_state = fields.Selection(
         recursive=True,
     )
+    components_availability_state = fields.Selection(
+        recursive=True,
+    )
+    components_availability = fields.Char(
+        recursive=True,
+    )
 
     show_validate_button = fields.Boolean(
         string="Show Validate Button",
@@ -73,6 +90,13 @@ class MrpProduction(models.Model):
         string="MO link",
         compute="_compute_link_mo",
         store=False,  # no DB column needed
+    )
+
+    display_component_ids = fields.One2many(
+        'parallel.display.component',
+        'production_id',
+        string='Components (info)',
+        readonly=True,
     )
 
     @api.onchange("product_id")
@@ -142,53 +166,86 @@ class MrpProduction(models.Model):
                 production.show_produce_all = show_produce_all
                 production.show_produce = show_produce
 
+    # @api.depends(
+    #     "state",
+    #     "move_raw_ids.state",
+    #     "type",
+    #     "sequential_production_ids",
+    #     "sequential_production_ids.reservation_state",
+    # )
+    # def _compute_reservation_state(self):
+    #     super()._compute_reservation_state()
+    #     # for production in self:
+    #     #     if production.type == "parallel":
+    #     #         sequential_productions = production.sequential_production_ids.filtered(
+    #     #             lambda c: c.type == "sequential"
+    #     #         )
+    #     #         if not sequential_productions:
+    #     #             # production.reservation_state = "confirmed"
+    #     #             continue
+
+    #     #         sequential_states = set(
+    #     #             sequential_productions.mapped("reservation_state")
+    #     #         )
+
+    #     #         # Priority: waiting > confirmed > assigned
+    #     #         if "waiting" in sequential_states:
+    #     #             production.reservation_state = "waiting"
+    #     #         elif "confirmed" in sequential_states:
+    #     #             production.reservation_state = "confirmed"
+    #     #         elif all(state == "assigned" for state in sequential_states):
+    #     #             production.reservation_state = "assigned"
+    #     #         else:
+    #     #             production.reservation_state = "confirmed"
+
+    #     for production in self:
+    #         if production.type != "parallel":
+    #             continue
+
+    #         sequential_productions = production.sequential_production_ids
+    #         if not sequential_productions:
+    #             continue  # fallback to standard behavior
+
+    #         sequential_states = set(sequential_productions.mapped("reservation_state"))
+
+    #         # Odoo 18 priority
+    #         for state in ["waiting", "confirmed", "assigned"]:
+    #             if state in sequential_states:
+    #                 production.reservation_state = state
+    #                 break
+
     @api.depends(
-        "state",
-        "move_raw_ids.state",
-        "type",
-        "sequential_production_ids",
-        "sequential_production_ids.reservation_state",
+        'state',
+        'reservation_state',
+        'date_start',
+        'move_raw_ids',
+        'move_raw_ids.forecast_availability',
+        'move_raw_ids.forecast_expected_date',
+        'sequential_production_ids.components_availability_state',
     )
-    def _compute_reservation_state(self):
-        super()._compute_reservation_state()
-        # for production in self:
-        #     if production.type == "parallel":
-        #         sequential_productions = production.sequential_production_ids.filtered(
-        #             lambda c: c.type == "sequential"
-        #         )
-        #         if not sequential_productions:
-        #             # production.reservation_state = "confirmed"
-        #             continue
-
-        #         sequential_states = set(
-        #             sequential_productions.mapped("reservation_state")
-        #         )
-
-        #         # Priority: waiting > confirmed > assigned
-        #         if "waiting" in sequential_states:
-        #             production.reservation_state = "waiting"
-        #         elif "confirmed" in sequential_states:
-        #             production.reservation_state = "confirmed"
-        #         elif all(state == "assigned" for state in sequential_states):
-        #             production.reservation_state = "assigned"
-        #         else:
-        #             production.reservation_state = "confirmed"
-
+    def _compute_components_availability(self):
+        super()._compute_components_availability()
         for production in self:
-            if production.type != "parallel":
+            if production.type != 'parallel':
                 continue
+            seq_productions = production.sequential_production_ids
+            if not seq_productions:
+                continue
+            states = seq_productions.mapped('components_availability_state')
+            if all(s == 'available' for s in states):
+                production.components_availability_state = 'available'
+                production.components_availability = _('All available')
+            elif 'unavailable' in states:
+                production.components_availability_state = 'unavailable'
+                production.components_availability = _('Not Available')
+            elif 'late' in states:
+                production.components_availability_state = 'late'
+                production.components_availability = _('Late')
+            else:
+                # mix with 'expected'
+                production.components_availability_state = 'expected'
+                production.components_availability = _('Expected')
 
-            sequential_productions = production.sequential_production_ids
-            if not sequential_productions:
-                continue  # fallback to standard behavior
-
-            sequential_states = set(sequential_productions.mapped("reservation_state"))
-
-            # Odoo 18 priority
-            for state in ["waiting", "confirmed", "assigned"]:
-                if state in sequential_states:
-                    production.reservation_state = state
-                    break
                 
 
     @api.depends()
@@ -258,13 +315,26 @@ class MrpProduction(models.Model):
         new_production_name = f"{production.name} - Parallel"
         orig_workorders = production.workorder_ids
 
-       
         sequential_productions = super()._split_productions(
             amounts, cancel_remaining_qty, set_consumed_qty
         )
         sequential_productions._compute_show_produce()
         if production.type != "parallel":
             return sequential_productions
+
+        count = len(sequential_productions)
+        original_moves = production.move_raw_ids
+        original_move_vals = [{
+            'product_id': move.product_id.id,
+            'product_uom_qty': move.product_uom_qty * count,
+            'product_uom': move.product_uom.id,
+            'location_id': move.location_id.id,
+            'location_dest_id': move.location_dest_id.id,
+            'name': move.name,
+            'state': 'draft',
+        } for move in original_moves]
+
+        _logger.warning(f"######## original_move_vals before copy: {original_move_vals}")
 
         # Ensure workorder durations are copied correctly from first to second (if needed)
         if len(sequential_productions) >= 2:
@@ -277,20 +347,52 @@ class MrpProduction(models.Model):
                     first_wo.duration_expected = second_wo.duration_expected
 
         
-
+        # copy the production to new parallel production parent
+        # but without move_finished_ids and move_raw_ids to keep parallel mo
+        # as logical parent only without own moves
         parallel_production = production.copy(
             {
+                "move_raw_ids": [(5, 0, 0)], 
+                "move_finished_ids": [(5, 0, 0)],
                 "name": new_production_name,
                 "type": "parallel",
                 "state": "confirmed",
                 "product_tracking": "none",
+                "product_qty": len(sequential_productions),
             }
         )
+
+        _logger.warning(f"#### parallel_production.move_raw_ids.ids: {parallel_production.move_raw_ids.ids}")
+        # parallel_production.display_move_raw_ids = [(6, 0, parallel_production.move_raw_ids.ids)]
+        # parallel_production.move_raw_ids.unlink()
+
+        # Point display field at original MO's moves — correct qty, not affected by unlink
+        # parallel_production.display_move_raw_ids = [(6, 0, production.move_raw_ids.ids)]
+        # parallel_production.display_move_raw_ids.write({'state': 'draft'})
+
         
-        # Re-confirm moves 
-        parallel_production.move_raw_ids.write({"state": "draft"})
-        parallel_production.action_confirm()   # re-confirms, sets move states properly
-        parallel_production.action_assign()    # computes availability
+        # for move in original_moves:
+        #     move.copy({
+        #         'production_id': parallel_production.id,
+        #         'product_uom_qty': move.product_uom_qty * count,
+        #         'state': 'draft',
+        #     })
+
+        _logger.warning(f"######## original_move_vals after copy: {original_move_vals}")
+
+        for vals in original_move_vals:
+            self.env['parallel.display.component'].create({
+                'production_id': parallel_production.id,
+                'product_id': vals['product_id'],
+                'product_uom_qty': vals['product_uom_qty'],
+                'location_id': vals['location_id'],
+                'product_uom': vals['product_uom'],
+            })
+        
+
+        # Re-confirm moves and set rewservation state correct
+        parallel_production.action_confirm()   
+        parallel_production.action_assign()    
 
         parallel_production.workorder_ids.write({"type": "parallel"})
 
@@ -503,6 +605,16 @@ class MrpProduction(models.Model):
 
         #     # fallback to the original return value
         return action
+
+
+    def action_cancel(self):
+        for production in self:
+            if production.type == 'parallel':
+                production.sequential_production_ids.action_cancel()
+                production.write({'state': 'cancel'})
+            else:
+                super().action_cancel()
+        return True
 
     def action_view_sequential_productions(self):
         self.ensure_one()

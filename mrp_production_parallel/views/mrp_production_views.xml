@@ -206,14 +206,27 @@
                 expr="//div[@class='o_row'][field[@name='lot_producing_id']]"
                 position="attributes"
             >
-                <attribute
-                    name="invisible"
-                >type == 'parallel' or state == 'draft' or product_tracking in ('none', False)</attribute>
+                <attribute name="invisible">type == 'parallel' or state == 'draft' or product_tracking in ('none', False)</attribute>
             </xpath>
             <xpath expr="//label[@name='bom_label']" position="before">
                 <field name="parallel_total_units" invisible="type != 'parallel'" />
             </xpath>
+
+            <xpath expr="//page[@name='components']" position="attributes">
+                <attribute name="invisible">type == 'parallel' and sequential_picking_ids</attribute>
+            </xpath>
+
             <xpath expr="//page[@name='components']" position="after">
+                <page name="components_parallel" string="Components" invisible="type!='parallel'">
+                    <field name="display_component_ids" widget="stock_move_one2many" readonly="1">
+                        <list  editable="bottom">
+                            <field name="product_id" />
+                            <field name="location_id" />
+                            <field name="product_uom_qty" />
+                            <field name="product_uom" />
+                        </list>
+                    </field>
+                </page> 
                 <page
                     name="sequential_productions"
                     string="Sequential Productions"
