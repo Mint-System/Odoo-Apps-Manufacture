@@ -11,6 +11,18 @@ import {useBus} from "@web/core/utils/hooks";
 import { useInterval } from "@mrp_workorder_parallel/mrp_display/useInterval";
 
 
+class SerialsDialog extends Component {
+    static template = xml`
+        <Dialog title="props.title">
+            <div class="d-flex flex-wrap" t-out="props.body"/>
+            <t t-set-slot="footer"/>
+        </Dialog>
+    `;
+    static props = ["title", "body", "close"];
+    static components = { Dialog };
+}
+
+
 patch(MrpDisplayRecord.prototype, {
     setup() {
         super.setup();
@@ -338,13 +350,6 @@ patch(MrpDisplayRecord.prototype, {
         if (resModel !== "mrp.workorder") {
             return;
         }
-        // const serials = this.props.record.data.sequential_infos;
-        // const serials = await this.model.orm.call(
-        //     resModel,
-        //     "get_sequential_infos",
-        //     [resId],
-        //     { context: this.props.context }
-        // );
         const [workorder] = await this.model.orm.read(
             resModel,
             [resId],
@@ -355,9 +360,6 @@ patch(MrpDisplayRecord.prototype, {
         const serials = serialsAll.filter(
             (s) => s.active_workcenter_id === currentWorkcenterId
         );
-        console.log("currentWorkcenterId:", currentWorkcenterId);
-        console.log("serialsAll:", serialsAll);
-        console.log("serials: ", serials);
 
         const activeCount = workorder.sequential_infos.active_wo_count;
         const totalCount = workorder.sequential_infos.total_wo_count;
@@ -383,19 +385,23 @@ patch(MrpDisplayRecord.prototype, {
             ? `${activeCount} of ${totalCount} active Serials`
             : "No Active Serials";
 
-        this.dialogService.add(ConfirmationDialog, {
-            title: modalTitle,
-            body: markup(`<div class="d-flex flex-wrap">${bodyHTML}</div>`),
-            confirmClass: "btn-primary",
-            confirmLabel: _t("Confirm"),
-            confirm: () => {
-                this.notification.add(_t("Confirmed"), {
-                    type: "success",
-                });
-            },
-            cancelLabel: _t("Cancel"),
-            cancel: () => {},
-        });
+        // this.dialogService.add(ConfirmationDialog, {
+        //     title: modalTitle,
+        //     body: markup(`<div class="d-flex flex-wrap">${bodyHTML}</div>`),
+        //     confirmClass: "btn-primary",
+        //     confirmLabel: _t("Confirm"),
+        //     confirm: () => {
+        //         this.notification.add(_t("Confirmed"), {
+        //             type: "success",
+        //         });
+        //     },
+        //     cancelLabel: _t("Cancel"),
+        //     cancel: () => {},
+        // });
+            this.dialogService.add(SerialsDialog, {
+                title: modalTitle,
+                body: markup(`<div class="d-flex flex-wrap">${bodyHTML}</div>`),
+            });
     },
 
     get buttonText() {

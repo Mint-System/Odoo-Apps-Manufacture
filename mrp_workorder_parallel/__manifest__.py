@@ -27,7 +27,6 @@
             "mrp_workorder_parallel/static/src/mrp_display/*.xml",
             'mrp_workorder_parallel/static/src/js/my_notification_widget.js',
             'mrp_workorder_parallel/static/src/xml/my_notification_widget.xml',
-            "mrp_workorder_parallel/static/src/confirmation_dialog/*.xml",
         ]
     },
 }

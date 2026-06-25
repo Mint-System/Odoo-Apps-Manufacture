@@ -4,16 +4,14 @@ from odoo import api, models, fields
 class ResUsers(models.Model):
     _inherit = "res.users"
 
-    barcode_action_mode = fields.Selection(
-        [("normal", "Normal"), ("move_to_repair", "Move to Repair")],
-        default="normal",
-    )
 
     @api.model
     def set_barcode_mode(self, mode):
-        self.env.user.sudo().barcode_action_mode = mode
+        key = f"mrp_workorder_parallel.barcode_mode.{self.env.uid}"
+        self.env["ir.config_parameter"].sudo().set_param(key, mode)
         return True
 
     @api.model
     def get_barcode_mode(self):
-        return self.env.user.sudo().barcode_action_mode or "normal"
+        key = f"mrp_workorder_parallel.barcode_mode.{self.env.uid}"
+        return self.env["ir.config_parameter"].sudo().get_param(key, "normal")

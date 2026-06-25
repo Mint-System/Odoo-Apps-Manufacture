@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<templates xml:space="preserve">
-    <t t-name="web.ConfirmationDialog" t-inherit="web.ConfirmationDialog" t-inherit-mode="extension">
-	    <xpath expr="//t[@t-set-slot='footer']" position="replace">
-	        <t t-set-slot="footer"/>
-	    </xpath>
-	</t>
-</templates>
