@@ -488,6 +488,16 @@ class MrpProduction(models.Model):
 
         return [data]
 
+
+    def unlink(self):
+        for production in self:
+            if production.type == 'parallel':
+                seq = production.sequential_production_ids
+                seq.filtered(lambda p: p.state not in ('draft', 'cancel')).action_cancel()
+                seq.unlink()
+        return super().unlink()
+        
+
     def _set_parallel_type(self, vals):
         if vals.get("product_id"):
             product = self.env["product.product"].browse(vals["product_id"])
