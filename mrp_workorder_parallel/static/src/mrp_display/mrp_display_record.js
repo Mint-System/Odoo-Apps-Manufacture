@@ -109,27 +109,30 @@ patch(MrpDisplayRecord.prototype, {
     },
     
 
-    async onClickHeader() {
-        if (this.props.record.type === "parallel") {
-            const {resModel, resId} = this.props.record;
-            if (resModel !== "mrp.workorder") return;
+    // async onClickHeader() {
+    //     console.log("onClickHeader called");
+    //     console.log("type:", this.props.record.type);
+    //     if (this.props.record.type === "parallel") {
+    //         const {resModel, resId} = this.props.record;
+    //         if (resModel !== "mrp.workorder") return;
 
-            const hasReady = this.props.record.data.has_ready;
+    //         const hasReady = this.props.record.data.has_ready;
 
-            if (hasReady) {
-                this.startBatchWorking(true);
-            }
-        } else {
-            const {resModel, resId} = this.props.record;
-            if (resModel === "mrp.workorder") {
-                this.startWorking(true);
-            }
-            if (resModel === "mrp.production") {
-                await this.model.orm.call(resModel, "action_start", [resId]);
-                await this.env.reload();
-            }
-        }
-    },
+    //         if (hasReady) {
+    //             this.startBatchWorking(true);
+    //         }
+    //     } else {
+    //         const {resModel, resId} = this.props.record;
+    //         if (resModel === "mrp.workorder") {
+    //             console.log("call startWorking");
+    //             this.startWorking(true);
+    //         }
+    //         if (resModel === "mrp.production") {
+    //             await this.model.orm.call(resModel, "action_start", [resId]);
+    //             await this.env.reload();
+    //         }
+    //     }
+    // },
 
     async onClickStartBatch() {
         const {resModel, resId} = this.props.record;
@@ -139,23 +142,24 @@ patch(MrpDisplayRecord.prototype, {
         console.log("hasReady: ", hasReady);
 
         if (hasReady) {
-            this.startBatchWorkingSimple(true);
+           // this.startBatchWorkingSimple(true);
+           this.onClickHeader();
         }
     },
 
-    async onClickToggleBatch() {
-        const {resModel, resId, data} = this.props.record;
+    // async onClickToggleBatch() {
+    //     const {resModel, resId, data} = this.props.record;
 
-        if (resModel !== "mrp.workorder") return;
+    //     if (resModel !== "mrp.workorder") return;
 
-        const hasRunning = this.props.record.data.has_running;
-        const hasPaused = this.props.record.data.has_paused;
-        if (hasRunning) {
-            await this.stopBatchWorkingSimple();
-        } else if (hasPaused) {
-            await this.startBatchWorking();
-        }
-    },
+    //     const hasRunning = this.props.record.data.has_running;
+    //     const hasPaused = this.props.record.data.has_paused;
+    //     if (hasRunning) {
+    //         await this.stopBatchWorkingSimple();
+    //     } else if (hasPaused) {
+    //         await this.startBatchWorking();
+    //     }
+    // },
 
     async onClickContinueBatch() {
         const {resModel, resId, data} = this.props.record;
@@ -165,7 +169,8 @@ patch(MrpDisplayRecord.prototype, {
         const hasPaused = this.props.record.data.has_paused;
 
         if (hasPaused) {
-            await this.continueBatchWorkingSimple();
+            await this.onClickHeader();
+            // await this.continueBatchWorkingSimple();
         }
     },
 
@@ -177,7 +182,9 @@ patch(MrpDisplayRecord.prototype, {
         const hasRunning = this.props.record.data.has_running;
 
         if (hasRunning) {
-            await this.stopBatchWorkingSimple();
+            // await this.stopBatchWorkingSimple();
+            // await this.stopBatchWorking();
+            await this.onClickHeader();
         }
     },
 

@@ -837,6 +837,14 @@ class MrpWorkorder(models.Model):
     def button_start(self, raise_on_invalid_state=False):
         res = super().button_start()
         for workorder in self:
+            sequential_wos = workorder.sequential_workorder_ids
+            active_seq_wos = sequential_wos.filtered(
+                lambda wo: wo.state in ("ready", "waiting", "progress")
+            )
+            for wo in active_seq_wos:
+                wo.with_context(from_production=True).sudo().button_start()
+
+
             if workorder.is_repair_wo:
                 repair_order = workorder.repair_order_id
                 if repair_order and repair_order.state == 'draft':
@@ -844,6 +852,22 @@ class MrpWorkorder(models.Model):
 
                 if repair_order and repair_order.state == 'confirmed':
                     repair_order.action_repair_start()
+        return res
+
+    def stop_employee(self, employee_ids):
+        """Fan out stop to sequential workorders if this is a parallel WO."""
+        res = super().stop_employee(employee_ids)
+        
+        sequential_wos = self.sequential_workorder_ids
+        if sequential_wos:
+            active_seq_wo = sequential_wos.filtered(
+                lambda wo: wo.state == "progress" and any(
+                    emp.id in employee_ids for emp in wo.employee_ids
+                )
+            )
+            if active_seq_wo:
+                active_seq_wo.with_context(from_production=True).sudo().stop_employee(employee_ids)
+        
         return res
 
 
@@ -895,6 +919,7 @@ class MrpWorkorder(models.Model):
             wo.has_paused = paused
             wo.has_ready = ready
             wo.is_finished = finished
+            _logger.warning(f"running: {wo.has_running}, paused: {wo.has_paused}, ready: {wo.has_ready}, finished: {wo.is_finished}")
 
     @api.model
     def _normalize_date(self, value):

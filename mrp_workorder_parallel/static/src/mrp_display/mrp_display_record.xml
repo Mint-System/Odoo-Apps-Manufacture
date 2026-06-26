@@ -155,7 +155,8 @@
                                     class="btn btn-lg text-nowrap btn-secondary"
                                     t-on-click="onClickFinishBatch"
                                     title="Finish Batch"
-                                >
+                                > 
+
                                     <span>
                                         <i class="fa fa-stop" />
                                     </span>
