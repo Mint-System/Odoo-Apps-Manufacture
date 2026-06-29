@@ -734,53 +734,6 @@ class MrpWorkorder(models.Model):
             else:
                 wo.workorder_infos = {}
 
-    def action_handle_parallel_start(self):
-        return self._handle_parallel_action("start")
-
-    def action_handle_parallel_continue(self):
-        return self._handle_parallel_action("continue")
-
-    def action_handle_parallel_stop(self):
-        return self._handle_parallel_action("stop")
-
-    def action_handle_parallel_finish(self):
-        return self._handle_parallel_action("finish")
-
-    def _handle_parallel_action(self, mode):
-        _logger.warning("_handle_parallel_action called")
-        for wo in self:
-            
-            if mode == "start":
-                wo.with_context(from_production=True).button_start()
-            elif mode == "stop":
-                wo.with_context(from_production=True).button_pending()
-            elif mode == "continue":
-                wo.with_context(from_production=True).button_start()
-            # elif mode == "finish":
-            #     wo.button_finish()
-
-            sequential_workorders = wo._get_sequential_workorders()
-            _logger.warning(f"SEQ WO of wo {wo.id}: sequential_workorders")
-
-            for workorder in sequential_workorders:
-                if mode == "start" and (
-                    workorder.state == "ready" or workorder.state == "waiting"
-                ):
-                    workorder.with_context(from_production=True).button_start()
-                elif (
-                    mode == "continue"
-                    and workorder.state == "progress"
-                    and not workorder.time_ids.filtered(lambda t: not t.date_end)
-                ):
-                    workorder.with_context(from_production=True).button_start()
-                elif (
-                    mode == "stop"
-                    and workorder.state == "progress"
-                    and workorder.time_ids.filtered(lambda t: not t.date_end)
-                ):
-                    workorder.with_context(from_production=True).button_pending()
-                # elif mode == "finish" and workorder.state == "progress" and workorder.time_ids.filtered(lambda t: not t.date_end):
-                #     workorder.button_finish()
 
     def action_finish_batch(self):
         """Finish all sequential workorders registered for this parallel step."""
