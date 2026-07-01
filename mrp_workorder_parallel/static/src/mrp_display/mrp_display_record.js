@@ -30,7 +30,6 @@ patch(MrpDisplayRecord.prototype, {
             this.resModel === "mrp.production"
                 ? this.record.type
                 : this.props.production.data.type;
-        console.log("type:", this.productionType);
         this.currentMode = useState({ barcode_action: "normal" });
         this.notification = useService("notification");
         this.dialogService = useService("dialog");
@@ -39,7 +38,6 @@ patch(MrpDisplayRecord.prototype, {
         this.workorderId = this.props.record.resId;
         const {resModel, resId, data} = this.props.record;
         const channel = `workorder_${this.workorderId}`;
-        console.log("resModel", resModel);
         
         this.busService.addChannel(channel);
         
@@ -50,7 +48,6 @@ patch(MrpDisplayRecord.prototype, {
 
         // fallback: Every 5 seconds, refresh
         this._reloading = false;
-        console.log("data.tye:", data.type);
         if (this.productionType === 'parallel' && this.resModel === "mrp.workorder") {
             useInterval(this.refreshView.bind(this), 5000); 
         }
@@ -64,7 +61,6 @@ patch(MrpDisplayRecord.prototype, {
         if (this.productionType === 'parallel' && this.resModel === "mrp.workorder" ) {
             this.displaySerialLine = true;
         }
-        console.log("this.displaySerialLine: ", this.displaySerialLine);
         
         onMounted(async () => {
             const savedMode = await this.env.services.orm.call(
@@ -84,14 +80,9 @@ patch(MrpDisplayRecord.prototype, {
         }
         
         if (payload.parallel_workorder_id === record.resId) {
-            console.log("Reloading production for workorder", record.resId);
             try {
                 // await this.env.reload(this.props.production);
                 await this.props.record.reload();  
-                console.log(
-                    "Reload complete, sequential_stats:",
-                    record.data.sequential_stats
-                );
             } catch (e) {
                 console.error("Reload failed:", e);
             }
@@ -104,10 +95,6 @@ patch(MrpDisplayRecord.prototype, {
         try {
             // await this.props.record.reload();
             await this.onClickReload();
-            console.log(
-                "Reload complete, sequential_stats:",
-                this.props.record.data.sequential_stats
-            );
         } catch (e) {
             console.error("Reload failed:", e);
         }
@@ -125,7 +112,6 @@ patch(MrpDisplayRecord.prototype, {
         if (resModel !== "mrp.workorder") return;
 
         const hasReady = this.props.record.data.has_ready;
-        console.log("hasReady: ", hasReady);
 
         if (hasReady) {
            this.onClickHeader();
@@ -280,7 +266,6 @@ patch(MrpDisplayRecord.prototype, {
 
     async onClickToggleMode(ev) {
         ev.stopPropagation();
-        console.log("onClickToggleMode called");
 
         // if (this.props.context) {
         //     this.props.context.barcode_action = "move_to_repair";
@@ -330,7 +315,6 @@ class MyComponent extends Component {
         this.busService.addChannel(this.channel);
         this.busService.addEventListener("notification", this.onMessage.bind(this));
 
-        console.log("busService:", this.busService);
     }
 
     onMessage({ detail: notifications }) {
