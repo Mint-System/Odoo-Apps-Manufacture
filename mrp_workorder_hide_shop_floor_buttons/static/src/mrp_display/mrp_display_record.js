@@ -10,7 +10,4 @@ patch(MrpDisplayRecord.prototype, {
         return false;
     },
 
-    get displayDoneButton() {
-        return false;
-    },
 });
