@@ -41,22 +41,18 @@ patch(MrpDisplayAction.prototype, {
                 "has_registered_serial",
             ];
         }
+        if (result["mrp.production"]) {
+            if (!result["mrp.production"].includes("type")) {
+                result["mrp.production"].push("type");
+            }
+        } else {
+            result["mrp.production"] = ["type"];
+        }
 
         return result;
     },
 
-    // setup() {
-    //     super.setup(arguments);
-    //     domain.push(["type", "!=", "sequential"]);
-    // },
-
-    // async setup() {
-    //     await super.setup(...arguments);
-
-    //     if (this.withSearchProps?.domain) {
-    //         this.withSearchProps.domain.push(["type", "=", "parallel"]);
-    //     }
-    // },
+    
     setup() {
         this.viewService = useService("view");
         this.fieldService = useService("field");

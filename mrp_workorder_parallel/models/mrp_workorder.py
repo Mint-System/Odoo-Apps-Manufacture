@@ -810,7 +810,7 @@ class MrpWorkorder(models.Model):
     def stop_employee(self, employee_ids):
         """Fan out stop to sequential workorders if this is a parallel WO."""
         res = super().stop_employee(employee_ids)
-        
+
         sequential_wos = self.sequential_workorder_ids
         if sequential_wos:
             active_seq_wo = sequential_wos.filtered(

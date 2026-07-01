@@ -26,6 +26,11 @@ class SerialsDialog extends Component {
 patch(MrpDisplayRecord.prototype, {
     setup() {
         super.setup();
+        this.productionType =
+            this.resModel === "mrp.production"
+                ? this.record.type
+                : this.props.production.data.type;
+        console.log("type:", this.productionType);
         this.currentMode = useState({ barcode_action: "normal" });
         this.notification = useService("notification");
         this.dialogService = useService("dialog");
@@ -34,6 +39,7 @@ patch(MrpDisplayRecord.prototype, {
         this.workorderId = this.props.record.resId;
         const {resModel, resId, data} = this.props.record;
         const channel = `workorder_${this.workorderId}`;
+        console.log("resModel", resModel);
         
         this.busService.addChannel(channel);
         
@@ -44,7 +50,22 @@ patch(MrpDisplayRecord.prototype, {
 
         // fallback: Every 5 seconds, refresh
         this._reloading = false;
-        useInterval(this.refreshView.bind(this), 5000); 
+        console.log("data.tye:", data.type);
+        if (this.productionType === 'parallel' && this.resModel === "mrp.workorder") {
+            useInterval(this.refreshView.bind(this), 5000); 
+        }
+
+        this.displaySerialLine = false;
+
+        if (this.productionType === 'parallel' ) {
+            this.displayRegisterProduction = false;
+        }
+
+        if (this.productionType === 'parallel' && this.resModel === "mrp.workorder" ) {
+            this.displaySerialLine = true;
+        }
+        console.log("this.displaySerialLine: ", this.displaySerialLine);
+        
         onMounted(async () => {
             const savedMode = await this.env.services.orm.call(
                 "res.users",
@@ -78,6 +99,8 @@ patch(MrpDisplayRecord.prototype, {
     },
 
     async refreshView() {
+        const {resModel, resId} = this.props.record;
+        if (resModel !== "mrp.workorder") return;
         try {
             // await this.props.record.reload();
             await this.onClickReload();
@@ -209,6 +232,28 @@ patch(MrpDisplayRecord.prototype, {
             ? "btn btn-warning btn-sm mt-2"
             : "btn btn-info btn-sm mt-2";
     },
+
+    get displayCloseProductionButton() {
+        const type = this.props.record.data.type;
+        if (type === 'parallel') {
+            return false;
+        }
+        else {
+            return super.displayCloseProductionButton;
+        }
+        
+    },
+
+    get displayDoneButton() {
+        const type = this.props.record.data.type;
+        if (type === 'parallel') {
+            return false;
+        }
+        else {
+            return super.displayDoneButton;
+        }
+    },
+
 
     async onClickOpenStatementModal() {
         const {resModel, resId} = this.props.record;
