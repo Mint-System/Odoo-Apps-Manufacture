@@ -1,0 +1,376 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* mrp_production_parallel
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-06 08:58+0000\n"
+"PO-Revision-Date: 2026-07-06 08:58+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: mrp_production_parallel
+#: model_terms:ir.ui.view,arch_db:mrp_production_parallel.mrp_production_form_view
+msgid ""
+"<span class=\"badge badge-primary\" style=\"margin-left:8px; background-color:#007bff; color:white; padding:2px 6px; border-radius:4px;\">\n"
+"                        P\n"
+"                    </span>"
+msgstr ""
+
+#. module: mrp_production_parallel
+#. odoo-python
+#: code:addons/mrp_production_parallel/models/mrp_production.py:0
+msgid "All available"
+msgstr Alles verfügbar""
+
+#. module: mrp_production_parallel
+#: model_terms:ir.ui.view,arch_db:mrp_production_parallel.view_mrp_parallel_summary_form
+msgid "Close"
+msgstr "Schliessen"
+
+#. module: mrp_production_parallel
+#: model_terms:ir.ui.view,arch_db:mrp_production_parallel.mrp_production_form_view
+msgid "Close Par. Prod."
+msgstr "Par. Produktion schliessen"
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_production__components_availability
+msgid "Component Status"
+msgstr "Komponentenstatus"
+
+#. module: mrp_production_parallel
+#: model_terms:ir.ui.view,arch_db:mrp_production_parallel.mrp_production_form_view
+msgid "Components"
+msgstr "Komponenten"
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_production__display_component_ids
+msgid "Components (info)"
+msgstr "Komponenten (Info)"
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_production__components_availability_state
+msgid "Components Availability State"
+msgstr "Verfügbarkeitsstatus der Komponenten"
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_parallel_summary__create_uid
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_parallel_display_component__create_uid
+msgid "Created by"
+msgstr "Angelegt von"
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_parallel_summary__create_date
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_parallel_display_component__create_date
+msgid "Created on"
+msgstr "Angelegt am"
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields.selection,name:mrp_production_parallel.selection__mrp_production__type__default
+msgid "Default"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_parallel_summary__display_name
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_parallel_display_component__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model,name:mrp_production_parallel.model_parallel_display_component
+msgid "Display-only component line for parallel MO"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_parallel_summary__duration
+msgid "Duration"
+msgstr "Dauer"
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_parallel_summary__date_finished
+msgid "End Date"
+msgstr "Enddatum"
+
+#. module: mrp_production_parallel
+#. odoo-python
+#: code:addons/mrp_production_parallel/models/mrp_production.py:0
+msgid "Expected"
+msgstr "Erwartet"
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_product_product__has_parallel_production
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_product_template__has_parallel_production
+msgid "Has Parallel Production"
+msgstr "Parellele Produktion"
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_parallel_summary__id
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_parallel_display_component__id
+msgid "ID"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,help:mrp_production_parallel.field_product_product__has_parallel_production
+#: model:ir.model.fields,help:mrp_production_parallel.field_product_template__has_parallel_production
+msgid ""
+"If checked, manufacturing orders for this product will default to 'Parallel'"
+" type."
+msgstr "Wenn aktiviert, ist die voreingestellte Produktionsmethode 'parallel'."
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_parallel_summary__default_code
+msgid "Internal Reference"
+msgstr "Interne Referenz"
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_parallel_summary__write_uid
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_parallel_display_component__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_parallel_summary__write_date
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_parallel_display_component__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: mrp_production_parallel
+#. odoo-python
+#: code:addons/mrp_production_parallel/models/mrp_production.py:0
+msgid "Late"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,help:mrp_production_parallel.field_mrp_production__components_availability
+msgid ""
+"Latest component availability status for this MO. If green, then the MO's "
+"readiness status is ready, as per BOM configuration."
+msgstr ""
+"Aktueller Status der Komponentenverfügbarkeit für diesen Fertigungsauftrag. "
+"Wenn der Status grün ist, ist der Fertigungsauftrag gemäß der "
+"Stücklistenkonfiguration bereit."
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_parallel_display_component__location_id
+msgid "Location"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_production__reservation_state
+msgid "MO Readiness"
+msgstr "Bereitschaft des Fertigungsauftrags"
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_production__link_mo_id
+msgid "MO link"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model,name:mrp_production_parallel.model_mrp_production
+msgid "Manufacturing Order"
+msgstr "Fertigungsauftrag"
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,help:mrp_production_parallel.field_mrp_production__reservation_state
+msgid ""
+"Manufacturing readiness for this MO, as per bill of material configuration:\n"
+"            * Ready: The material is available to start the production.\n"
+"            * Waiting: The material is not available to start the production.\n"
+msgstr ""
+"Fertigungsbereitschaft für diesen Fertigungsauftrag gemäß der Stücklistenkonfiguration:\n"
+"            * Bereit: Das Material ist verfügbar, um die Produktion zu starten.\n"
+"            * Warten: Das Material ist nicht verfügbar, um die Produktion zu starten.\n"
+
+#. module: mrp_production_parallel
+#. odoo-python
+#: code:addons/mrp_production_parallel/models/mrp_production.py:0
+msgid "Not Available"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model_terms:ir.ui.view,arch_db:mrp_production_parallel.mrp_production_form_view
+msgid "Order"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields.selection,name:mrp_production_parallel.selection__mrp_production__type__parallel
+#: model_terms:ir.ui.view,arch_db:mrp_production_parallel.mrp_production_form_view
+msgid "Parallel"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_production__parallel_production_id
+msgid "Parallel Manufacturing Order"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_stock_move__parallel_product_uom_qty
+msgid "Parallel Product Uom Qty"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model,name:mrp_production_parallel.model_mrp_parallel_summary
+#: model_terms:ir.ui.view,arch_db:mrp_production_parallel.view_mrp_parallel_summary_form
+msgid "Parallel Production Summary"
+msgstr "Parallele Produktion (Zus.)"
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_stock_move__parallel_quantity
+msgid "Parallel Quantity"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_production__summary_id
+msgid "Parallel Summary"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_production__sequential_picking_count
+msgid "Pickings"
+msgstr ""
+
+#. module: mrp_production_parallel
+#. odoo-python
+#: code:addons/mrp_production_parallel/models/mrp_batch_product.py:0
+msgid "Please specify the serial number you would like to use."
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model_terms:ir.ui.view,arch_db:mrp_production_parallel.mrp_production_form_view
+msgid "Post Calculation"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model,name:mrp_production_parallel.model_mrp_batch_produce
+msgid "Produce a batch of production order"
+msgstr "Eine Charge eines Produktionsauftrags produzieren"
+
+#. module: mrp_production_parallel
+#: model:ir.model,name:mrp_production_parallel.model_product_template
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_parallel_display_component__product_id
+msgid "Product"
+msgstr "Produkt"
+
+#. module: mrp_production_parallel
+#: model:ir.model,name:mrp_production_parallel.model_stock_move_line
+msgid "Product Moves (Stock Move Line)"
+msgstr "Produktbewegungen (Lagerbuchung)"
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_parallel_display_component__product_uom
+msgid "Product Uom"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_parallel_display_component__product_uom_qty
+msgid "Product Uom Qty"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_parallel_summary__production_id
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_parallel_display_component__production_id
+msgid "Production"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model_terms:ir.ui.view,arch_db:mrp_production_parallel.view_mrp_parallel_summary_form
+msgid "Recalculate"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_parallel_summary__name
+msgid "Reference"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model_terms:ir.ui.view,arch_db:mrp_production_parallel.mrp_production_form_view
+msgid "Seq. Pickings"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields.selection,name:mrp_production_parallel.selection__mrp_production__type__sequential
+#: model_terms:ir.ui.view,arch_db:mrp_production_parallel.mrp_production_form_view
+#: model_terms:ir.ui.view,arch_db:mrp_production_parallel.view_mrp_production_tree_inherit
+msgid "Sequential"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_production__sequential_production_ids
+msgid "Sequential Manufacturing Orders"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_production__sequential_picking_ids
+msgid "Sequential Picking"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model_terms:ir.ui.view,arch_db:mrp_production_parallel.mrp_production_form_view
+msgid "Sequential Pickings"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model_terms:ir.ui.view,arch_db:mrp_production_parallel.mrp_production_form_view
+msgid "Sequential Productions"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_production__show_button_mark_done_parallel
+msgid "Show Button Mark Done Parallel"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_production__show_validate_button
+msgid "Show Validate Button"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_production__show_product_qty
+msgid "Show product qty"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_parallel_summary__date_start
+msgid "Start Date"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model,name:mrp_production_parallel.model_stock_move
+msgid "Stock Move"
+msgstr "Lagerbuchung"
+
+#. module: mrp_production_parallel
+#: model_terms:ir.ui.view,arch_db:mrp_production_parallel.mrp_production_form_view
+msgid "Summary"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model_terms:ir.ui.view,arch_db:mrp_production_parallel.view_mrp_production_search_inherit
+msgid "To do (Non Sequential)"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_parallel_summary__total_cost
+msgid "Total Cost"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_parallel_summary__total_units
+msgid "Total Units"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_production__parallel_total_units
+msgid "Total Units (Parallel)"
+msgstr ""
+
+#. module: mrp_production_parallel
+#: model:ir.model.fields,field_description:mrp_production_parallel.field_mrp_production__type
+msgid "Type"
+msgstr ""

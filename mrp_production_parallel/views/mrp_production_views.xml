@@ -274,28 +274,28 @@
             <xpath expr="(//button[@name='button_mark_done'])[1]" position="attributes">
                 <attribute
                     name="invisible"
-                    add="type in ['sequential']"
+                    add="type in ['parallel']"
                     separator=" or "
                 />
             </xpath>
             <xpath expr="(//button[@name='button_mark_done'])[2]" position="attributes">
                 <attribute
                     name="invisible"
-                    add="type in ['sequential']"
+                    add="type in ['parallel']"
                     separator=" or "
                 />
             </xpath>
             <xpath expr="(//button[@name='button_mark_done'])[3]" position="attributes">
                 <attribute
                     name="invisible"
-                    add="type in ['sequential']"
+                    add="type in ['parallel']"
                     separator=" or "
                 />
             </xpath>
             <xpath expr="(//button[@name='button_mark_done'])[4]" position="attributes">
                 <attribute
                     name="invisible"
-                    add="type in ['sequential']"
+                    add="type in ['parallel']"
                     separator=" or "
                 />
             </xpath>
