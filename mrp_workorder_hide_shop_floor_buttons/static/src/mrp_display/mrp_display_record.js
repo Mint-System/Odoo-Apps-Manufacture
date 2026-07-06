@@ -10,4 +10,8 @@ patch(MrpDisplayRecord.prototype, {
         return false;
     },
 
+    get displayDoneButton() {
+        return this.resModel !== "mrp.production" && this._workorderDisplayDoneButton();
+    },
+
 });
