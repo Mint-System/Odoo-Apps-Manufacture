@@ -1,0 +1,1 @@
+Hides Done Button and changes button done string for tracked products.
