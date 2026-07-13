@@ -10,7 +10,7 @@
     "development_status": "Production/Stable",
     "version": "19.0.1.0.0",
     "license": "AGPL-3",
-    "depends": ["mrp"],
+    "depends": ["mrp", "stock"],
     "data": [
         "data/server_actions.xml",
         "views/stock_picking_views.xml",

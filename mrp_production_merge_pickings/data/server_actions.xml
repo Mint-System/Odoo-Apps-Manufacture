@@ -10,4 +10,16 @@
 action = records.action_merge_pickings()
         </field>
     </record>
+
+
+    <record id="action_server_ungroup_pickings" model="ir.actions.server">
+        <field name="name">Ungroup Component Pickings</field>
+        <field name="model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">
+action = records.action_ungroup_pickings()
+        </field>
+    </record>
 </odoo>

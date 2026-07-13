@@ -122,6 +122,10 @@ class MrpProduction(models.Model):
                 old_group.sudo().unlink()
 
         if master_picking:
+            master_picking.write({
+                'is_grouped_picking': True,
+                'component_picking_type_id': master_picking.picking_type_id.id,
+            })
             master_picking._compute_state()
             master_picking._compute_scheduled_date()
 
@@ -134,3 +138,6 @@ class MrpProduction(models.Model):
                 "view_mode": "form",
                 "res_id": master_picking.id,
             }
+
+
+
