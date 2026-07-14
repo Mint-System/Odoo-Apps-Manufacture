@@ -38,9 +38,10 @@ class StockBarcodeSerialController(StockBarcodeController):
             [("barcode", "=", barcode), ("is_repair_wo", "=", True)], limit=1
         )
         if workorder:
-            mode = "normal"
+            # mode = "normal"
             request.env.user.set_barcode_mode("normal")
 
+        _logger.warning(f"##### mode: {mode}")
         if mode == "move_to_repair":
             return self.try_move_workorder_to_repair(barcode, corresponding_mo)
 
@@ -74,7 +75,7 @@ class StockBarcodeSerialController(StockBarcodeController):
         if not active_wo:
             return False
 
-        active_wo.action_move_to_repair(barcode)  # your custom method
+        active_wo.action_move_to_repair(barcode) 
         # Reset mode after action if desired
         request.env.user.set_barcode_mode("normal")
         action = corresponding_mo.action_open_barcode_client_action()

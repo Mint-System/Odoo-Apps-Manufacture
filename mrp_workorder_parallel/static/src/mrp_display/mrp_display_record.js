@@ -48,9 +48,9 @@ patch(MrpDisplayRecord.prototype, {
 
         // fallback: Every 5 seconds, refresh
         this._reloading = false;
-        if (this.productionType === 'parallel' && this.resModel === "mrp.workorder") {
-            useInterval(this.refreshView.bind(this), 5000); 
-        }
+        // if (this.productionType === 'parallel' && this.resModel === "mrp.workorder") {
+        //     useInterval(this.refreshView.bind(this), 5000); 
+        // }
 
         this.displaySerialLine = false;
 

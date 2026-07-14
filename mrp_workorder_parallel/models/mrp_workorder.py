@@ -127,7 +127,6 @@ class MrpWorkorder(models.Model):
             limit=1,
         )
 
-        _logger.warning("test bus called")
         channel = (self._cr.dbname, "mrp_workorder_parallel.notification", parallel_workorder.id)
         payload = {
             "type": "status_update",
@@ -146,7 +145,6 @@ class MrpWorkorder(models.Model):
             limit=1,
         )
         if not parallel_workorder:
-            _logger.warning("No parallel workorder found for reload")
             return
             
         channel = f"workorder_{parallel_workorder.id}"
@@ -154,14 +152,12 @@ class MrpWorkorder(models.Model):
             "parallel_workorder_id": parallel_workorder.id,
             "serial": self.production_id.lot_producing_id.name,
         }
-        _logger.info("Sending reload trigger on channel %s", channel)
        
         self.env["bus.bus"].sudo()._sendone(
             channel,
             "workorder_update",
             payload,
         )
-        _logger.info("Reload trigger sent successfully")
 
     def action_register_serial(self):
         """Mark non finished workorder as registered"""
@@ -401,6 +397,7 @@ class MrpWorkorder(models.Model):
         # repair_wo = self._inject_repair_workorder()
         repair_order = self._create_repair_order(repair_location, source_location, lot_id)
         repair_wo = self._get_or_create_repair_wo(lot_id, repair_order)
+        _logger.warning(f"################ A repair wo was created: {repair_wo.name}, {repair_wo.id}, {repair_wo.state}, {repair_wo.type}")
 
 
         # Cross-linking repair order and repair workorder
@@ -612,7 +609,6 @@ class MrpWorkorder(models.Model):
                 "active_wo_count": active_wo_count,
                 "total_wo_count": len(infos),
             }
-            _logger.warning(f"seq infos: {wo.sequential_infos}")
 
     @api.depends(
         "production_id",
@@ -642,7 +638,6 @@ class MrpWorkorder(models.Model):
                 seq_wos = seq_prod.workorder_ids.filtered(lambda w: w.name == wo.name)
                 if not seq_wos:
                     continue
-                _logger.warning(f"### seq_wo: {", ".join([wo.name for wo in seq_wos])}")
                 for seq_wo in seq_wos:
                     if seq_wo.state not in ("done", "cancel"):
                         current_wo_serials += 1
@@ -669,8 +664,13 @@ class MrpWorkorder(models.Model):
             )
             wo.total_serials = len(sequential_productions)
 
+    @api.depends('production_availability', 'blocked_by_workorder_ids.state', 'sequential_workorder_ids.state')
     def _compute_state(self):
         for workorder in self:
+            if workorder.is_repair_wo and workorder.type == 'sequential':
+                # ad hoc repair WOs manage their own state explicitly
+                continue
+            
             if workorder.type != "parallel":
                 # original logic for normal/sequential workorders
                 super()._compute_state()
@@ -685,8 +685,6 @@ class MrpWorkorder(models.Model):
                 lambda w: w.state in ("progress", "paused")
             ):
                 workorder.state = "progress"
-            # elif workorder._get_sequential_workorders() and all(w.state == "done" for w in workorder._get_sequential_workorders()):
-            #     workorder.state = "done"
             elif workorder._get_sequential_workorders().filtered(
                 lambda w: w.state and w.state in ("waiting")
             ):
@@ -694,23 +692,6 @@ class MrpWorkorder(models.Model):
             else:
                 pass
 
-    # def get_sequential_infos(self):
-    #     self.ensure_one()
-    #     infos = []
-    #     seq_workorders = self.env["mrp.workorder"].search([
-    #         ("production_id.parent_production_id", "=", self.production_id.id),
-    #         ("name", "=", self.name)
-    #     ])
-    #     for wo in seq_workorders:
-    #         infos.append({
-    #             "name": wo.production_id.lot_producing_id.name,
-    #             "state": (
-    #                 "done" if wo.state == "done" else
-    #                 "registered" if wo.registered else
-    #                 "waiting"
-    #             )
-    #         })
-    #     return serials
 
     @api.depends("production_id.type")
     def _compute_workorder_infos(self):

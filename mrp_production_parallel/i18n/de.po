@@ -27,7 +27,7 @@ msgstr ""
 #. odoo-python
 #: code:addons/mrp_production_parallel/models/mrp_production.py:0
 msgid "All available"
-msgstr Alles verfügbar""
+msgstr "Alles verfügbar"
 
 #. module: mrp_production_parallel
 #: model_terms:ir.ui.view,arch_db:mrp_production_parallel.view_mrp_parallel_summary_form
