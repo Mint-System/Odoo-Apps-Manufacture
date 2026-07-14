@@ -188,7 +188,8 @@
                 <span class="h5 text-truncate" t-esc="record.display_name" />
             </t>
         </xpath>
-        <!-- <xpath expr="//i[@class='fa']" position="replace" /> -->
+       
+        <xpath expr="//i[@class='fa']" position="replace" />
     </t>
 
 
