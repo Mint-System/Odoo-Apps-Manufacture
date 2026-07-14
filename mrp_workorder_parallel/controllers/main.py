@@ -18,12 +18,21 @@ class ShopfloorBarcodeMode(http.Controller):
 class StockBarcodeSerialController(StockBarcodeController):
     @http.route()
     def main_menu(self, barcode, **kw):
+        current_wo_id = request.env.user.get_current_workorder() or False
+        current_wo = request.env["mrp.workorder"].browse(int(current_wo_id))
+        in_progress_parallel_mo = current_wo.production_id if current_wo else False
+        _logger.warning(f"####### in progress mo: {in_progress_parallel_mo}, {in_progress_parallel_mo.name}")
         mode = request.env.user.get_barcode_mode() or "normal"
         corresponding_mo = request.env["mrp.production"].search(
-            [("lot_producing_id", "=", barcode)], limit=1
+            [("lot_producing_id", "=", barcode), ("parallel_production_id", "=", in_progress_parallel_mo.id)]
         )
+        _logger.warning(f"####### corresponding mo: {corresponding_mo}, {corresponding_mo.name}")
+
         if not corresponding_mo:
             return False
+        if len(corresponding_mo) > 1:
+            _logger.warning(f"###### {len(corresponding_mo)} MOs gefunden")
+            corresponding_mo = in_progress_mo
 
         workorder = request.env["mrp.workorder"].search(
             [("barcode", "=", barcode), ("is_repair_wo", "=", True)], limit=1

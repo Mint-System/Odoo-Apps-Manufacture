@@ -69,7 +69,10 @@ patch(MrpDisplayRecord.prototype, {
                 []
             );
             this.currentMode.barcode_action = savedMode || "normal";
+            this.workorderId = this.props.record.resId;
+            await this.env.services.orm.call("res.users", "set_current_workorder", [this.workorderId]);
         });
+
     },
 
 
@@ -279,7 +282,7 @@ patch(MrpDisplayRecord.prototype, {
 
         const msg =
             newMode === "move_to_repair"
-                ? "RRRepair mode activated: scan a workorder to move it to repair."
+                ? "Repair mode activated: scan a workorder to move it to repair."
                 : "Returned to normal scanning mode.";
         this.env.services.notification.add(msg, {
             type: newMode === "move_to_repair" ? "warning" : "info",
