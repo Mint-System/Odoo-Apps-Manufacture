@@ -22,4 +22,17 @@ action = records.action_merge_pickings()
 action = records.action_ungroup_pickings()
         </field>
     </record>
+
+
+
+    <record id="action_server_merge_common_moves" model="ir.actions.server">
+        <field name="name">Merge Common Moves</field>
+        <field name="model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">
+records.action_merge_common_moves()
+        </field>
+    </record>
 </odoo>
