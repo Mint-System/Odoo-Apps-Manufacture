@@ -4,6 +4,7 @@ import logging
 from collections import defaultdict
 
 from odoo import models, _, fields
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
