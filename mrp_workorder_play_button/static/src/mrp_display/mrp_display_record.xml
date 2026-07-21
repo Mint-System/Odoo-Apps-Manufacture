@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+    <t t-inherit="mrp_workorder.MrpDisplayRecord" t-inherit-mode="extension">
+        <xpath expr="//ul[@class='list-group list-group-flush']" position="after">
+              <div id="play-button">
+                <t t-if="props.record.resModel=='mrp.workorder' and this.showPlayButtonExt">
+                    <ul class="list-group list-group-flush play-button">      
+                            <div
+                                class="mt-2 mb-2 text-center d-flex justify-content-between mx-2"
+                            >
+
+                                <t t-if="!this.active">
+                                    <button
+                                        class="btn btn-lg text-nowrap btn-secondary"
+                                        t-on-click="onClickHeader"
+                                        title="Start"
+                                    >
+                                        <span>
+                                            <i class="fa fa-play" />
+                                        </span>
+                                    </button>
+                                </t>
+                                <t t-if="this.active">
+                                    <button
+                                        class="btn btn-lg text-nowrap btn-secondary"
+                                        t-on-click="onClickHeader"
+                                        title="Stop"
+                                    >
+                                        <span>
+                                            <i class="fa fa-pause" />
+                                        </span>
+                                    </button>
+                                </t>
+                            </div>
+                    </ul>
+                </t>
+            </div>
+        </xpath>
+    </t>
+</templates>
+
+

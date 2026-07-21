@@ -210,6 +210,19 @@ patch(MrpDisplayRecord.prototype, {
             });
     },
 
+
+   
+    get showPlayButtonExt() {
+        const type = this.props.record.data.type;
+        if (type === 'parallel') {
+            return false;
+        }
+        else {
+            return true;
+        }
+    },
+ 
+
     get buttonText() {
         return this.currentMode.barcode_action === "normal"
             ? "Move Serial to Repair"
