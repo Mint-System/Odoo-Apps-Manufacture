@@ -27,8 +27,8 @@ class StockPicking(models.Model):
     def action_ungroup_pickings(self):
         self.ensure_one()
 
-        if not self.is_grouped_picking:
-            raise UserError(_('This is not a grouped picking.'))
+        # if not self.is_grouped_picking:
+        #     raise UserError(_('This is not a grouped picking.'))
 
         mos = self.production_ids.sorted('id')
         component_picking_type = self.component_picking_type_id
