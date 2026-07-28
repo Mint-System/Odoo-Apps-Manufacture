@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_mrp_bom_refdes_import_form" model="ir.ui.view">
+        <field name="name">mrp.bom.refdes.import.form</field>
+        <field name="model">mrp.bom.refdes.import</field>
+        <field name="arch" type="xml">
+            <form string="Import RefDes CSV">
+                <group>
+                    <field name="csv_file" filename="csv_filename"/>
+                    <field name="csv_filename" invisible="1"/>
+                    <field name="data_start_line"/>
+                </group>
+                <field name="result_log" readonly="1" invisible="not result_log"/>
+                <footer>
+                    <button name="action_import" type="object" string="Import" class="btn-primary"/>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mrp_bom_refdes_import" model="ir.actions.act_window">
+        <field name="name">Import RefDes CSV</field>
+        <field name="res_model">mrp.bom.refdes.import</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Adds a button in the BoM form header to launch the wizard -->
+    <record id="view_mrp_bom_form_refdes_button" model="ir.ui.view">
+        <field name="name">mrp.bom.form.refdes.button</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@class='oe_button_box']" position="inside">
+                <button name="%(action_mrp_bom_refdes_import)d" type="action"
+                        string="Import RefDes CSV"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
