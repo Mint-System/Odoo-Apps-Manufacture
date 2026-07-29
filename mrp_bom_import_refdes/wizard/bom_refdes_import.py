@@ -21,12 +21,18 @@ class MrpBomRefdesImport(models.TransientModel):
     csv_file = fields.Binary(string='CSV File', required=True)
     csv_filename = fields.Char(string='Filename')
     data_start_line = fields.Integer(
-        string='Data starts at line', default=6,
+        string='Data starts at line', default=7,
         help="1-based line number of the first data row. The line "
              "immediately above this must be the column header row "
              "(RefDes;PartNumber;Label;Description;Quantity). Rows above "
              "that (title, 'Zusammenfassung', 'Erstellt', component "
              "counts) are skipped.")
+    new_bom = fields.Boolean(
+        string='Create New BOM',
+        help="If no BOM exists yet for the product in cell A1, create one "
+             "and add each matched component as a new BOM line instead of "
+             "raising an error.",
+        default=False)
     result_log = fields.Text(string='Import Log', readonly=True)
 
     def _decode(self, raw):
@@ -58,6 +64,14 @@ class MrpBomRefdesImport(models.TransientModel):
             if score > best_score:
                 best_delim, best_score = delim, score
         return best_delim, best_score
+
+    def _parse_qty(self, value):
+        value = self._norm(value).replace(',', '.')
+        try:
+            qty = float(value)
+            return qty if qty > 0 else 1.0
+        except (TypeError, ValueError):
+            return 1.0
 
     def action_import(self):
         self.ensure_one()
@@ -107,8 +121,18 @@ class MrpBomRefdesImport(models.TransientModel):
             ('product_id', '=', product.id),
             '&', ('product_id', '=', False), ('product_tmpl_id', '=', product.product_tmpl_id.id),
         ], limit=1)
+        created_bom = False
         if not bom:
-            raise UserError(_("No BOM found for product '%s'.") % product.display_name)
+            if not self.new_bom:
+                raise UserError(_("No BOM found for product '%s'. Tick 'Create "
+                                   "New BOM' to have one created automatically.") % product.display_name)
+            bom = self.env['mrp.bom'].create({
+                'product_tmpl_id': product.product_tmpl_id.id,
+                'product_id': product.id,
+                'product_qty': 1.0,
+                'type': 'normal',
+            })
+            created_bom = True
 
         # Preload a code -> product map once, instead of a DB search per row.
         # Keep an exact map (preferred) and a lowercase fallback map, so a
@@ -131,8 +155,9 @@ class MrpBomRefdesImport(models.TransientModel):
         start_index = max(self.data_start_line - 1, 0)
         data_rows = rows[start_index:]
 
-        log_lines = [_("BOM: %s (product: %s) - delimiter detected: %r") % (
-            bom.display_name, product.display_name, delimiter)]
+        log_lines = [_("BOM: %s (product: %s)%s - delimiter detected: %r") % (
+            bom.display_name, product.display_name,
+            _(' [newly created]') if created_bom else '', delimiter)]
         matched = 0
         unmatched = []
 
@@ -159,20 +184,33 @@ class MrpBomRefdesImport(models.TransientModel):
                                     "'%s'") % (row_no, part_number))
                 continue
 
+            qty = self._parse_qty(row[4]) if len(row) > 4 else 1.0
+
             bom_line = line_by_product.get(matched_product.id)
             if not bom_line:
-                unmatched.append(_("Line %s: part '%s' matched a product but is not a "
-                                    "component of BOM %s") % (row_no, matched_product.default_code,
-                                                               bom.display_name))
-                continue
+                if not self.new_bom:
+                    unmatched.append(_("Line %s: part '%s' matched a product but is not a "
+                                        "component of BOM %s") % (row_no, matched_product.default_code,
+                                                                   bom.display_name))
+                    continue
+                bom_line = self.env['mrp.bom.line'].create({
+                    'bom_id': bom.id,
+                    'product_id': matched_product.id,
+                    'product_qty': qty,
+                    'product_uom_id': matched_product.uom_id.id,
+                })
+                line_by_product[matched_product.id] = bom_line
+            elif bom_line.product_qty != qty:
+                bom_line.product_qty = qty
 
-            # NOTE: this assumes x_ref_des lives on mrp.bom.line (one BOM can
+            # NOTE: this assumes ref_des lives on mrp.bom.line (one BOM can
             # have many components, each with its own RefDes list). If the
             # field currently only exists on mrp.bom, move/recreate it on the
             # BOM line model first.
             bom_line.ref_des = refdes_str
             matched += 1
-            log_lines.append(_("Line %s: %s -> %s") % (row_no, matched_product.default_code, refdes_str))
+            log_lines.append(_("Line %s: %s -> refdes %s, qty %s") % (
+                row_no, matched_product.default_code, refdes_str, qty))
 
         log_lines.append(_("\n%s line(s) updated, %s line(s) skipped/unmatched.") % (matched, len(unmatched)))
         log_lines.extend(unmatched)

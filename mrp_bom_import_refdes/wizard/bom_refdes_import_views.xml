@@ -9,6 +9,7 @@
                     <field name="csv_file" filename="csv_filename"/>
                     <field name="csv_filename" invisible="1"/>
                     <field name="data_start_line"/>
+                    <field name="new_bom"/>
                 </group>
                 <field name="result_log" readonly="1" invisible="not result_log"/>
                 <footer>
