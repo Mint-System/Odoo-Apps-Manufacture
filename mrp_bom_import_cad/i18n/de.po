@@ -22,30 +22,32 @@ msgid ""
 "\n"
 "%s line(s) updated, %s line(s) skipped/unmatched."
 msgstr ""
+"\n"
+"%s Zeile(n) aktualisiert, %s Zeile(n) übersprungen/ohne Treffer."
 
 #. module: mrp_bom_import_cad
 #. odoo-python
 #: code:addons/mrp_bom_import_cad/wizard/bom_cad_import.py:0
 msgid " - %s draft MO(s) relinked"
-msgstr ""
+msgstr " - %s Draft-MO(s) erneut zugeordnet"
 
 #. module: mrp_bom_import_cad
 #. odoo-python
 #: code:addons/mrp_bom_import_cad/wizard/bom_cad_import.py:0
 msgid " [added]"
-msgstr ""
+msgstr " [hinzugefügt]"
 
 #. module: mrp_bom_import_cad
 #. odoo-python
 #: code:addons/mrp_bom_import_cad/wizard/bom_cad_import.py:0
 msgid " [newly created]"
-msgstr ""
+msgstr " [erzeugt]"
 
 #. module: mrp_bom_import_cad
 #. odoo-python
 #: code:addons/mrp_bom_import_cad/wizard/bom_cad_import.py:0
 msgid " [replaced old BOM]"
-msgstr ""
+msgstr " [ersetzt alte Stückliste]"
 
 #. module: mrp_bom_import_cad
 #: model:ir.model.fields,help:mrp_bom_import_cad.field_mrp_bom_cad_import__data_start_line
@@ -55,12 +57,16 @@ msgid ""
 "(RefDes;PartNumber;Label;Description;Quantity). Rows above that (title, "
 "'Zusammenfassung', 'Erstellt', component counts) are skipped."
 msgstr ""
+"Zeilennummer der ersten Datenzeile. Die Zeile unmittelbar über dieser Zeile "
+"musss die Zeile mit den Spaltenüberschriften "
+"(RefDes;PartNumber;Label;Description;Quantity) sein. Zeilen darüber (Titel, "
+"'Zusammenfassung', 'Erstellt', Anzahl der Komponenten) werden ignoriert."
 
 #. module: mrp_bom_import_cad
 #. odoo-python
 #: code:addons/mrp_bom_import_cad/wizard/bom_cad_import.py:0
 msgid "BOM: %s (product: %s)%s - delimiter detected: %r"
-msgstr ""
+msgstr "Stückliste: %s (Produkt: %s)%s - Spaltenbegrenzer gefunden: %r"
 
 #. module: mrp_bom_import_cad
 #: model:ir.model,name:mrp_bom_import_cad.model_mrp_bom_line
