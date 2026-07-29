@@ -13,8 +13,12 @@
                 </group>
                 <field name="result_log" readonly="1" invisible="not result_log"/>
                 <footer>
-                    <button name="action_import" type="object" string="Import" class="btn-primary"/>
-                    <button string="Close" class="btn-secondary" special="cancel"/>
+                    <button name="action_import" type="object" string="Import"
+                            class="btn-primary" invisible="result_log"/>
+                    <button string="Close" class="btn-secondary" special="cancel"
+                            invisible="not result_log"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"
+                            invisible="result_log"/>
                 </footer>
             </form>
         </field>
@@ -41,3 +45,4 @@
     </record>
 
 </odoo>
+

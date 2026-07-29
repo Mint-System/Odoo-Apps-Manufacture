@@ -4,7 +4,7 @@ import io
 import logging
 
 from odoo import fields, models, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 _logger = logging.getLogger(__name__)
 
@@ -116,16 +116,24 @@ class MrpBomRefdesImport(models.TransientModel):
         if not product:
             raise UserError(_("No product found with default code '%s' (cell A1).") % bom_default_code)
 
-        bom = self.env['mrp.bom'].search([
+        existing_bom = self.env['mrp.bom'].search([
             '|',
             ('product_id', '=', product.id),
             '&', ('product_id', '=', False), ('product_tmpl_id', '=', product.product_tmpl_id.id),
         ], limit=1)
+
         created_bom = False
-        if not bom:
-            if not self.new_bom:
-                raise UserError(_("No BOM found for product '%s'. Tick 'Create "
-                                   "New BOM' to have one created automatically.") % product.display_name)
+        replaced_bom = False
+        if self.new_bom:
+            if existing_bom:
+                try:
+                    existing_bom.unlink()
+                    replaced_bom = True
+                except (UserError, ValidationError):
+                    # Likely protected by a foreign key (e.g. referenced by
+                    # manufacturing orders) - archive instead of failing.
+                    existing_bom.write({'active': False})
+                    replaced_bom = True
             bom = self.env['mrp.bom'].create({
                 'product_tmpl_id': product.product_tmpl_id.id,
                 'product_id': product.id,
@@ -133,6 +141,11 @@ class MrpBomRefdesImport(models.TransientModel):
                 'type': 'normal',
             })
             created_bom = True
+        else:
+            if not existing_bom:
+                raise UserError(_("No BOM found for product '%s'. Tick 'Create "
+                                   "New BOM' to have one created automatically.") % product.display_name)
+            bom = existing_bom
 
         # Preload a code -> product map once, instead of a DB search per row.
         # Keep an exact map (preferred) and a lowercase fallback map, so a
@@ -155,9 +168,12 @@ class MrpBomRefdesImport(models.TransientModel):
         start_index = max(self.data_start_line - 1, 0)
         data_rows = rows[start_index:]
 
+        if created_bom:
+            status = _(' [replaced old BOM]') if replaced_bom else _(' [newly created]')
+        else:
+            status = ''
         log_lines = [_("BOM: %s (product: %s)%s - delimiter detected: %r") % (
-            bom.display_name, product.display_name,
-            _(' [newly created]') if created_bom else '', delimiter)]
+            bom.display_name, product.display_name, status, delimiter)]
         matched = 0
         unmatched = []
 
