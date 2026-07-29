@@ -14,9 +14,9 @@ _EXPECTED_HEADERS = ['refdes', 'partnumber', 'label', 'description', 'quantity']
 _CANDIDATE_DELIMITERS = [';', ',', '\t']
 
 
-class MrpBomRefdesImport(models.TransientModel):
-    _name = 'mrp.bom.refdes.import'
-    _description = 'Import RefDes CSV into BOM component lines'
+class MrpBomCadImport(models.TransientModel):
+    _name = 'mrp.bom.cad.import'
+    _description = 'Import CAD CSV into BOM component lines'
 
     csv_file = fields.Binary(string='CSV File', required=True)
     csv_filename = fields.Char(string='Filename')
@@ -124,16 +124,22 @@ class MrpBomRefdesImport(models.TransientModel):
 
         created_bom = False
         replaced_bom = False
+        relinked_mo_count = 0
+        linked_mos = self.env['mrp.production']
         if self.new_bom:
             if existing_bom:
-                try:
-                    existing_bom.unlink()
-                    replaced_bom = True
-                except (UserError, ValidationError):
-                    # Likely protected by a foreign key (e.g. referenced by
-                    # manufacturing orders) - archive instead of failing.
+                linked_mos = self.env['mrp.production'].search([('bom_id', '=', existing_bom.id)])
+                if linked_mos:
+                    # Any MO (draft or otherwise) referencing this BOM - archive
+                    # rather than delete, so historical MOs keep an accurate
+                    # record of which BOM they were actually built from.
                     existing_bom.write({'active': False})
-                    replaced_bom = True
+                else:
+                    try:
+                        existing_bom.unlink()
+                    except (UserError, ValidationError):
+                        existing_bom.write({'active': False})
+                replaced_bom = True
             bom = self.env['mrp.bom'].create({
                 'product_tmpl_id': product.product_tmpl_id.id,
                 'product_id': product.id,
@@ -141,11 +147,18 @@ class MrpBomRefdesImport(models.TransientModel):
                 'type': 'normal',
             })
             created_bom = True
+
         else:
-            if not existing_bom:
-                raise UserError(_("No BOM found for product '%s'. Tick 'Create "
-                                   "New BOM' to have one created automatically.") % product.display_name)
-            bom = existing_bom
+            if existing_bom:
+                bom = existing_bom
+            else:
+                bom = self.env['mrp.bom'].create({
+                    'product_tmpl_id': product.product_tmpl_id.id,
+                    'product_id': product.id,
+                    'product_qty': 1.0,
+                    'type': 'normal',
+                })
+                created_bom = True
 
         # Preload a code -> product map once, instead of a DB search per row.
         # Keep an exact map (preferred) and a lowercase fallback map, so a
@@ -170,6 +183,8 @@ class MrpBomRefdesImport(models.TransientModel):
 
         if created_bom:
             status = _(' [replaced old BOM]') if replaced_bom else _(' [newly created]')
+            if relinked_mo_count:
+                status += _(' - %s draft MO(s) relinked') % relinked_mo_count
         else:
             status = ''
         log_lines = [_("BOM: %s (product: %s)%s - delimiter detected: %r") % (
@@ -203,12 +218,8 @@ class MrpBomRefdesImport(models.TransientModel):
             qty = self._parse_qty(row[4]) if len(row) > 4 else 1.0
 
             bom_line = line_by_product.get(matched_product.id)
+            added = False
             if not bom_line:
-                if not self.new_bom:
-                    unmatched.append(_("Line %s: part '%s' matched a product but is not a "
-                                        "component of BOM %s") % (row_no, matched_product.default_code,
-                                                                   bom.display_name))
-                    continue
                 bom_line = self.env['mrp.bom.line'].create({
                     'bom_id': bom.id,
                     'product_id': matched_product.id,
@@ -216,17 +227,15 @@ class MrpBomRefdesImport(models.TransientModel):
                     'product_uom_id': matched_product.uom_id.id,
                 })
                 line_by_product[matched_product.id] = bom_line
+                added = True
             elif bom_line.product_qty != qty:
                 bom_line.product_qty = qty
 
-            # NOTE: this assumes ref_des lives on mrp.bom.line (one BOM can
-            # have many components, each with its own RefDes list). If the
-            # field currently only exists on mrp.bom, move/recreate it on the
-            # BOM line model first.
             bom_line.ref_des = refdes_str
             matched += 1
-            log_lines.append(_("Line %s: %s -> refdes %s, qty %s") % (
-                row_no, matched_product.default_code, refdes_str, qty))
+            log_lines.append(_("Line %s: %s -> refdes %s, qty %s%s") % (
+                row_no, matched_product.default_code, refdes_str, qty,
+                _(' [added]') if added else ''))
 
         log_lines.append(_("\n%s line(s) updated, %s line(s) skipped/unmatched.") % (matched, len(unmatched)))
         log_lines.extend(unmatched)
@@ -240,3 +249,4 @@ class MrpBomRefdesImport(models.TransientModel):
             'view_mode': 'form',
             'target': 'new',
         }
+

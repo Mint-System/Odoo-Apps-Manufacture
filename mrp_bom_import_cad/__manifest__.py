@@ -1,8 +1,8 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
-    "name": "Mrp Bom Import Refdes",
+    "name": "Mrp Bom Import Cad",
     "summary": """
-        Import RefDes Data into bom's.
+        Import CAD data into bom.
     """,
     "author": "Mint System GmbH",
     "website": "https://www.mint-system.ch/",
@@ -13,7 +13,7 @@
     "depends": ["mrp"],
     "data": [
         "security/ir.model.access.csv",
-        'wizard/bom_refdes_import_views.xml',
+        'wizard/bom_cad_import_views.xml',
         "views/mrp_bom_views.xml",
     ],
     "installable": True,

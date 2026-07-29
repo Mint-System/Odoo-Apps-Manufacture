@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="mrp_bom_form_view" model="ir.ui.view">
-        <field name="name">mrp_bom_import_refdes.mrp_bom_form_view</field>
+        <field name="name">mrp_bom_import_cad.mrp_bom_form_view</field>
         <field name="model">mrp.bom</field>
         <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
         <field name="arch" type="xml">
