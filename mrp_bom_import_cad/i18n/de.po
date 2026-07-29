@@ -102,6 +102,9 @@ msgid ""
 "(RefDes;PartNumber;Label;Description;Quantity) at line %s. Check 'Data "
 "starts at line' - it must be exactly one more than the header line number."
 msgstr ""
+"Kann die Zeile mit Spaltenüberschriften nicht finden"
+"(RefDes;PartNumber;Label;Description;Quantity) in Zeile %s. Check 'Daten "
+"beginnen in Zeile' - diese muss genau um eins grösser sein als die Zeilennummer der Spaltenüberschriften."
 
 #. module: mrp_bom_import_cad
 #: model:ir.model.fields,field_description:mrp_bom_import_cad.field_mrp_bom_cad_import__new_bom
