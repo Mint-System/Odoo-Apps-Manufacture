@@ -46,7 +46,6 @@ class MrpProduction(models.Model):
     #         production.button_mark_done()
 
     def button_generate_serials(self):
-        _logger.warning("##### button_generate_serials called")
         for production in self:
             res = production.button_mark_done()
             if res is not True:
