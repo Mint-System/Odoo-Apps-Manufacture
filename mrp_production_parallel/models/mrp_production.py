@@ -267,6 +267,14 @@ class MrpProduction(models.Model):
             else:
                 production.picking_state = "draft"
 
+
+    @api.depends('type')
+    def _compute_show_produce(self):
+        super()._compute_show_produce()
+        for production in self.filtered(lambda p: p.type == 'parallel'):
+            production.show_produce_all = False
+            production.show_produce = False
+
     
 
     # original method up to 2025-11-24

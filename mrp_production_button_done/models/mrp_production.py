@@ -22,8 +22,9 @@ class MrpProduction(models.Model):
                 production.product_id.tracking == 'serial'
                 and production.backorder_sequence <= 0
                 and bool(production.move_raw_ids)
-                and (production.show_produce or production.show_produce_all)
+              #  and (production.show_produce or production.show_produce_all)
                 and production.reservation_state == 'assigned'
+                and production.product_qty > 1
             )
             _logger.warning(f"show_produce_serial: {production.show_produce_serial}")
 

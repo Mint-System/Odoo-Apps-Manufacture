@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
              <xpath expr="//button[@name='button_mark_done'][1]" position="attributes">
                 <attribute name="invisible">
-                    not move_raw_ids or not show_produce or state != 'to_close' or type == "parallel"
+                    not move_raw_ids or not show_produce or state != 'to_close'
                 </attribute>
                 <attribute name="string">
                     Close Prod.
@@ -16,7 +16,7 @@
 
             <xpath expr="//button[@name='button_mark_done'][2]" position="attributes">
                 <attribute name="invisible">
-                    not move_raw_ids or not show_produce_all or state != 'to_close' or type == "parallel"
+                    not move_raw_ids or not show_produce_all or state != 'to_close'
                 </attribute>
                 <attribute name="string">
                     Close Prod.
@@ -25,7 +25,7 @@
 
             <xpath expr="//button[@name='button_mark_done'][3]" position="attributes">
                 <attribute name="invisible">
-                    move_raw_ids or not show_produce or state != 'to_close' or type == "parallel"
+                    move_raw_ids or not show_produce or state != 'to_close'
                 </attribute>
                 <attribute name="string">
                     Close Prod.
@@ -34,7 +34,7 @@
 
             <xpath expr="//button[@name='button_mark_done'][4]" position="attributes">
                 <attribute name="invisible">
-                    move_raw_ids or not show_produce_all or state != 'to_close' or type == "parallel"
+                    move_raw_ids or not show_produce_all or state != 'to_close'
                 </attribute>
                 <attribute name="string">
                     Close Prod.
