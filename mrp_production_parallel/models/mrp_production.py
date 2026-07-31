@@ -59,9 +59,12 @@ class MrpProduction(models.Model):
         readonly=True,
     )
 
+    state = fields.Selection(recursive=True)
+
     reservation_state = fields.Selection(
         recursive=True,
     )
+
     components_availability_state = fields.Selection(
         recursive=True,
     )
@@ -149,70 +152,31 @@ class MrpProduction(models.Model):
                     else rec.product_qty
                 )
 
-    # @api.depends("state", "product_qty", "qty_producing", "type")
-    # def _compute_show_produce(self):
-    #     for production in self:
-    #         # Original logic
-    #         state_ok = production.state in ("confirmed", "progress", "to_close")
-    #         qty_none_or_all = production.qty_producing in (0, production.product_qty)
-    #         show_produce_all = state_ok and qty_none_or_all
-    #         show_produce = state_ok and not qty_none_or_all
 
-    #         # New condition: hide buttons for sequential productions
-    #         if production.type == "sequential":
-    #             production.show_produce_all = False
-    #             production.show_produce = False
-    #         else:
-    #             production.show_produce_all = show_produce_all
-    #             production.show_produce = show_produce
+    @api.depends('sequential_production_ids.state')
+    def _compute_state(self):
+        super()._compute_state()  # runs for every record, parallel or not
+        for production in self.filtered(
+            lambda p: p.type == 'parallel' and p.sequential_production_ids
+        ):
+            production.state = production._get_parallel_state()
 
-    # @api.depends(
-    #     "state",
-    #     "move_raw_ids.state",
-    #     "type",
-    #     "sequential_production_ids",
-    #     "sequential_production_ids.reservation_state",
-    # )
-    # def _compute_reservation_state(self):
-    #     super()._compute_reservation_state()
-    #     # for production in self:
-    #     #     if production.type == "parallel":
-    #     #         sequential_productions = production.sequential_production_ids.filtered(
-    #     #             lambda c: c.type == "sequential"
-    #     #         )
-    #     #         if not sequential_productions:
-    #     #             # production.reservation_state = "confirmed"
-    #     #             continue
 
-    #     #         sequential_states = set(
-    #     #             sequential_productions.mapped("reservation_state")
-    #     #         )
-
-    #     #         # Priority: waiting > confirmed > assigned
-    #     #         if "waiting" in sequential_states:
-    #     #             production.reservation_state = "waiting"
-    #     #         elif "confirmed" in sequential_states:
-    #     #             production.reservation_state = "confirmed"
-    #     #         elif all(state == "assigned" for state in sequential_states):
-    #     #             production.reservation_state = "assigned"
-    #     #         else:
-    #     #             production.reservation_state = "confirmed"
-
-    #     for production in self:
-    #         if production.type != "parallel":
-    #             continue
-
-    #         sequential_productions = production.sequential_production_ids
-    #         if not sequential_productions:
-    #             continue  # fallback to standard behavior
-
-    #         sequential_states = set(sequential_productions.mapped("reservation_state"))
-
-    #         # Odoo 18 priority
-    #         for state in ["waiting", "confirmed", "assigned"]:
-    #             if state in sequential_states:
-    #                 production.reservation_state = state
-    #                 break
+    def _get_parallel_state(self):
+        self.ensure_one()
+        states = self.sequential_production_ids.mapped('state')
+        if all(s == 'cancel' for s in states):
+            return 'cancel'
+        active_states = [s for s in states if s != 'cancel']
+        if not active_states:
+            return 'cancel'
+        if all(s == 'done' for s in active_states):
+            return 'done'
+        if all(s in ('done', 'to_close') for s in active_states):
+            return 'to_close'
+        if any(s in ('progress', 'to_close', 'done') for s in active_states):
+            return 'progress'
+        return 'confirmed'
 
     @api.depends(
         'state',
@@ -334,8 +298,6 @@ class MrpProduction(models.Model):
             'state': 'draft',
         } for move in original_moves]
 
-        _logger.warning(f"######## original_move_vals before copy: {original_move_vals}")
-
         # Ensure workorder durations are copied correctly from first to second (if needed)
         if len(sequential_productions) >= 2:
             # because the first seq production has no duration_expected set we copy it from the first seq production workorders
@@ -361,24 +323,6 @@ class MrpProduction(models.Model):
                 "product_qty": len(sequential_productions),
             }
         )
-
-        _logger.warning(f"#### parallel_production.move_raw_ids.ids: {parallel_production.move_raw_ids.ids}")
-        # parallel_production.display_move_raw_ids = [(6, 0, parallel_production.move_raw_ids.ids)]
-        # parallel_production.move_raw_ids.unlink()
-
-        # Point display field at original MO's moves — correct qty, not affected by unlink
-        # parallel_production.display_move_raw_ids = [(6, 0, production.move_raw_ids.ids)]
-        # parallel_production.display_move_raw_ids.write({'state': 'draft'})
-
-        
-        # for move in original_moves:
-        #     move.copy({
-        #         'production_id': parallel_production.id,
-        #         'product_uom_qty': move.product_uom_qty * count,
-        #         'state': 'draft',
-        #     })
-
-        _logger.warning(f"######## original_move_vals after copy: {original_move_vals}")
 
         for vals in original_move_vals:
             self.env['parallel.display.component'].create({
@@ -534,40 +478,6 @@ class MrpProduction(models.Model):
 
         return seq_productions
 
-    # @api.depends(
-    #     "state", "product_qty", "qty_producing", "type", "sequential_production_ids"
-    # )
-    # def _compute_show_produce(self):
-    #     for production in self:
-    #         state_ok = production.state in ("confirmed", "progress", "to_close")
-    #         qty_none_or_all = production.qty_producing in (0, production.product_qty)
-    #         show_all = state_ok and qty_none_or_all
-    #         show_single = state_ok and not qty_none_or_all
-
-    #         if production.type == "parallel" and production.sequential_production_ids:
-    #             show_all = False
-
-    #         production.show_produce_all = show_all
-    #         production.show_produce = show_single
-
-    # @api.depends('state', 'product_qty', 'qty_producing', 'type')
-    # def _compute_show_produce(self):
-    #     _logger.warning("#### is called")
-    #     for production in self:
-    #         # Original logic
-    #         state_ok = production.state in ('confirmed', 'progress', 'to_close')
-    #         qty_none_or_all = production.qty_producing in (0, production.product_qty)
-    #         show_produce_all = state_ok and qty_none_or_all
-    #         show_produce = state_ok and not qty_none_or_all
-
-    #         # New condition: hide buttons for sequential productions
-    #         if production.type == 'sequential':
-    #             production.show_produce_all = False
-    #             production.show_produce = False
-    #         else:
-    #             production.show_produce_all = show_produce_all
-    #             production.show_produce = show_produce
-    #
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -580,51 +490,14 @@ class MrpProduction(models.Model):
         self._set_parallel_type(vals)
         return super().write(vals)
 
-    # def button_mark_done(self):
-    #     action = super().button_mark_done()
-
-        # #     # If you want to detect parallel backorders from your custom _split_productions:
-        #     parallel_mos = self.env['mrp.production'].search([("type", "=", "parallel")])
-        #     if isinstance(action, dict):
-        #         # if your super() already returned an action, check if there are parallel backorders
-        #         # You can use your own logic to retrieve them (depends on your _split_productions)
-        #         parallel_mos = self.filtered(lambda mo: mo.type == 'parallel')
-        #         _logger.warning("first call parallel_mos: %s" % (parallel_mos))
-        #         # or, if your _split_productions sets them in context, check there
-
-        # #     default_mo_id = action['context'].get('default_production_id')
-        # #     _logger.warning('default_mo_id: %s' % (default_mo_id))
-
-        # #     if default_mo_id:
-        # #         default_mo = self.env['mrp.production'].browse(default_mo_id)
-        # #         _logger.warning("default MO: %s" % (default_mo))
-        # #         _logger.warning("parallel MO: %s" % (default_mo.parallel_production_id))
-        # #         parallel_mo = default_mo.parallel_production_id
-        # #         _logger.warning("parallel mo %s" % (parallel_mo))
-        # #         action['context']['default_production_id'] = parallel_mo.id
-
-        # #     # Example: redirect if we find a parallel MO
-        #     if parallel_mos:
-        #         last_mo = parallel_mos[0].id
-        #         _logger.warning("last_mo: %s" % (last_mo))
-        #         if isinstance(action, dict) and action["context"]:
-        #             _logger.warning("### action: %s" % (action))
-        #             action['context']['default_production_id'] = last_mo + 1
-
-        #     _logger.warning("### action: %s" % (action))
-
-        #     # fallback to the original return value
-        # return action
-
 
     def action_cancel(self):
+        res = super().action_cancel()
         for production in self:
             if production.type == 'parallel':
                 production.sequential_production_ids.action_cancel()
-                production.write({'state': 'cancel'})
-            else:
-                super().action_cancel()
-        return True
+
+        return res
 
     def action_view_sequential_productions(self):
         self.ensure_one()
@@ -677,83 +550,7 @@ class MrpProduction(models.Model):
             ):
                 picking.button_validate()
 
-    # # planning only for parallel workorders
-    # def button_plan(self):
-    #     parallel_orders = self.filtered(lambda mo: mo.type == 'parallel')
-    #     orders_to_confirm = parallel_orders.filtered(lambda mo: mo.state == 'draft')
-    #     orders_to_confirm.action_confirm()
-    #     for order in parallel_orders:
-    #         order._plan_only_parallel_workorders()
-    #     return True
 
-    # def _plan_only_parallel_workorders(self, replan=False):
-    #     if self.type == 'sequential':
-    #         _logger.debug("Skipping sequential production %s for planning", self.name)
-    #         return
-
-    #     self._plan_workorders(replan)
-
-    def action_confirm(self):
-        for production in self:
-            if (
-                production.type == "parallel"
-                and production.bom_id
-                and not production.bom_id.operation_ids
-            ):
-                raise UserError(
-                    "This Bill of Materials has no operations.\n"
-                    "Parallel production requires at least one work order."
-                )
-
-        return super().action_confirm()
-
-    # def pre_button_mark_done(self):
-    #     for production in self: 
-    #         if production.type != 'parallel':
-    #             return super().pre_button_mark_done()
-
-        # call method for sequential production
-        #     production._finish_sequential_productions()
-
-        # return res
-
-    # def button_mark_done(self):
-    #     _logger.warning("#### BUTTON_MARK_DONE called")
-    #     for production in self:
-    #         if self.type != 'parallel':
-    #             return super().button_mark_done()
-    #         self.button_mark_done_parallel()
-
-
-        # for production in self:
-        #     if production.type == "parallel":
-        #         # Remove or neutralize serial before finalization
-        #         production.lot_producing_id = False
-
-
-    # def _post_inventory(self, cancel_backorder=False):
-    #     """Bypass serial enforcement for parallel productions."""
-    #     for order in self:
-    #         if order.type == "parallel":
-    #             # Mark all finished moves as untracked before finalizing
-    #             order.move_finished_ids.write({'tracking': 'none'})
-    #     return super()._post_inventory(cancel_backorder=cancel_backorder)
-
-    # def button_mark_done(self):
-    #     parallel = self.filtered(lambda p: p.type == 'parallel')
-    #     others = self - parallel
-
-    #     for production in parallel:
-    #         res = production.button_mark_done_parallel()
-    #         if res is not True:
-    #             return res  # propagate wizard action (e.g. serials)
-
-    #     if others:
-    #         res = super(MrpProduction, others).button_mark_done()
-    #         if res is not True:
-    #             return res
-
-    #     return True
 
     def action_generate_serial(self):
         self.ensure_one()
@@ -784,6 +581,9 @@ class MrpProduction(models.Model):
                 # Mark production as done
                 seq_prod.state = "done"
 
+        # compute state for parallel production
+        production._compute_state()
+
     def _compute_show_button_mark_done_parallel(self):
         any_to_close_list = []
         for production in self:
@@ -797,30 +597,23 @@ class MrpProduction(models.Model):
         else:
             self.show_button_mark_done_parallel = False
 
+
     def button_mark_done_parallel(self):
         for production in self:
             if production.type != "parallel":
                 continue
             seq_productions = production.sequential_production_ids
-            nothing_to_close = all(p.state not in ["to_close"] for p in seq_productions)
-            if nothing_to_close:
-                raise UserError("No sequentiqal production to close")
-            any_to_close = any(p.state in ["to_close"] for p in seq_productions)
-            all_done = all(p.state in ["done"] for p in seq_productions)
-            if any_to_close:
-                for prod in seq_productions.filtered(lambda p: p.state == "to_close"):
-                    prod.button_mark_done()
-                # production.state = "done"
-                production.write({
-                    'state': 'done',
-                    'date_finished': fields.Datetime.now(),
-                })
-            if all_done:
-                # production.state = "done"
-                production.write({
-                    'state': 'done',
-                    'date_finished': fields.Datetime.now(),
-                })
+            closable = seq_productions.filtered(lambda p: p.state == "to_close")
+            if not closable:
+                raise UserError("No sequential production to close")
+
+            closable.button_mark_done()
+
+            # force the parent's computed state to reflect the children's
+            # updated states right now, instead of waiting for lazy recompute
+            production._compute_state()
+            if production.state == 'done':
+                production.date_finished = fields.Datetime.now()
 
             production._generate_parallel_summary()
 
