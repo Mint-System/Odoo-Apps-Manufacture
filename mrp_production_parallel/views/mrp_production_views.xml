@@ -268,49 +268,7 @@
                     />
                 </page>
             </xpath>
-            <!-- <xpath expr="//field[@name='show_produce_all']" position="after">
-                <field name="type" invisible="1" />
-            </xpath> -->
 
-            <xpath expr="(//button[@name='button_mark_done'])[1]" position="replace" />
-            <xpath expr="(//button[@name='button_mark_done'])[2]" position="replace" />
-            <!-- <xpath expr="(//button[@name='button_mark_done'])[3]" position="replace" /> -->
-            <!-- <xpath expr="(//button[@name='button_mark_done'])[4]" position="replace" /> -->
-
-            <!-- <xpath expr="(//button[@name='button_mark_done'])[1]" position="attributes">
-                <attribute name="invisible"
-                    add="type in ['parallel']"
-                    separator=" or "
-                />
-            </xpath>
-            <xpath expr="(//button[@name='button_mark_done'])[2]" position="attributes">
-                <attribute
-                    name="invisible"
-                    add="type in ['parallel']"
-                    separator=" or "
-                />
-            </xpath>
-            <xpath expr="(//button[@name='button_mark_done'])[3]" position="attributes">
-                <attribute
-                    name="invisible"
-                    add="type in ['parallel']"
-                    separator=" or "
-                />
-            </xpath>
-            <xpath expr="(//button[@name='button_mark_done'])[4]" position="attributes">
-                <attribute
-                    name="invisible"
-                    add="type in ['parallel']"
-                    separator=" or "
-                />
-            </xpath>
-            <xpath expr="//button[@name='button_plan']" position="attributes">
-                <attribute
-                    name="invisible"
-                    add="type in ['sequential']"
-                    separator=" or "
-                />
-            </xpath> -->
             <xpath expr="//button[@name='button_unplan']" position="attributes">
                 <attribute
                     name="invisible"
