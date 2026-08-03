@@ -217,7 +217,7 @@
             </xpath>
 
             <xpath expr="//page[@name='components']" position="after">
-                <page name="components_parallel" string="Components" invisible="type!='parallel'">
+                <page name="components_parallel" string="Components" invisible="type!='parallel' or not sequential_picking_ids or not sequential_production_ids">
                     <field name="display_component_ids" widget="stock_move_one2many" readonly="1">
                         <list  editable="bottom">
                             <field name="product_id" />

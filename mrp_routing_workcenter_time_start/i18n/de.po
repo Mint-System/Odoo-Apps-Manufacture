@@ -1,0 +1,37 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* mrp_routing_workcenter_time_start
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-03 14:49+0000\n"
+"PO-Revision-Date: 2026-08-03 14:49+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: mrp_routing_workcenter_time_start
+#: model:ir.model.fields,help:mrp_routing_workcenter_time_start.field_mrp_routing_workcenter__time_start
+msgid ""
+"Overrides the workcenter's default setup time for this specific operation."
+msgstr ""
+
+#. module: mrp_routing_workcenter_time_start
+#: model:ir.model.fields,field_description:mrp_routing_workcenter_time_start.field_mrp_routing_workcenter__time_start
+msgid "Setup Time (min)"
+msgstr ""
+
+#. module: mrp_routing_workcenter_time_start
+#: model:ir.model,name:mrp_routing_workcenter_time_start.model_mrp_routing_workcenter
+msgid "Work Center Usage"
+msgstr "Arbeitsplatznutzung"
+
+#. module: mrp_routing_workcenter_time_start
+#: model:ir.model,name:mrp_routing_workcenter_time_start.model_mrp_workorder
+msgid "Work Order"
+msgstr "Arbeitsauftrag"

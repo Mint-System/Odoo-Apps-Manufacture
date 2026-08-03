@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mrp_routing_workcenter_tree_view" model="ir.ui.view">
+        <field name="name">mrp_routing_workcenter_time_start.mrp_routing_workcenter_tree_view</field>
+        <field name="model">mrp.routing.workcenter</field>
+        <field name="inherit_id" ref="mrp.mrp_routing_workcenter_tree_view"/>
+        <field name="arch" type="xml">
+            <field name="time_mode" position="after">
+                <field name="time_start" />
+            </field>
+        </field>
+    </record>
+
+    <record id="mrp_routing_workcenter_form_view" model="ir.ui.view">
+        <field name="name">mrp_routing_workcenter_time_start.mrp_routing_workcenter_form_view</field>
+        <field name="model">mrp.routing.workcenter</field>
+        <field name="inherit_id" ref="mrp.mrp_routing_workcenter_form_view"/>
+        <field name="arch" type="xml">
+            <field name="time_cycle" position="before">
+                <field name="time_start" />
+            </field>
+        </field>
+    </record>
+</odoo>

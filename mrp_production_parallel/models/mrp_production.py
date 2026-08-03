@@ -424,6 +424,20 @@ class MrpProduction(models.Model):
 
         return res
 
+    def copy(self, default=None):
+        action = super().copy(default=default)
+        if action.type == 'parallel':
+            # Covers two cases that both leave move_raw_ids/move_finished_ids
+            # empty on the copy: (1) no_copy_move_lines intentionally stripping
+            # them in copy_data above, and (2) _compute_move_raw_ids having no
+            # dependency on `state`, so it can run before _compute_state settles
+            # state='draft' during create(), silently skipping BoM regeneration.
+            if not action.move_raw_ids:
+                action._compute_move_raw_ids()
+            if not action.move_finished_ids:
+                action._compute_move_finished_ids()
+        return action
+
     def copy_data(self, default=None):
         data = super().copy_data(default)[0]
         
