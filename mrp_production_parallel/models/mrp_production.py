@@ -500,10 +500,11 @@ class MrpProduction(models.Model):
 
 
     def action_cancel(self):
-        res = super().action_cancel()
         for production in self:
-            if production.type == 'parallel':
+            if production.type == 'parallel' and production.sequential_production_ids:
                 production.sequential_production_ids.action_cancel()
+
+        res = super().action_cancel()
 
         return res
 
