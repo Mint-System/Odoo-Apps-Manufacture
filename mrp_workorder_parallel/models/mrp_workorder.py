@@ -495,18 +495,6 @@ class MrpWorkorder(models.Model):
                 entries = entries.search([("workorder_id", "in", sequential_wos.ids)])
             wo.sequential_time_entries = entries
 
-    # @api.depends("production_id", "sequential_workorder_ids")
-    # def _compute_duration_expected(self):
-    #     super()._compute_duration_expected()
-    
-    #     for wo in self:
-    #         if wo.production_id.type == "parallel":
-    #             # Sum expected durations of all sequential WOs
-               
-    #             seq_expected = sum(
-    #                 wo.sequential_workorder_ids.mapped("duration_expected")
-    #             )
-    #             wo.duration_expected = seq_expected
 
     @api.depends("production_id", "sequential_workorder_ids")
     def _compute_duration_expected(self):
