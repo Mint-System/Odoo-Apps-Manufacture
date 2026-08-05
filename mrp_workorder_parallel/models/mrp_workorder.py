@@ -185,7 +185,7 @@ class MrpWorkorder(models.Model):
             
 
         # Return empty action since bus message will handle frontend update
-        return {}
+        return {'registered': wo.registered}
 
     def _get_repair_location(self):
         loc_id = int(self.env["ir.config_parameter"].sudo().get_param(

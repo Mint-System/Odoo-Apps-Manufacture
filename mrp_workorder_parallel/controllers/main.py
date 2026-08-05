@@ -1,6 +1,6 @@
 import logging
 
-from odoo import http
+from odoo import _, http
 from odoo.http import request
 
 from odoo.addons.stock_barcode.controllers.stock_barcode import StockBarcodeController
@@ -21,12 +21,10 @@ class StockBarcodeSerialController(StockBarcodeController):
         current_wo_id = request.env.user.get_current_workorder() or False
         current_wo = request.env["mrp.workorder"].browse(int(current_wo_id))
         in_progress_parallel_mo = current_wo.production_id if current_wo else False
-        _logger.warning(f"####### in progress mo: {in_progress_parallel_mo}, {in_progress_parallel_mo.name}")
         mode = request.env.user.get_barcode_mode() or "normal"
         corresponding_mo = request.env["mrp.production"].search(
             [("lot_producing_id", "=", barcode), ("parallel_production_id", "=", in_progress_parallel_mo.id)]
         )
-        _logger.warning(f"####### corresponding mo: {corresponding_mo}, {corresponding_mo.name}")
 
         if not corresponding_mo:
             return False
@@ -41,15 +39,19 @@ class StockBarcodeSerialController(StockBarcodeController):
             # mode = "normal"
             request.env.user.set_barcode_mode("normal")
 
-        _logger.warning(f"##### mode: {mode}")
         if mode == "move_to_repair":
             return self.try_move_workorder_to_repair(barcode, corresponding_mo)
 
-        ret_open_mo_by_serial = self.try_open_mo_by_serial(barcode, corresponding_mo)
-        if ret_open_mo_by_serial:
-            return ret_open_mo_by_serial
+        # ret_open_mo_by_serial = self.try_open_mo_by_serial(barcode, corresponding_mo)
+        # if ret_open_mo_by_serial:
+        #     return ret_open_mo_by_serial
+        serial_scanned, registered = self.try_open_mo_by_serial(barcode, corresponding_mo)
+        if serial_scanned:
+            warning_message = _('Serial %(barcode)s registered', barcode=barcode) if registered else   _('Serial %(barcode)s unregistered', barcode=barcode)
+            return {'warning': warning_message}
 
         return super().main_menu(barcode)
+
 
     def try_open_mo_by_serial(self, barcode, corresponding_mo):
         for wo in corresponding_mo.workorder_ids:
@@ -65,9 +67,12 @@ class StockBarcodeSerialController(StockBarcodeController):
         if not active_wo:
             return False
             
-        active_wo.action_register_serial()
-        action = corresponding_mo.action_open_barcode_client_action()
-        return {"action": action}
+        res = active_wo.action_register_serial()
+        # action = corresponding_mo.action_open_barcode_client_action()
+        # return {"action": action}
+        registered = res["registered"]
+        return True, registered
+
 
 
     def try_move_workorder_to_repair(self, barcode, corresponding_mo):
@@ -80,6 +85,8 @@ class StockBarcodeSerialController(StockBarcodeController):
         request.env.user.set_barcode_mode("normal")
         action = corresponding_mo.action_open_barcode_client_action()
         return {"action": action}
+
+    
 
 
 class MrpWorkorderTestController(http.Controller):

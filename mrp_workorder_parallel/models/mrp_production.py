@@ -39,3 +39,7 @@ class MrpProduction(models.Model):
             and wo.state in ('ready', 'progress')
         )[:1]
         return repair_wo
+
+    def action_open_barcode_client_action(self):
+        self.ensure_one()
+        return {}
