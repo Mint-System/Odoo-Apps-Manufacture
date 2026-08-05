@@ -495,18 +495,37 @@ class MrpWorkorder(models.Model):
                 entries = entries.search([("workorder_id", "in", sequential_wos.ids)])
             wo.sequential_time_entries = entries
 
+    # @api.depends("production_id", "sequential_workorder_ids")
+    # def _compute_duration_expected(self):
+    #     super()._compute_duration_expected()
+    
+    #     for wo in self:
+    #         if wo.production_id.type == "parallel":
+    #             # Sum expected durations of all sequential WOs
+               
+    #             seq_expected = sum(
+    #                 wo.sequential_workorder_ids.mapped("duration_expected")
+    #             )
+    #             wo.duration_expected = seq_expected
+
     @api.depends("production_id", "sequential_workorder_ids")
     def _compute_duration_expected(self):
         super()._compute_duration_expected()
-    
+
         for wo in self:
             if wo.production_id.type == "parallel":
-                # Sum expected durations of all sequential WOs
-               
-                seq_expected = sum(
-                    wo.sequential_workorder_ids.mapped("duration_expected")
+                seq_wos = wo.sequential_workorder_ids
+                if not seq_wos:
+                    continue
+
+                setup = seq_wos[0].workcenter_id.time_start + seq_wos[0].operation_id.time_start
+
+                cycle_total = sum(
+                    seq.duration_expected - (seq.workcenter_id.time_start + seq.operation_id.time_start)
+                    for seq in seq_wos
                 )
-                wo.duration_expected = seq_expected
+
+                wo.duration_expected = setup + cycle_total
 
     @api.depends("sequential_workorder_ids.time_ids")
     def _compute_all_time_ids(self):

@@ -9,7 +9,7 @@
     "category": "Repository",
     "version": "18.0.1.0.0",
     "license": "AGPL-3",
-    "depends": ["base", "mrp", "mrp_workorder", "mrp_production_parallel", "repair", "repair_timesheet", "mrp_workorder_play_button"],
+    "depends": ["base", "mrp", "mrp_workorder", "mrp_production_parallel", "repair", "repair_timesheet", "mrp_workorder_play_button", "mrp_routing_workcenter_time_start"],
     "data": [
         "views/res_config_settings_views.xml",
         "views/mrp_production_views.xml",
