@@ -6,6 +6,11 @@ import {patch} from "@web/core/utils/patch";
 
 patch(MrpDisplayRecord.prototype, {
 
+    setup() {
+        super.setup();
+        this.displayRegisterProduction = false;
+    },
+
 	get displayCloseProductionButton() {
         return false;
     },
