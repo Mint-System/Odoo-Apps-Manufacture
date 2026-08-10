@@ -22,7 +22,7 @@ class MrpProduction(models.Model):
                 quantity_done = sum(
                     move_raw.move_orig_ids.filtered(
                         lambda m: m.state in ("done")
-                    ).mapped("quantity_done")
+                    ).mapped("quantity")
                 )
                 if move_raw.product_uom_qty == quantity_done:
                     move._action_cancel()
