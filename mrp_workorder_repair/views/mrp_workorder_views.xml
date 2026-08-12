@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<odoo>
+    <record id="mrp_production_workorder_tree_editable_view" model="ir.ui.view">
+        <field name="name">mrp_workorder_repair.mrp_production_workorder_tree_editable_view</field>
+        <field name="model">mrp.workorder</field>
+        <field
+            name="inherit_id"
+            ref="mrp.mrp_production_workorder_tree_editable_view"
+        />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="is_repair_wo" readonly="1" />
+                <field name="repair_order_id" readonly="1" />
+            </xpath>
+        </field>
+    </record>
+</odoo>

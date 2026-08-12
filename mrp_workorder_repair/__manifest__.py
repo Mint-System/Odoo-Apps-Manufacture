@@ -10,8 +10,11 @@
     "development_status": "Production/Stable",
     "version": "18.0.1.0.0",
     "license": "AGPL-3",
-    "depends": ["mrp_workorder"],
-    "data": [],
+    "depends": ["mrp_workorder", "repair", "repair_timesheet"],
+    "data": [
+        "views/repair_order_views.xml",
+        "views/mrp_workorder_views.xml",
+    ],
     "installable": True,
     "application": False,
     "auto_install": False,

@@ -59,6 +59,7 @@ class StockBarcodeSerialController(StockBarcodeController):
     @http.route()
     def main_menu(self, barcode, **kw):
         mode = request.env.user.get_barcode_mode() or "normal"
+        _logger.warning(f"#### mode: {mode}")
 
         if mode != "move_to_repair":
             current_wo_id = request.env.user.get_current_workorder() or False
@@ -66,6 +67,7 @@ class StockBarcodeSerialController(StockBarcodeController):
             in_progress_parallel_mo = current_wo.production_id if current_wo else False
 
             corresponding_mo = self._find_parallel_mo_by_serial(barcode, in_progress_parallel_mo)
+            _logger.warning(f"#### corresponding_mo: {corresponding_mo}")
             if not corresponding_mo:
                 return False
 
@@ -116,6 +118,22 @@ class StockBarcodeSerialController(StockBarcodeController):
     #     # return {"action": action}
     #     registered = res["registered"]
     #     return True, registered
+
+
+    def try_open_mo_by_serial(self, barcode, corresponding_mo):
+        on_repair = corresponding_mo.workorder_ids.filtered(lambda wo: wo.on_repair)[:1]
+        _logger.warning(f"on_repair: {on_repair}")
+        if on_repair:
+            active_wo = corresponding_mo.get_active_repair_workorder()
+        else:
+            active_wo = corresponding_mo.get_active_workorder()
+
+        if not active_wo:
+            return False
+        _logger.warning(f"active WO: {active_wo}")
+        res = active_wo.action_register_serial()
+        registered = res["registered"]
+        return True, registered
 
     
 

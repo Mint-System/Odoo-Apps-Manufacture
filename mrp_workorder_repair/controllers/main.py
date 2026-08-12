@@ -38,18 +38,6 @@ class StockBarcodeSerialController(StockBarcodeController):
 
         return super().main_menu(barcode, **kw)
 
-    def try_open_mo_by_serial(self, barcode, corresponding_mo):
-        on_repair = corresponding_mo.workorder_ids.filtered(lambda wo: wo.on_repair)[:1]
-        if on_repair:
-            active_wo = corresponding_mo.get_active_repair_workorder()
-        else:
-            active_wo = corresponding_mo.get_active_workorder()
-        if not active_wo:
-            return False
-
-        res = active_wo.action_register_serial()
-        registered = res["registered"]
-        return True, registered
 
 
     def try_move_workorder_to_repair(self, barcode, corresponding_mo):
@@ -60,7 +48,9 @@ class StockBarcodeSerialController(StockBarcodeController):
         active_wo.action_move_to_repair(barcode) 
         # Reset mode after action if desired
         request.env.user.set_barcode_mode("normal")
-        action = corresponding_mo.action_open_barcode_client_action()
-        return {"action": action}
+        # action = corresponding_mo.action_open_barcode_client_action()
+        # return {"action": action}
+        # return corresponding_mo.action_open_barcode_client_action()
+        return {'warning': _('Serial %(barcode)s registered for repair', barcode=barcode)}
 
 

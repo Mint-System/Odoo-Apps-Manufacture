@@ -48,12 +48,6 @@ class MrpProduction(models.Model):
         return super().get_active_repair_workorder()
 
 
-    def get_active_repair_workorder(self):
-        self.ensure_one()
-        if self.parallel_production_id:
-            return self.parallel_production_id.get_active_repair_workorder()
-        return super().get_active_repair_workorder()
-
     def action_open_barcode_client_action(self):
         self.ensure_one()
         return {}

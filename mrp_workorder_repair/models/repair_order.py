@@ -22,11 +22,6 @@ class Repair(models.Model):
         help="Link this repair order to an MRP production order",
     )
 
-    parallel_production_id = fields.Many2one(
-        string="Related Parallel Production Order",
-        related="production_id.parallel_production_id",
-        depends=["production_id"],
-    )
 
     def _unblock_production_after_repair(self):
         origin_wo = self.workorder_id
