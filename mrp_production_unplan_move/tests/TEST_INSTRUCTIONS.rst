@@ -1,0 +1,7 @@
+- Create new Manufacturing Order for "[D_0045_GR] Hocker (Grey)"
+- Confirm order
+- The end date is set to "31/12/2299"
+- Click on "Plan" button
+- The end date is set to calculated end date (depends on production duration)
+- Click on "Unplan" button
+- The end date switches back to "31/12/2299"
