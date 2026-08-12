@@ -12,7 +12,7 @@ class MrpProduction(models.Model):
     def _set_date_planned_finished(self):
         future_date = datetime.strptime("2299-12-31", "%Y-%m-%d")
         self.move_finished_ids.write({"date": future_date})
-        self.write({"date_planned_finished": future_date})
+        self.write({"date_finished": future_date})
 
     def button_unplan(self):
         super().button_unplan()
