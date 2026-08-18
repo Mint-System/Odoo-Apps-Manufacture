@@ -33,7 +33,7 @@ class StockBarcodeSerialController(StockBarcodeController):
         if mode == "move_to_repair":
             corresponding_mo = self._find_mo_for_repair_scan(barcode)
             if not corresponding_mo:
-                return False
+                raise UserError(_('Serial %(barcode)s not found', barcode=barcode))
             return self.try_move_workorder_to_repair(barcode, corresponding_mo)
 
         return super().main_menu(barcode, **kw)
@@ -46,6 +46,8 @@ class StockBarcodeSerialController(StockBarcodeController):
             return False
 
         active_wo.action_move_to_repair(barcode) 
+        # store active workorder
+        #  request.env.user.set_current_workorder(active_wo.id)
         # Reset mode after action if desired
         request.env.user.set_barcode_mode("normal")
         # action = corresponding_mo.action_open_barcode_client_action()

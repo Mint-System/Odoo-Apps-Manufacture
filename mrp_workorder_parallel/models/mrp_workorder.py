@@ -137,11 +137,13 @@ class MrpWorkorder(models.Model):
 
 
     def action_register_serial(self):
+        _logger.warning(f"##### ACTION  REGISTER SERIAL CALLED for {self.name}")
         """Mark non-finished workorder as registered"""
         for wo in self:
             if wo.state == "done":
                 raise UserError(_("You cannot register a serial for a completed workorder."))
             wo._check_not_under_repair()
+            _logger.warning(f"### not under repair: {wo._check_not_under_repair()}")
             wo.registered = not wo.registered
             wo._compute_sequential_stats()
             wo.sudo().reload()
@@ -152,6 +154,7 @@ class MrpWorkorder(models.Model):
                 ],
                 limit=1,
             )
+        _logger.warning(f"###### wo.registered: {wo.registered} for {wo.name} (id: {wo.id}, type: {wo.type})")
         return {'registered': wo.registered}
 
 
@@ -336,6 +339,7 @@ class MrpWorkorder(models.Model):
         "production_id.sequential_production_ids.workorder_ids.is_repair_wo",
     )
     def _compute_sequential_infos(self):
+        _logger.warning(f" _compute_sequential_infos  called")
         for wo in self:
             infos = []
             active_wo_count = 0
@@ -391,7 +395,9 @@ class MrpWorkorder(models.Model):
                 "active_wo_count": active_wo_count,
                 "total_wo_count": len(infos),
             }
+            _logger.warning(f"##### seq infos: {wo.sequential_infos}")
 
+    
 
     @api.depends(
         "production_id",
@@ -433,6 +439,10 @@ class MrpWorkorder(models.Model):
                 "current_wo_serials": current_wo_serials,
                 "registered_serials": registered_serials,
             }
+
+
+
+
 
     @api.depends(
         "production_id",
