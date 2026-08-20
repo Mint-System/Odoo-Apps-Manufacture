@@ -7,6 +7,21 @@ _logger = logging.getLogger(__name__)
 class MrpProduction(models.Model):
     _inherit = "mrp.production"
 
+    previous_workorder_id = fields.Many2one(
+        "mrp.workorder", string="Previous Workorder", help="The previous workorder."
+    )
+
+    open_repair_order_ids = fields.One2many(
+        "repair.order", compute="_compute_open_repair_order_ids", string="Open Repairs"
+    )
+
+    def _compute_open_repair_order_ids(self):
+        for production in self:
+            production.open_repair_order_ids = self.env["repair.order"].search([
+                ("workorder_id", "in", production.workorder_ids.ids),
+                ("state", "!=", "done"),
+            ])
+
     def get_active_workorder(self):
         """Register the active workorder (the one in progress or ready)."""
         self.ensure_one()
@@ -25,6 +40,6 @@ class MrpProduction(models.Model):
         )[:1]
 
 
-    
+
 
 

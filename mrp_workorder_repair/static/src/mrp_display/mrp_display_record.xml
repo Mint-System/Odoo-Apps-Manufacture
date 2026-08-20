@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+	<t t-inherit="mrp_workorder.MrpDisplayRecord" t-inherit-mode="extension">
+		<xpath expr="//ul[@class='list-group list-group-flush']" position="before">
+			 <ul class="list-group list-group-flush repair-line"
+    			 t-if="resModel === 'mrp.workorder' and props.production.data.product_tracking !== 'serial'">
+    			 <t t-esc="props.record.is_repair_wo"/>
+                 <t t-if="!record.is_repair_wo">
+				 	<div>
+	                  
+			            <button type="button"
+			                class="btn btn-outline-info btn-sm mt-2 mx-2 mb-2"
+			                t-on-click="onClickMoveToRepair">
+			                <span>&gt; R</span>
+			            </button>
+				       
+	                </div>
+	            </t>
+
+			 </ul>
+			 <ul class="list-group list-group-flush repair-line"
+    			 t-if="resModel === 'mrp.workorder' and props.record.data.has_pending_repair">
+    			 <t t-esc="props.record.is_repair_wo"/>
+                 <t t-if="!record.is_repair_wo">
+				 	<div class="mt-2 mx-2 mb-2">
+	                  
+			            <span class="badge bg-warning">Open Repairs</span>
+				       
+	                </div>
+	            </t>
+
+			 </ul>
+
+		</xpath>
+
+		<xpath expr="//ul[@class='list-group list-group-flush']" position="before">
+		    <ul class="list-group list-group-flush open-repairs"
+		        t-if="resModel === 'mrp.production' and props.record.data.open_repair_order_ids?.records?.length">
+		        <div class="mx-2">On Repair:</div>
+		        <t t-foreach="props.record.data.open_repair_order_ids.records" t-as="repair" t-key="repair.resId">
+		            <li class="list-group-item d-flex justify-content-between align-items-center">
+		                <span t-esc="repair.data.origin_workorder_id[1]"/>
+		                <span class="badge bg-warning" t-esc="repair.data.state"/>
+		            </li>
+		        </t>
+		    </ul>
+		</xpath>
+	</t>
+</templates>

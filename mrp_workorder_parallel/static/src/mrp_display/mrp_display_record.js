@@ -6,10 +6,9 @@ import {patch} from "@web/core/utils/patch";
 import {Dialog} from "@web/core/dialog/dialog";
 import {ConfirmationDialog} from "@web/core/confirmation_dialog/confirmation_dialog";
 import {useService} from "@web/core/utils/hooks";
-import {Component, markup, useState, xml, onMounted, onWillUnmount } from "@odoo/owl";
+import {Component, markup, useState, useEffect, xml, onMounted, onWillUnmount } from "@odoo/owl";
 import {useBus} from "@web/core/utils/hooks";
 import { useInterval } from "@mrp_workorder_parallel/mrp_display/useInterval";
-import { useEffect } from "@odoo/owl";
 
 
 class SerialsDialog extends Component {
@@ -63,6 +62,7 @@ patch(MrpDisplayRecord.prototype, {
             this.displaySerialLine = true;
         }
         
+        // TODO: not needed any longer? 
         onMounted(async () => {
             const savedMode = await this.env.services.orm.call(
                 "res.users",

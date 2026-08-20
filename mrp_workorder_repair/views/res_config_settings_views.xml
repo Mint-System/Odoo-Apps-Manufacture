@@ -6,7 +6,7 @@
         <field name="inherit_id" ref="mrp.res_config_settings_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//app[@name='mrp']" position="inside">
-                <block title="Parallel Production Repair">
+                <block title="Production Repair">
                     <setting string="WIP Repair Location"
                              help="Internal location where units are held during repair">
                         <field name="repair_location_id"/>

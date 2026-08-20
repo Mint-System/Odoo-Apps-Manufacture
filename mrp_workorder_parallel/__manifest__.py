@@ -11,7 +11,6 @@
     "license": "AGPL-3",
     "depends": ["base", "mrp", "mrp_workorder", "mrp_production_parallel", "mrp_workorder_repair", "mrp_workorder_play_button", "mrp_routing_workcenter_time_start", "mrp_workorder_hide_shop_floor_buttons"],
     "data": [
-        "views/res_config_settings_views.xml",
         "views/mrp_production_views.xml",
         "views/workorder_action_views.xml",
         "views/mrp_workcenter_views.xml",

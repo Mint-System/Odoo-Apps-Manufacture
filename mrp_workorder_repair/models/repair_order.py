@@ -16,6 +16,8 @@ class Repair(models.Model):
         help="Link this repair order to an MRP work order",
     )
 
+    origin_workorder_id = fields.Many2one("mrp.workorder", string="Pulled From Workorder")
+
     production_id = fields.Many2one(
         "mrp.production",
         string="Related Production Order",
@@ -51,4 +53,7 @@ class Repair(models.Model):
         res = super().action_repair_end()
         if self.workorder_id:
             self._unblock_production_after_repair()
+            self.workorder_id._check_repair_done()
         return res
+
+    
