@@ -14,7 +14,7 @@ patch(MrpDisplayAction.prototype, {
             "origin_workorder_id",
             "product_id",
         ];
-        fields["mrp.workorder"] = [...fields["mrp.workorder"], "is_repair_wo", "has_pending_repair"];
+        fields["mrp.workorder"] = [...fields["mrp.workorder"], "is_repair_wo", "has_pending_repair", "open_repair_count"];
         return fields;
     },
 });

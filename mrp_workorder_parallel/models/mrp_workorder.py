@@ -158,6 +158,49 @@ class MrpWorkorder(models.Model):
         return {'registered': wo.registered}
 
 
+    # def _get_or_create_repair_wo(self, lot_id, repair_order):
+    #     self.ensure_one()
+    #     parallel_production = self.production_id.parallel_production_id
+    #     if not parallel_production:
+    #         return super()._get_or_create_repair_wo(lot_id, repair_order)
+
+    #     repair_workcenter = self._get_repair_workcenter()
+    #     repair_parallel_wo = parallel_production.workorder_ids.filtered(
+    #         lambda w: w.workcenter_id == repair_workcenter
+    #         and w.is_repair_wo
+    #         and w.type == 'parallel'
+    #     )
+    #     if not repair_parallel_wo:
+    #         repair_parallel_wo = self.env["mrp.workorder"].create({
+    #             "name": "Repair",
+    #             "type": "parallel",
+    #             "production_id": parallel_production.id,
+    #             "workcenter_id": repair_workcenter.id,
+    #             "product_uom_id": self.production_id.product_uom_id.id,
+    #             "qty_production": 0.0,
+    #             "sequence": 9999,
+    #             "state": "pending",
+    #             "is_repair_wo": True,
+    #             "date_start": False,
+    #         })
+
+    #     return self.env['mrp.workorder'].create({
+    #         'name': 'Repair',
+    #         'production_id': self.production_id.id,
+    #         'parallel_workorder_id': repair_parallel_wo.id,
+    #         'origin_workorder_id': self.id,
+    #         'type': 'sequential',
+    #         'workcenter_id': repair_workcenter.id,
+    #         'product_uom_id': self.production_id.product_uom_id.id,
+    #         'qty_production': 1,
+    #         'state': 'ready',
+    #         'is_repair_wo': True,
+    #         'repair_order_id': repair_order.id,
+    #         'sequence': 9999,
+    #     })
+
+
+
     def _get_or_create_repair_wo(self, lot_id, repair_order):
         self.ensure_one()
         parallel_production = self.production_id.parallel_production_id
@@ -165,14 +208,14 @@ class MrpWorkorder(models.Model):
             return super()._get_or_create_repair_wo(lot_id, repair_order)
 
         repair_workcenter = self._get_repair_workcenter()
-        repair_parallel_wo = parallel_production.workorder_ids.filtered(
-            lambda w: w.workcenter_id == repair_workcenter
-            and w.is_repair_wo
-            and w.type == 'parallel'
+
+        existing_parallel_wos = parallel_production.workorder_ids.filtered(
+            lambda w: w.workcenter_id == repair_workcenter and w.is_repair_wo and w.type == 'parallel'
         )
+        repair_parallel_wo = existing_parallel_wos.filtered(lambda w: w.state != 'done')[:1]
         if not repair_parallel_wo:
             repair_parallel_wo = self.env["mrp.workorder"].create({
-                "name": "Repair",
+                "name": f"Repair - {len(existing_parallel_wos) + 1}" if existing_parallel_wos else "Repair",
                 "type": "parallel",
                 "production_id": parallel_production.id,
                 "workcenter_id": repair_workcenter.id,
@@ -184,20 +227,28 @@ class MrpWorkorder(models.Model):
                 "date_start": False,
             })
 
-        return self.env['mrp.workorder'].create({
-            'name': 'Repair',
-            'production_id': self.production_id.id,
-            'parallel_workorder_id': repair_parallel_wo.id,
-            'origin_workorder_id': self.id,
-            'type': 'sequential',
-            'workcenter_id': repair_workcenter.id,
-            'product_uom_id': self.production_id.product_uom_id.id,
-            'qty_production': 1,
-            'state': 'ready',
-            'is_repair_wo': True,
-            'repair_order_id': repair_order.id,
-            'sequence': 9999,
-        })
+        existing_seq_wos = self.production_id.workorder_ids.filtered(
+            lambda w: w.workcenter_id == repair_workcenter and w.is_repair_wo and w.type == 'sequential'
+        )
+        repair_wo = existing_seq_wos.filtered(lambda w: w.state != 'done')[:1]
+        if not repair_wo:
+            repair_wo = self.env['mrp.workorder'].create({
+                'name': f"Repair - {len(existing_seq_wos) + 1}" if existing_seq_wos else "Repair",
+                'production_id': self.production_id.id,
+                'parallel_workorder_id': repair_parallel_wo.id,
+                'origin_workorder_id': self.id,
+                'type': 'sequential',
+                'workcenter_id': repair_workcenter.id,
+                'product_uom_id': self.production_id.product_uom_id.id,
+                'qty_production': 1,
+                'state': 'ready',
+                'is_repair_wo': True,
+                'repair_order_id': repair_order.id,
+                'sequence': 9999,
+            })
+
+        self.repair_workorder_id = repair_wo.id
+        return repair_wo
 
 
     def _get_sequential_workorders(self):
@@ -590,19 +641,19 @@ class MrpWorkorder(models.Model):
         return res
 
 
-    def button_finish(self):
-        res = super().button_finish()
-        for workorder in self:
-            _logger.warning(f"button finish is repair wo: {workorder.is_repair_wo}")
-            if workorder.is_repair_wo:
-                original_wo = workorder.origin_workorder_id
-                original_wo.write({"on_repair": False})
-                workorder._create_account_analytic_line()
-                repair_order = workorder.repair_order_id
-                if repair_order and repair_order.state == "under_repair":
-                    repair_order.action_repair_end()
+    # def button_finish(self):
+    #     res = super().button_finish()
+    #     for workorder in self:
+    #         _logger.warning(f"button finish is repair wo: {workorder.is_repair_wo}")
+    #         if workorder.is_repair_wo:
+    #             original_wo = workorder.origin_workorder_id
+    #             original_wo.write({"on_repair": False})
+    #             workorder._create_account_analytic_line()
+    #             repair_order = workorder.repair_order_id
+    #             if repair_order and repair_order.state == "under_repair":
+    #                 repair_order.action_repair_end()
 
-        return res
+    #     return res
 
 
     @api.depends(

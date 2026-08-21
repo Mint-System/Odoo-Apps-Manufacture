@@ -39,7 +39,7 @@ class MrpWorkorder(models.Model):
     has_pending_repair = fields.Boolean(
         compute="_compute_has_pending_repair", string="Has Pending Repair"
     )
-
+    open_repair_count = fields.Integer(compute="_compute_open_repair_count")
 
     def _compute_has_pending_repair(self):
         for wo in self:
@@ -47,6 +47,15 @@ class MrpWorkorder(models.Model):
                 ('origin_workorder_id', '=', wo.id),
                 ('state', '!=', 'done'),
             ]))
+
+    def _compute_open_repair_count(self):
+        for wo in self:
+            wo.open_repair_count = self.env['repair.order'].search_count([
+                ('workorder_id', '=', wo.id),
+                ('state', '!=', 'done'),
+            ]) if wo.is_repair_wo else 0
+
+
 
     # def _check_all_repairs_done(self):
     #     """Called when a linked repair.order finishes; marks the repair
@@ -84,9 +93,16 @@ class MrpWorkorder(models.Model):
             raise UserError(_("Please configure the WIP Repair Location in Settings → Manufacturing."))
         return location
 
+    def _get_source_location(self):
+        """ Hook-in for non default source location
+        """
+        return self._get_default_source_location()
+
+
     def _get_repair_locations_for_unit(self):
         """Lot/untracked: resolve locations for bookkeeping-only repair move, no stock move."""
-        return self._get_repair_location(), self._get_default_source_location()
+        return self._get_repair_location(), self._get_source_location()
+
 
     def _get_default_source_location(self):
         return self.production_id.location_src_id or self.env.ref("stock.location_production")
@@ -200,6 +216,80 @@ class MrpWorkorder(models.Model):
         move._action_done()
         return repair_location, source_location
 
+    # def _move_unit_to_repair_location(self, repair_location, source_location):
+    #     """Non-serial (lot/untracked): physically relocate one unit to repair,
+    #     no specific serial identified."""
+    #     self.ensure_one()
+    #     product_id = self.production_id.product_id
+    #     move = self.env["stock.move"].create({
+    #         "name": f"WIP → Repair: {product_id.display_name}",
+    #         "product_id": product_id.id,
+    #         "product_uom_qty": 1.0,
+    #         "product_uom": product_id.uom_id.id,
+    #         "location_id": source_location.id,
+    #         "location_dest_id": repair_location.id,
+    #         "state": "draft",
+    #     })
+    #     move._action_confirm()
+    #     move._action_assign()
+    #     if move.move_line_ids:
+    #         move.move_line_ids[0].write({"picked": True, "quantity": 1.0})
+    #     else:
+    #         self.env["stock.move.line"].create({
+    #             "move_id": move.id,
+    #             "product_id": product_id.id,
+    #             "quantity": 1.0,
+    #             "picked": True,
+    #             "location_id": source_location.id,
+    #             "location_dest_id": repair_location.id,
+    #         })
+    #     move._action_done()
+    #     return True
+
+    def _move_unit_to_repair_location(self, repair_location, source_location):
+        """Non-serial: physically relocate one unit to repair.
+        Picks an arbitrary available lot for lot-tracked products;
+        no lot needed for untracked."""
+        self.ensure_one()
+        product_id = self.production_id.product_id
+        lot_id = False
+        lot_id_string = ""
+
+        if product_id.tracking == 'lot':
+            lot_id = self.production_id.lot_producing_id
+            if not lot_id:
+                raise UserError(_("No lot assigned to this production yet."))
+            lot_id_string = f" (Lot: {lot_id.name})"
+
+        move = self.env["stock.move"].create({
+            "name": f"WIP → Repair: {product_id.display_name}{lot_id_string}",
+            "product_id": product_id.id,
+            "product_uom_qty": 1.0,
+            "product_uom": product_id.uom_id.id,
+            "location_id": source_location.id,
+            "location_dest_id": repair_location.id,
+            "state": "draft",
+        })
+        move._action_confirm()
+        move._action_assign()
+
+        line_vals = {"picked": True, "quantity": 1.0}
+        if lot_id:
+            line_vals["lot_id"] = lot_id.id
+        if move.move_line_ids:
+            move.move_line_ids[0].write(line_vals)
+        else:
+            line_vals.update({
+                "move_id": move.id,
+                "product_id": product_id.id,
+                "location_id": source_location.id,
+                "location_dest_id": repair_location.id,
+            })
+            self.env["stock.move.line"].create(line_vals)
+
+        move._action_done()
+        return lot_id
+
 
     def _get_blocking_loss(self):
         loss_id = int(self.env["ir.config_parameter"].sudo().get_param(
@@ -220,15 +310,16 @@ class MrpWorkorder(models.Model):
 
 
     def _get_or_create_repair_wo(self, lot_id, repair_order):
-        """Get existing repair WO or create one for this production."""
+        """Get existing non-done repair WO or create a new one for this production."""
         self.ensure_one()
         repair_workcenter = self._get_repair_workcenter()
-        repair_wo = self.production_id.workorder_ids.filtered(
+        existing_repair_wos = self.production_id.workorder_ids.filtered(
             lambda w: w.workcenter_id == repair_workcenter and w.is_repair_wo
-        )[:1]
+        )
+        repair_wo = existing_repair_wos.filtered(lambda w: w.state != 'done')[:1]
         if not repair_wo:
             repair_wo = self.env['mrp.workorder'].create({
-                'name': 'Repair',
+                'name': f"Repair - {len(existing_repair_wos) + 1}" if existing_repair_wos else "Repair",
                 'production_id': self.production_id.id,
                 'origin_workorder_id': self.id,
                 'workcenter_id': repair_workcenter.id,
@@ -415,17 +506,31 @@ class MrpWorkorder(models.Model):
     #     for wo in pending_wos:
     #         wo.qty_production -= 1
 
+    # def action_move_unit_to_repair(self):
+    #     self.ensure_one()
+    #     if self.production_id.product_id.tracking == 'serial':
+    #         raise UserError(_("Use the barcode scan flow for serial-tracked products."))
+
+    #     repair_location, source_location = self._get_repair_locations_for_unit()
+    #     repair_order = self._create_repair_order(repair_location, source_location, lot_id=False)
+    #     repair_order.origin_workorder_id = self.id
+    #     repair_wo = self._get_or_create_repair_wo(lot_id=False, repair_order=repair_order)
+    #     repair_wo.blocked_by_workorder_ids = [(5, 0, 0)]  # clear predecessor blocking
+    #     repair_order.workorder_id = repair_wo.id
+
     def action_move_unit_to_repair(self):
         self.ensure_one()
         if self.production_id.product_id.tracking == 'serial':
             raise UserError(_("Use the barcode scan flow for serial-tracked products."))
 
         repair_location, source_location = self._get_repair_locations_for_unit()
-        repair_order = self._create_repair_order(repair_location, source_location, lot_id=False)
+        lot_id = self._move_unit_to_repair_location(repair_location, source_location)
+        repair_order = self._create_repair_order(repair_location, source_location, lot_id)
         repair_order.origin_workorder_id = self.id
         repair_wo = self._get_or_create_repair_wo(lot_id=False, repair_order=repair_order)
         repair_wo.blocked_by_workorder_ids = [(5, 0, 0)]  # clear predecessor blocking
         repair_order.workorder_id = repair_wo.id
+        self.repair_workorder_id = repair_wo.id
 
 
     # def _create_account_analytic_line(self):

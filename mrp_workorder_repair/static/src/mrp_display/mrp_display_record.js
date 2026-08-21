@@ -37,4 +37,11 @@ patch(MrpDisplayRecord.prototype, {
 	        this.notification.add(error.data?.message || error.message, {type: "danger"});
 	    }
 	},
+
+	get displayDoneButton() {
+        if (this.resModel === "mrp.workorder" && this.props.record.data.has_pending_repair) {
+            return false;
+        }
+        return super.displayDoneButton;
+    },
 })

@@ -25,11 +25,20 @@
 				 	<div class="mt-2 mx-2 mb-2">
 	                  
 			            <span class="badge bg-warning">Open Repairs</span>
+
 				       
 	                </div>
 	            </t>
 
 			 </ul>
+			 <ul class="list-group list-group-flush repair-line"
+    			 t-if="resModel === 'mrp.workorder' and props.record.data.is_repair_wo and props.record.data.open_repair_count">
+    			 <span class="badge bg-warning">
+				    <t t-esc="props.record.data.open_repair_count"/> unit<t t-if="props.record.data.open_repair_count > 1">s</t>
+				</span>
+
+			 </ul>
+
 
 		</xpath>
 
