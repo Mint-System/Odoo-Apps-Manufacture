@@ -40,6 +40,15 @@ class MrpProduction(models.Model):
         )[:1]
 
 
+    def _split_productions(self, *args, **kwargs):
+        productions = super()._split_productions(*args, **kwargs)
+        if self.env.context.get('repair_backorder_rename'):
+            original_name = productions[0].name
+            for backorder in productions[1:]:
+                backorder.name = f"{original_name} - R"
+        return productions
+
+
 
 
 

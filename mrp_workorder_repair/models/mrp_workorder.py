@@ -533,6 +533,7 @@ class MrpWorkorder(models.Model):
         self.repair_workorder_id = repair_wo.id
 
 
+
     # def _create_account_analytic_line(self):
     #     duration = self.duration
     #     if self.repair_order_id and duration and self.is_repair_wo:
@@ -641,3 +642,26 @@ class MrpWorkorder(models.Model):
             self._create_account_analytic_line(ro, share_count)
 
 
+    # def do_finish(self):
+    #     self.ensure_one()
+    #     if not self.is_repair_wo:
+    #         open_repair_count = self.env['repair.order'].search_count([
+    #             ('origin_workorder_id', '=', self.id),
+    #             ('state', '!=', 'done'),
+    #         ])
+    #         if open_repair_count:
+    #             self.qty_producing = max(self.qty_producing - open_repair_count, 0)
+    #     return super().do_finish()
+
+
+    def do_finish(self):
+        self.ensure_one()
+        if not self.is_repair_wo:
+            open_repair_count = self.env['repair.order'].search_count([
+                ('origin_workorder_id', '=', self.id),
+                ('state', '!=', 'done'),
+            ])
+            if open_repair_count:
+                self.qty_producing = max(self.qty_producing - open_repair_count, 0)
+                return super(MrpWorkorder, self.with_context(repair_backorder_rename=True)).do_finish()
+        return super().do_finish()

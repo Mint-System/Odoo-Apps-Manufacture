@@ -38,10 +38,10 @@ patch(MrpDisplayRecord.prototype, {
 	    }
 	},
 
-	get displayDoneButton() {
-        if (this.resModel === "mrp.workorder" && this.props.record.data.has_pending_repair) {
-            return false;
-        }
-        return super.displayDoneButton;
-    },
+	// get displayDoneButton() {
+    //     if (this.resModel === "mrp.workorder" && this.props.record.data.has_pending_repair) {
+    //         return false;
+    //     }
+    //     return super.displayDoneButton;
+    // },
 })
