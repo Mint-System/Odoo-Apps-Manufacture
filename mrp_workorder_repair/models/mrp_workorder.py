@@ -33,13 +33,24 @@ class MrpWorkorder(models.Model):
     is_repair_wo = fields.Boolean(
         string="Is Repair Work Order",
         default=False,
-        copy=False,
+        copy=True,
     )
 
     has_pending_repair = fields.Boolean(
         compute="_compute_has_pending_repair", string="Has Pending Repair"
     )
     open_repair_count = fields.Integer(compute="_compute_open_repair_count")
+
+    related_repair_order_ids = fields.One2many(
+        'repair.order', 'workorder_id', string="Repair Orders",
+        compute="_compute_related_repair_order_ids",
+    )
+
+    def _compute_related_repair_order_ids(self):
+        for wo in self:
+            wo.related_repair_order_ids = self.env['repair.order'].search([
+                ('workorder_id', '=', wo.id),
+            ]) if wo.is_repair_wo else self.env['repair.order']
 
     def _compute_has_pending_repair(self):
         for wo in self:

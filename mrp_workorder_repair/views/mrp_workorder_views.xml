@@ -10,7 +10,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='state']" position="after">
                 <field name="is_repair_wo" readonly="1" />
-                <field name="repair_order_id" readonly="1" />
+                <field name="related_repair_order_ids" readonly="1" widget="many2many_tags" />
             </xpath>
         </field>
     </record>
