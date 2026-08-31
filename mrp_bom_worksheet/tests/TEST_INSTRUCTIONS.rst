@@ -1,0 +1,2 @@
+- Edit or create Bills of Materials (BoM)
+- On the "Worksheet" tab, select the appropriate work sheet type
