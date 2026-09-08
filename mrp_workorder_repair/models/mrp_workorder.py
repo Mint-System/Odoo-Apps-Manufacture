@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+from odoo.tools.float_utils import float_compare
 
 _logger = logging.getLogger(__name__)
 
@@ -65,6 +66,13 @@ class MrpWorkorder(models.Model):
                 ('workorder_id', '=', wo.id),
                 ('state', '!=', 'done'),
             ]) if wo.is_repair_wo else 0
+
+    def _compute_state(self):
+        repair_wos = self.filtered('is_repair_wo')
+        super(MrpWorkorder, self - repair_wos)._compute_state()
+        for wo in repair_wos:
+            if wo.state in ('pending', 'waiting'):
+                wo.state = 'ready'
 
 
 
@@ -665,7 +673,21 @@ class MrpWorkorder(models.Model):
     #     return super().do_finish()
 
 
+    # def do_finish(self):
+    #     self.ensure_one()
+    #     if not self.is_repair_wo:
+    #         open_repair_count = self.env['repair.order'].search_count([
+    #             ('origin_workorder_id', '=', self.id),
+    #             ('state', '!=', 'done'),
+    #         ])
+    #         if open_repair_count:
+    #             self.qty_producing = max(self.qty_producing - open_repair_count, 0)
+    #             return super(MrpWorkorder, self.with_context(repair_backorder_rename=True)).do_finish()
+    #     return super().do_finish()
+
+
     def do_finish(self):
+        _logger.warning("### do finish called")
         self.ensure_one()
         if not self.is_repair_wo:
             open_repair_count = self.env['repair.order'].search_count([
@@ -674,5 +696,23 @@ class MrpWorkorder(models.Model):
             ])
             if open_repair_count:
                 self.qty_producing = max(self.qty_producing - open_repair_count, 0)
+
+                needs_split = float_compare(
+                    self.qty_producing, self.qty_remaining,
+                    precision_rounding=self.product_uom_id.rounding
+                ) == -1
+                _logger.warning(f"#### open_repair_count={open_repair_count}, qty_producing={self.qty_producing}, qty_remaining={self.qty_remaining}, needs_split={needs_split}, is_first_started_wo={self.is_first_started_wo}")
+                if needs_split and not self.is_first_started_wo:
+                    production = self.production_id
+                    backorders = production.with_context(
+                        repair_backorder_rename=True
+                    )._split_productions()[1:]
+                    for wo in backorders.workorder_ids:
+                        if wo.product_tracking == 'serial':
+                            wo.qty_producing = 1
+                        else:
+                            wo.qty_producing = wo.qty_remaining
+                    production.product_qty = self.qty_producing
+
                 return super(MrpWorkorder, self.with_context(repair_backorder_rename=True)).do_finish()
         return super().do_finish()

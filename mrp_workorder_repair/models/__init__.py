@@ -1,1 +1,1 @@
-from . import mrp_production, mrp_workorder, repair_order, res_config_settings
+from . import mrp_production, mrp_workorder, repair_order, res_config_settings, res_users

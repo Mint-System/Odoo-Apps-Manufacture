@@ -3,5 +3,4 @@ from . import (
     mrp_production,
     mrp_workcenter_productivity,
     mrp_workcenter,
-    res_users,
 )
