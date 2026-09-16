@@ -54,22 +54,5 @@
 		        </t>
 		    </ul>
 		</xpath>
-		<xpath expr="//ul[@class='list-group list-group-flush']" position="before">
-		    <ul class="list-group list-group-flush scan-component"
-    			 t-if="resModel === 'mrp.production'">
-    			 
-				 	<div>
-	                  
-			            <button type="button"
-			                class="btn btn-outline-info btn-sm mt-2 mx-2 mb-2"
-			                t-on-click="onClickScanComponent">
-			                <span>Scan Component</span>
-			            </button>
-				       
-	                </div>
-	            
-
-			 </ul>
-		</xpath>
 	</t>
 </templates>

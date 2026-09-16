@@ -23,6 +23,7 @@ class SerialsDialog extends Component {
 }
 
 
+
 patch(MrpDisplayRecord.prototype, {
     setup() {
         super.setup();
@@ -215,10 +216,10 @@ patch(MrpDisplayRecord.prototype, {
             ? `${activeCount} of ${totalCount} active Serials`
             : "No Active Serials";
 
-            this.dialogService.add(SerialsDialog, {
-                title: modalTitle,
-                body: markup(`<div class="d-flex flex-wrap">${bodyHTML}</div>`),
-            });
+        this.dialogService.add(SerialsDialog, {
+            title: modalTitle,
+            body: markup(`<div class="d-flex flex-wrap">${bodyHTML}</div>`),
+        });
     },
 
 
