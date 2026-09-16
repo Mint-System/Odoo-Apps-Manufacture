@@ -1,0 +1,40 @@
+.o_worksheet_modal {
+    // Let clicks pass through the full-viewport modal AND its now-empty centered wrapper.
+    .modal.o_technical_modal,
+    .modal-dialog {
+        pointer-events: none;
+        background: transparent;
+    }
+
+    // Re-enable clicks only on the actual visible panel and everything inside it.
+    .modal-content.o_worksheet_side_panel,
+    .modal-content.o_worksheet_side_panel * {
+        pointer-events: auto;
+    }
+
+    .modal-content.o_worksheet_side_panel {
+        position: fixed;
+        top: 0 !important;
+        left: auto !important;
+        right: 0 !important;
+        margin: 0;
+        width: 50vw;
+        max-width: 50vw;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+        box-shadow: -4px 0 12px rgba(0, 0, 0, .15);
+        display: flex;
+        flex-direction: column;
+
+        .modal-header {
+            flex: 0 0 auto;
+        }
+
+        .modal-body {
+            flex: 1 1 auto;
+            overflow-y: auto;
+            min-height: 0;
+        }
+    }
+}

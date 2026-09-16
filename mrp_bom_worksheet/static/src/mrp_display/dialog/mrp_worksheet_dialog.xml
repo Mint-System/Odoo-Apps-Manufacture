@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="mrp_bom_worksheet.MrpWorksheetDialog"
+       t-inherit="mrp_workorder.MrpWorksheetDialog"
+       t-inherit-mode="extension">
+
+        <xpath expr="//Dialog" position="attributes">
+            <!-- drop 'fs', use a normal size so Bootstrap doesn't stretch it -->
+            <attribute name="size">'md'</attribute>
+            <!-- lets you target the actual .modal-dialog box in CSS -->
+            <attribute name="contentClass">'o_worksheet_side_panel'</attribute>
+        </xpath>
+
+        <xpath expr="//div[hasclass('o_worksheet_modal')]" position="attributes">
+            <attribute name="class" add="o_worksheet_side_panel_wrapper" separator=" "/>
+        </xpath>
+    </t>
+</templates>
