@@ -1,0 +1,1 @@
+Add button to shop floor linking do component view.

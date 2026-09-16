@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+	<t t-inherit="mrp_workorder.MrpDisplayRecord" t-inherit-mode="extension">
+		<xpath expr="//ul[@class='list-group list-group-flush']" position="before">
+		    <ul class="list-group list-group-flush scan-component"
+    			 t-if="resModel === 'mrp.production' and displayScanComponentButton">
+    			 
+				 	<div>
+	                  
+			            <button type="button"
+			                class="btn btn-outline-info btn-sm mt-2 mx-2 mb-2"
+			                t-on-click="onClickScanComponent">
+			                <span>Scan Component</span>
+			            </button>
+				       
+	                </div>
+	            
+
+			 </ul>
+		</xpath>
+	</t>
+</templates>
