@@ -1,0 +1,1 @@
+Add link to barcode app component view to shop floor
