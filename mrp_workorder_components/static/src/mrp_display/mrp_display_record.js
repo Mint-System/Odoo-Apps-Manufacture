@@ -12,6 +12,10 @@ patch(MrpDisplayRecord.prototype, {
         this.orm = useService('orm');
     },
 
+    get displayScanComponentButton() {
+        return true;
+    },
+
     async onClickScanComponent() {
 
         const productionId = this.props.record.data.id;
@@ -30,6 +34,6 @@ patch(MrpDisplayRecord.prototype, {
         // Test first whether you need to append anything further
         // to land directly on the component-scan sub-screen.
 
-        window.location.href = url;
+        window.open(url, "_blank", "noopener,noreferrer");
     },
 })

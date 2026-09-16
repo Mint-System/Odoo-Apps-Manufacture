@@ -42,7 +42,10 @@ patch(MrpDisplayRecord.prototype, {
     },
 
     get displayScanComponentButton() {
-        return false;
+        if (this.productionType === 'parallel') {
+            return false;
+        }
+        return super.displayScanComponentButton;
     },
 
 
@@ -74,11 +77,14 @@ patch(MrpDisplayRecord.prototype, {
         });
     },
 
+
     async openComponentScanForSerial(serial) {
+        const productionId = serial.id;
         const [pickingType] = await this.orm.searchRead(
             "stock.picking.type", [["code", "=", "mrp_operation"]], ["id"], { limit: 1 }
         );
-        window.location.href = `/odoo/barcode/action-390/${pickingType.id}/barcode-mo/${serial.id}/action-407`;
+        const url = `/odoo/barcode/action-390/${pickingType.id}/barcode-mo/${productionId}/action-407`;
+        window.open(url, "_blank", "noopener,noreferrer");
     },
 
     
