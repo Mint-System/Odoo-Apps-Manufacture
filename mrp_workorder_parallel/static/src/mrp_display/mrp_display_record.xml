@@ -88,6 +88,13 @@
                                             t-esc="buttonText"
                                         />
                                    </t>
+                                   <button
+                                        type="button"
+                                        t-att-class="buttonScanClass"
+                                        t-on-click="onClickScanComponentParallel"
+                                        t-esc="buttonScanText"
+                                    />
+
                                 </div>
                             </div>
                         </div>

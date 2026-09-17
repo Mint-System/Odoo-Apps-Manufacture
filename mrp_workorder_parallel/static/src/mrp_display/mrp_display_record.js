@@ -6,7 +6,7 @@ import {patch} from "@web/core/utils/patch";
 import {Dialog} from "@web/core/dialog/dialog";
 import {ConfirmationDialog} from "@web/core/confirmation_dialog/confirmation_dialog";
 import {useService} from "@web/core/utils/hooks";
-import {Component, markup, useState, useEffect, xml, onMounted, onWillUnmount } from "@odoo/owl";
+import {Component, markup, useState, useEffect, xml, onMounted, onWillUnmount, onWillStart} from "@odoo/owl";
 import {useBus} from "@web/core/utils/hooks";
 import { useInterval } from "@mrp_workorder_parallel/mrp_display/useInterval";
 
@@ -35,6 +35,7 @@ patch(MrpDisplayRecord.prototype, {
         this.notification = useService("notification");
         this.dialogService = useService("dialog");
         this.action = useService("action");
+        this.orm = useService("orm");
         this.busService = this.env.services.bus_service;
         this.workorderId = this.props.record.resId;
         const {resModel, resId, data} = this.props.record;
@@ -84,7 +85,6 @@ patch(MrpDisplayRecord.prototype, {
             },
             () => [this.props.record.resId]
         );
-
     },
 
 
@@ -101,6 +101,10 @@ patch(MrpDisplayRecord.prototype, {
             } catch (e) {
                 console.error("Reload failed:", e);
             }
+        }
+
+        if (payload.type === "barcode_mode_changed") {
+            this.currentMode.barcode_action = payload.mode;
         }
     },
 
@@ -222,6 +226,16 @@ patch(MrpDisplayRecord.prototype, {
         });
     },
 
+    // onClickScanComponentParallel() {
+    //     this.orm.call("res.users", "set_barcode_mode", ["component_scan"]);
+
+    // },
+
+
+    async onClickScanComponentParallel() {
+        await this.orm.call("res.users", "set_barcode_mode", ["component_scan"]);
+        this.currentMode.barcode_action = "component_scan";
+    },
 
    
     get showPlayButtonExt() {
@@ -241,10 +255,22 @@ patch(MrpDisplayRecord.prototype, {
             : "Back to Normal Mode";
     },
 
+
+    get buttonScanText() {
+        return this.currentMode.barcode_action === "component_scan"
+            ? "Scan Component (active)"
+            : "Scan Component";
+    },
+
+
     get buttonClass() {
         return this.currentMode.barcode_action === "move_to_repair"
             ? "btn btn-warning btn-sm mt-2"
             : "btn btn-info btn-sm mt-2";
+    },
+
+    get buttonScanClass() {
+        return  "btn btn-secondary btn-sm mt-2";
     },
 
     get displayCloseProductionButton() {

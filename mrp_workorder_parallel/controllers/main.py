@@ -18,20 +18,32 @@ class ShopfloorBarcodeMode(http.Controller):
 
 class StockBarcodeSerialController(StockBarcodeController):
 
+    # def _find_mo_for_component_scan(self, barcode):
+    #     """Default lookup: MO whose current serial matches the scan.
+    #     Override in specialized modules (e.g. parallel production) to scope this."""
+    #     return request.env["mrp.production"].search(
+    #         [("lot_producing_id", "=", barcode)], limit=1
+    #     )
+
+
+    def _find_mo_for_component_scan(self, barcode):
+        current_wo_id = request.env.user.get_current_workorder() or False
+        current_wo = request.env["mrp.workorder"].browse(int(current_wo_id))
+        in_progress_parallel_mo = current_wo.production_id if current_wo else False
+        return self._find_parallel_mo_by_serial(barcode, in_progress_parallel_mo)
+
     @http.route()
     def main_menu(self, barcode, **kw):
         mode = request.env.user.get_barcode_mode() or "normal"
-        _logger.warning(f"#### mode: {mode}")
+        _logger.warning(f"########### mode: {mode}")
 
-        if mode != "move_to_repair":
+        if mode not in ("move_to_repair", "component_scan"):
             current_wo_id = request.env.user.get_current_workorder() or False
 
             current_wo = request.env["mrp.workorder"].browse(int(current_wo_id))
-            _logger.warning(f"#### current wo: {current_wo}, {current_wo.name} ")
             in_progress_parallel_mo = current_wo.production_id if current_wo else False
 
             corresponding_mo = self._find_parallel_mo_by_serial(barcode, in_progress_parallel_mo)
-            _logger.warning(f"#### corresponding_mo: {corresponding_mo}")
             if not corresponding_mo:
                 raise UserError(_('Serial %(barcode)s not found', barcode=barcode))
 
@@ -43,7 +55,18 @@ class StockBarcodeSerialController(StockBarcodeController):
                 )
                 return {'warning': warning_message}
 
+
+        if mode == "component_scan":
+            corresponding_mo = self._find_mo_for_component_scan(barcode)
+            if not corresponding_mo:
+                raise UserError(_('Serial %(barcode)s not found', barcode=barcode))
+            request.env.user.set_barcode_mode("normal")  # one-shot, same as repair mode
+            _logger.warning(f"#### open_barcode_production_id: {corresponding_mo.id}")
+            return {"open_barcode_production_id": corresponding_mo.id}
+
         return super().main_menu(barcode, **kw)
+
+
 
     def _find_parallel_mo_by_serial(self, barcode, in_progress_parallel_mo):
         corresponding_mo = request.env["mrp.production"].search(
@@ -51,7 +74,6 @@ class StockBarcodeSerialController(StockBarcodeController):
              ("parallel_production_id", "=", in_progress_parallel_mo.id)]
         )
         if len(corresponding_mo) > 1:
-            _logger.warning(f"###### {len(corresponding_mo)} MOs gefunden")
             corresponding_mo = corresponding_mo[:1]  # see note below
         return corresponding_mo
 

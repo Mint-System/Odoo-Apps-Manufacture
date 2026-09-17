@@ -25,6 +25,11 @@ class ResUsers(models.Model):
     def set_barcode_mode(self, mode):
         key = f"mrp_workorder_repair.barcode_mode.{self.env.uid}"
         self.env["ir.config_parameter"].sudo().set_param(key, mode)
+        self.env["bus.bus"]._sendone(
+            f"workorder_{self.env.user.get_current_workorder()}",  # match your existing channel naming
+            "workorder_update",
+            {"type": "barcode_mode_changed", "mode": mode},
+        )
         return True
 
     @api.model
