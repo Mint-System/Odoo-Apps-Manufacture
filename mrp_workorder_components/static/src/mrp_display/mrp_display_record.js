@@ -30,7 +30,7 @@ patch(MrpDisplayRecord.prototype, {
             { limit: 1 }
         );
 
-        const url = `/odoo/barcode/action-390/${pickingType.id}/barcode-mo/${productionId}/action-407`;
+        // const url = `/odoo/barcode/action-390/${pickingType.id}/barcode-mo/${productionId}/action-407`;
         // Test first whether you need to append anything further
         // to land directly on the component-scan sub-screen.
 

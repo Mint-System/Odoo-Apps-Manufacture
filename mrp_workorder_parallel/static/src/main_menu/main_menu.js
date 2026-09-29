@@ -16,6 +16,7 @@ patch(MainMenu.prototype, {
 	async _onBarcodeScanned(barcode) {
 	    const res = await rpc('/stock_barcode/scan_from_main_menu', { barcode });
 	    if (res.open_barcode_production_id) {
+	    	await this.orm.call("mrp.production", "action_prepare_component_scan", [res.open_barcode_production_id]);
 	        const [pickingType] = await this.orm.searchRead(
 	            "stock.picking.type", [["code", "=", "mrp_operation"]], ["id"], { limit: 1 }
 	        );
@@ -35,3 +36,4 @@ patch(MainMenu.prototype, {
 	},
 
 })
+

@@ -55,3 +55,10 @@ class MrpProduction(models.Model):
     def action_open_barcode_client_action(self):
         self.ensure_one()
         return {}
+
+
+    def action_prepare_component_scan(self):
+        _logger.warning(f"##### action_prepare_component_called")
+        self.ensure_one()
+        self._set_qty_producing()
+        return True
