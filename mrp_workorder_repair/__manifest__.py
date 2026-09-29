@@ -16,6 +16,7 @@
         "views/repair_order_views.xml",
         "views/mrp_workorder_views.xml",
         "views/mrp_production.xml",
+        "views/repair_order.xml",
         "report/mrp_report_mo_overview.xml",
     ],
     "installable": True,

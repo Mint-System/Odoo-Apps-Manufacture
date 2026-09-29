@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="repair_order_form_view_timesheet_inherit" model="ir.ui.view">
+        <field name="name">mrp_workorder_repair.repair_order_form_view_timesheet_inherit</field>
+        <field name="model">repair.order</field>
+        <field name="inherit_id" ref="repair_timesheet.repair_order_form_view_timesheet_inherit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='unit_amount']" position="attributes">
+                <attribute name="readonly">True</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
