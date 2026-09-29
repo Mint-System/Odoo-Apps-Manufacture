@@ -1,0 +1,14 @@
+- Create a new manufacturing order for three units of a product with BoM and workorders.
+- Validate picking.
+- Start the first workorder in shop floor.
+- Move a unit to repair via the shop floor button "> R".
+- Finish the workorder for the remaining units.
+- A repair backorder is created.
+- Check if it contains the workorders not finished for the unit to repair.
+- Finish the remaining workorders of the original manufaturing order.
+- Finish the Manufacturing Order in backend.
+- Complete the workorders of backorder in shop floor including repair workorder.
+- Finish the backorder in backend.
+- Open the manufacturing overview report of the original MO.
+- Check if all workorders from original Manufacturing Order and backorder are shown.
+- Check if a "Repair Backorders" section with repair workorder duration and cost is shown.

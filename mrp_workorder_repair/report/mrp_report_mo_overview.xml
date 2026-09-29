@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="mo_overview_content" inherit_id="mrp.mo_overview_content">
+        <xpath expr="//tbody/t[@t-call='mrp.mo_overview_components']" position="after">
+            <t t-call="mrp_workorder_repair.mo_overview_repair_backorders">
+                <t t-set="summary" t-value="data.get('repair_backorders', {}).get('summary', {})"/>
+                <t t-set="operations" t-value="data.get('repair_backorders', {}).get('details', [])"/>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="mo_overview_repair_backorders">
+        <t t-if="operations">
+            <tr>
+                <td class="text-start">
+                    <span t-attf-style="margin-left: {{ (operations[0]['level'] - 1 if len(operations) else 0) * 20 }}px"/>
+                    Repair Backorders
+                </td>
+                <td t-if="data['show_replenishments']" class="text-center"/>
+                <td t-attf-class="text-end {{ data['get_color'](summary.get('quantity_decorator')) }}">
+                    <t t-if="summary.get('done')" t-out="summary['quantity']" t-options="{'widget': 'float', 'precision': operations[0].get('uom_precision', 0)}"/>
+                    <t t-else="" t-out="summary['quantity']" t-options="{'widget': 'float_time'}"/>
+                </td>
+                <td t-if="data['show_uom']" class="text-start" t-out="summary['uom_name']"/>
+                <td t-if="data['show_availabilities']" class="text-end"/>
+                <td t-if="data['show_availabilities']" class="text-end"/>
+                <td t-if="data['show_receipts']" class="text-end"/>
+                <td t-if="data['show_unit_costs']"/>
+                <td t-if="data['show_mo_costs']" t-attf-class="text-end {{ data['get_color'](summary.get('mo_cost_decorator')) }}">
+                    <t t-out="summary['mo_cost']" t-options="{'widget': 'monetary', 'display_currency': summary['currency']}"/>
+                </td>
+                <td t-if="data['show_bom_costs']" class="text-end">
+                    <t t-out="summary['bom_cost']" t-options="{'widget': 'monetary', 'display_currency': summary['currency']}"/>
+                </td>
+                <td t-if="data['show_real_costs']" class="text-end">
+                    <t t-out="summary['real_cost']" t-options="{'widget': 'monetary', 'display_currency': summary['currency']}"/>
+                </td>
+            </tr>
+        </t>
+        <t t-if="summary.get('index') in data['unfolded_ids']" t-foreach="operations" t-as="operation">
+            <t t-call="mrp.mo_overview_line">
+                <t t-set="line" t-value="operation"/>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="mrp_workorder_repair.MoOverviewRepairBackordersBlock" t-inherit="mrp.MoOverviewOperationsBlock" t-inherit-mode="primary">
+        <xpath expr="//span[hasclass('btn')]" position="replace">
+            <span class="btn btn-light ps-0 py-0" t-attf-aria-label="{{ state.isFolded ? 'Unfold' : 'Fold' }}" t-attf-title="{{ state.isFolded ? 'Unfold' : 'Fold' }}">
+                <i t-attf-class="fa fa-fw fa-caret-{{ state.isFolded ? 'right' : 'down' }}" role="img"/>
+                Repair Backorders
+            </span>
+        </xpath>
+    </t>
+
+    <t t-inherit="mrp.MoOverview" t-inherit-mode="extension">
+        <xpath expr="//tbody/MoOverviewComponentsBlock" position="after">
+            <MoOverviewRepairBackordersBlock
+                t-if="state.data.repair_backorders?.details?.length"
+                summary="state.data.repair_backorders.summary"
+                operations="state.data.repair_backorders.details"
+                showOptions="state.showOptions"/>
+        </xpath>
+    </t>
+
+</templates>
