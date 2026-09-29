@@ -1,0 +1,8 @@
+- Create BoM for a product with one component tracked by lot and one component tracked by serial.
+- Generate Manufacturing Order for the product.
+- Copy name of the MO.
+- Start Barcode App.
+- Switch to scan Mode and insert name of the MO.
+- Component list view for this MO opens.
+- The quantity of the serial tracked component is already set to its demand.
+- The quantity of the lot tracked component is still zero.

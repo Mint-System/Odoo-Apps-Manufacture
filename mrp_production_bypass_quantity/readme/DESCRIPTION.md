@@ -1,0 +1,1 @@
+Bypass quantity setting when generate serial for tracked product to produce.
