@@ -294,6 +294,16 @@ patch(MrpDisplayRecord.prototype, {
         }
     },
 
+    get showToRepairButton() {
+        const type = this.props.record.data.type;
+        if (type === 'parallel') {
+            return false;
+        }
+        else {
+            return true;
+        }
+    },
+
 
     async onClickOpenStatementModal() {
         const {resModel, resId} = this.props.record;

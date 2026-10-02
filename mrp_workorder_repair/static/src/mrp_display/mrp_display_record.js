@@ -15,6 +15,10 @@ patch(MrpDisplayRecord.prototype, {
         this.orm = useService('orm');
     },
 
+    get showToRepairButton() {
+        return true;
+    },
+
     async onClickMoveToRepair() {
 	    const {resModel, resId} = this.props.record;
 	    try {

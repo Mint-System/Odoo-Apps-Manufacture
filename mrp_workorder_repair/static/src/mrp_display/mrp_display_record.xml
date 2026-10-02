@@ -3,7 +3,7 @@
 	<t t-inherit="mrp_workorder.MrpDisplayRecord" t-inherit-mode="extension">
 		<xpath expr="//ul[@class='list-group list-group-flush']" position="before">
 			 <ul class="list-group list-group-flush repair-line"
-    			 t-if="resModel === 'mrp.workorder' and props.production.data.product_tracking !== 'serial'">
+    			 t-if="resModel === 'mrp.workorder' and showToRepairButton">
     			 <t t-esc="props.record.is_repair_wo"/>
                  <t t-if="!record.is_repair_wo">
 				 	<div>
