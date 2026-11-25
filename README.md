@@ -7,12 +7,11 @@ Odoo modules extending the `manufacture` module.
 Clone this repo into the Odoo addons directory.
 
 ```bash
-git clone git@github.com:mint-system/odoo-apps-manufacture.git ./addons/manufacture
+git clone git@github.com:Mint-System/Odoo-Apps-Manufacture.git ./addons/manufacture
 ```
 
 ## Available modules
 
 | Module | Summary |
-| --- | --- |
-| [mrp_documents_share](mrp_documents_share) |         Share product drawing and step files with vendors and link them in the workorder tablet view. |
-| [stock_mrp_traceability_list](stock_mrp_traceability_list) |         Show nested traceability report data as list. |
+| ------ | ------- |
+|        |         |

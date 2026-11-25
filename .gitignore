@@ -86,3 +86,7 @@ docs/_build/
 
 # OCA rules
 !static/lib/
+
+# Odoo Build
+tmp
+prompt.md
